@@ -1,0 +1,48 @@
+.landing-page .hero {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://picsum.photos/1920/1080');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 100px 0;
+  text-align: center;
+}
+
+.landing-page .hero h1 {
+  font-size: 3.5rem;
+  font-weight: bold;
+}
+
+.landing-page .hero p {
+  font-size: 1.25rem;
+  margin-bottom: 30px;
+}
+
+.landing-page .features {
+  padding: 80px 0;
+}
+
+.landing-page .feature-card {
+  border: none;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.landing-page .feature-card:hover {
+  transform: translateY(-10px);
+}
+
+.landing-page .footer {
+  background-color: #343a40;
+  color: white;
+  padding: 40px 0;
+}
+
+.landing-page .footer a {
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .landing-page .feature-card {
+    margin-bottom: 20px;
+  }
+}
