@@ -552,8 +552,8 @@ export default function Home() {
     }
 
     const url = authTab === 'login'
-      ? 'http://localhost:5001/api/auth/login'
-      : 'http://localhost:5001/api/auth/signup';
+      ? 'http://localhost:5003/api/auth/login'
+      : 'http://localhost:5003/api/auth/signup';
 
     const payload = authTab === 'login'
       ? { email: authForm.email, password: authForm.password }

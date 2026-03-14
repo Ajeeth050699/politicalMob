@@ -1,16 +1,29 @@
 const express = require('express');
-const router = express.Router();
+const router  = express.Router();
 const {
-  signup,
+  register,
   login,
+  getProfile,
+  updateProfile,
+  updateFcmToken,
+  sendOtp,
+  verifyOtp,
   forgotPassword,
-  updateUserProfile,
+  resetPassword,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
-router.post('/signup', signup);
-router.post('/login', login);
+// ── Public routes ─────────────────────────────────────────────────
+router.post('/register',        register);
+router.post('/login',           login);
+router.post('/send-otp',        sendOtp);
+router.post('/verify-otp',      verifyOtp);
 router.post('/forgot-password', forgotPassword);
-router.put('/profile', protect, updateUserProfile);
+router.post('/reset-password',  resetPassword);
+
+// ── Private routes ────────────────────────────────────────────────
+router.get ('/profile',   protect, getProfile);
+router.put ('/profile',   protect, updateProfile);
+router.put ('/fcm-token', protect, updateFcmToken);
 
 module.exports = router;
