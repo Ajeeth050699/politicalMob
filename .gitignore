@@ -1,0 +1,34 @@
+# ===== SECRETS =====
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+
+# ===== NODE MODULES =====
+node_modules/
+**/node_modules/
+
+# ===== API SERVER =====
+packages/api-server/.env
+packages/api-server/dist/
+packages/api-server/build/
+
+# ===== WEB ADMIN =====
+packages/web-admin/.env
+packages/web-admin/dist/
+packages/web-admin/build/
+
+# ===== MOBILE APP =====
+packages/mobile-app/.env
+packages/mobile-app/android/local.properties
+packages/mobile-app/android/.gradle
+packages/mobile-app/ios/Pods/
+packages/mobile-app/*.keystore
+packages/mobile-app/*.jks
+
+# ===== LOGS =====
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
