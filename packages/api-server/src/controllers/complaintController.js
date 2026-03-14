@@ -1,70 +1,121 @@
-const complaints = [
-  {
-    id: "CMP-1042",
-    category: "Road Damage",
-    user: "Arjun V.",
-    booth: "Booth #12",
-    district: "Chennai",
-    status: "NEW",
-    time: "12m ago",
-    priority: "high",
-  },
-  {
-    id: "CMP-1041",
-    category: "Water Supply",
-    user: "Meena R.",
-    booth: "Booth #47",
-    district: "Coimbatore",
-    status: "IN PROGRESS",
-    time: "45m ago",
-    priority: "medium",
-  },
-  {
-    id: "CMP-1040",
-    category: "Street Light",
-    user: "Kumar S.",
-    booth: "Booth #89",
-    district: "Madurai",
-    status: "COMPLETED",
-    time: "2h ago",
-    priority: "low",
-  },
-  {
-    id: "CMP-1039",
-    category: "Garbage Issue",
-    user: "Lakshmi P.",
-    booth: "Booth #23",
-    district: "Salem",
-    status: "IN PROGRESS",
-    time: "3h ago",
-    priority: "medium",
-  },
-  {
-    id: "CMP-1038",
-    category: "Drainage",
-    user: "Vijay N.",
-    booth: "Booth #61",
-    district: "Trichy",
-    status: "COMPLETED",
-    time: "5h ago",
-    priority: "low",
-  },
-  {
-    id: "CMP-1037",
-    category: "Public Safety",
-    user: "Preethi K.",
-    booth: "Booth #34",
-    district: "Chennai",
-    status: "NEW",
-    time: "6h ago",
-    priority: "high",
-  },
-];
+const asyncHandler = require('express-async-handler');
+const Complaint    = require('../models/complaintModel');
+const User         = require('../models/userModel');
 
-const getComplaints = async (req, res) => {
-  res.json(complaints);
-};
+// @desc   Get complaints (admin=all, worker=assigned, public=own)
+// @route  GET /api/complaints
+// @access Private
+const getComplaints = asyncHandler(async (req, res) => {
+  const { status, district, booth, category } = req.query;
+  let filter = {};
+
+  if (req.user.role === 'public') filter.user           = req.user._id;
+  if (req.user.role === 'worker') filter.assignedWorker = req.user._id;
+
+  if (status   && status   !== 'ALL') filter.status   = status;
+  if (district && district !== 'ALL') filter.district = district;
+  if (booth)    filter.booth    = booth;
+  if (category) filter.category = category;
+
+  const complaints = await Complaint.find(filter)
+    .sort({ createdAt: -1 })
+    .populate('user', 'name phone')
+    .populate('assignedWorker', 'name');
+
+  res.json(complaints.map((c) => ({
+    id:             c._id,
+    category:       c.category,
+    description:    c.description,
+    user:           c.user?.name || 'Unknown',
+    userPhone:      c.user?.phone,
+    booth:          c.booth,
+    district:       c.district,
+    priority:       c.priority,
+    status:         c.status,
+    assignedWorker: c.assignedWorker?.name,
+    proofPhoto:     c.proofPhoto,
+    time:           c.createdAt,
+  })));
+});
+
+// @desc   Create complaint
+// @route  POST /api/complaints
+// @access Private
+const createComplaint = asyncHandler(async (req, res) => {
+  const { category, description, booth, district, location } = req.body;
+
+  // Auto-assign worker from same booth
+  const worker = await User.findOne({
+    role: 'worker',
+    booth: booth || req.user.booth,
+    isActive: true,
+  });
+
+  const complaint = await Complaint.create({
+    user:           req.user._id,
+    category,
+    description,
+    booth:          booth    || req.user.booth,
+    district:       district || req.user.district,
+    assignedWorker: worker?._id,
+    location,
+  });
+
+  res.status(201).json(complaint);
+});
+
+// @desc   Get complaint by ID
+// @route  GET /api/complaints/:id
+// @access Private
+const getComplaintById = asyncHandler(async (req, res) => {
+  const complaint = await Complaint.findById(req.params.id)
+    .populate('user', 'name phone address')
+    .populate('assignedWorker', 'name phone');
+
+  if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+  res.json(complaint);
+});
+
+// @desc   Update complaint status
+// @route  PUT /api/complaints/:id/status
+// @access Private (worker/admin)
+const updateComplaintStatus = asyncHandler(async (req, res) => {
+  const complaint = await Complaint.findById(req.params.id);
+  if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+
+  complaint.status   = req.body.status   || complaint.status;
+  complaint.priority = req.body.priority || complaint.priority;
+  if (req.body.assignedWorker) complaint.assignedWorker = req.body.assignedWorker;
+
+  res.json(await complaint.save());
+});
+
+// @desc   Upload proof photo & mark completed
+// @route  PUT /api/complaints/:id/proof
+// @access Private (worker/admin)
+const uploadProof = asyncHandler(async (req, res) => {
+  const complaint = await Complaint.findById(req.params.id);
+  if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+
+  complaint.proofPhoto = req.body.photoUrl || (req.file ? `/uploads/${req.file.filename}` : null);
+  complaint.status     = 'COMPLETED';
+
+  res.json(await complaint.save());
+});
+
+// @desc   Delete complaint
+// @route  DELETE /api/complaints/:id
+// @access Private (admin)
+const deleteComplaint = asyncHandler(async (req, res) => {
+  await Complaint.findByIdAndDelete(req.params.id);
+  res.json({ message: 'Complaint deleted' });
+});
 
 module.exports = {
   getComplaints,
+  createComplaint,
+  getComplaintById,
+  updateComplaintStatus,
+  uploadProof,
+  deleteComplaint,
 };

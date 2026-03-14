@@ -94,47 +94,47 @@ export default function AdminDashboard() {
       };
 
       try {
-        const { data: statsData } = await axios.get("http://localhost:5001/api/dashboard/stats", config);
+        const { data: statsData } = await axios.get("http://localhost:5003/api/dashboard/stats", config);
         setStats(statsData);
 
-        const { data: weeklyData } = await axios.get("http://localhost:5001/api/dashboard/complaints/weekly", config);
+        const { data: weeklyData } = await axios.get("http://localhost:5003/api/dashboard/complaints/weekly", config);
         setWeeklyData(weeklyData);
 
-        const { data: categoryData } = await axios.get("http://localhost:5001/api/dashboard/complaints/by-category", config);
+        const { data: categoryData } = await axios.get("http://localhost:5003/api/dashboard/complaints/by-category", config);
         setCategoryData(categoryData);
 
-        const { data: recentComplaintsData } = await axios.get("http://localhost:5001/api/dashboard/complaints/recent", config);
+        const { data: recentComplaintsData } = await axios.get("http://localhost:5003/api/dashboard/complaints/recent", config);
         setComplaints(recentComplaintsData);
         setComplaintList(recentComplaintsData);
 
 
-        const { data: districtPerformanceData } = await axios.get("http://localhost:5001/api/dashboard/districts/performance", config);
+        const { data: districtPerformanceData } = await axios.get("http://localhost:5003/api/dashboard/districts/performance", config);
         setDistrictData(districtPerformanceData);
 
-        const { data: complaintsData } = await axios.get("http://localhost:5001/api/complaints", config);
+        const { data: complaintsData } = await axios.get("http://localhost:5003/api/complaints", config);
         setComplaints(complaintsData);
         setComplaintList(complaintsData);
 
-        const { data: workersData } = await axios.get("http://localhost:5001/api/workers", config);
+        const { data: workersData } = await axios.get("http://localhost:5003/api/workers", config);
         setWorkers(workersData);
         setWorkerList(workersData);
 
-        const { data: newsData } = await axios.get("http://localhost:5001/api/news", config);
+        const { data: newsData } = await axios.get("http://localhost:5003/api/news", config);
         setNewsItems(newsData);
 
-        const { data: campsData } = await axios.get("http://localhost:5001/api/news/camps", config);
+        const { data: campsData } = await axios.get("http://localhost:5003/api/news/camps", config);
         setCamps(campsData);
 
-        const { data: videosData } = await axios.get("http://localhost:5001/api/education/videos", config);
+        const { data: videosData } = await axios.get("http://localhost:5003/api/education/videos", config);
         setVideos(videosData);
 
-        const { data: examsData } = await axios.get("http://localhost:5001/api/education/exams", config);
+        const { data: examsData } = await axios.get("http://localhost:5003/api/education/exams", config);
         setExams(examsData);
 
-        const { data: notificationsData } = await axios.get("http://localhost:5001/api/notifications", config);
+        const { data: notificationsData } = await axios.get("http://localhost:5003/api/notifications", config);
         setNotifications(notificationsData);
 
-        const { data: analyticsStatsData } = await axios.get("http://localhost:5001/api/analytics/stats", config);
+        const { data: analyticsStatsData } = await axios.get("http://localhost:5003/api/analytics/stats", config);
         setAnalyticsStats(analyticsStatsData);
 
       } catch (error) {
@@ -2673,7 +2673,7 @@ export default function AdminDashboard() {
       };
 
       try {
-        const { data } = await axios.put('http://localhost:5001/api/auth/profile', { name, email }, config);
+        const { data } = await axios.put('http://localhost:5003/api/auth/profile', { name, email }, config);
         localStorage.setItem('userInfo', JSON.stringify(data));
         alert('Profile updated successfully!');
       } catch (error) {
