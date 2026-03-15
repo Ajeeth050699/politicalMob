@@ -606,7 +606,7 @@ export default function AdminDashboard() {
   const showToast = (msg) => setToast(msg);
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
-    navigate("/login");
+    navigate("/");
   };
 
   // ── FETCH ALL ─────────────────────────────────────────────────────
