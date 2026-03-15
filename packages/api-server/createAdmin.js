@@ -1,34 +1,33 @@
 const mongoose = require('mongoose');
-const bcrypt   = require('bcryptjs');
 require('dotenv').config();
 
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ MongoDB connected');
+
     const User = require('./src/models/userModel');
 
-    const existing = await User.findOne({ email: 'admin@peopleconnect.com' });
-    if (existing) {
-      console.log('⚠️  Admin already exists. Login with admin@peopleconnect.com / admin123');
-      process.exit();
-    }
+    // Remove existing admin if any (fresh start)
+    await User.deleteOne({ email: 'admin@peopleconnect.com' });
 
-    const hash = await bcrypt.hash('admin123', 10);
-    await User.create({
+    // Create admin — let the model's pre-save hook hash the password
+    const admin = new User({
       name:     'Admin',
       email:    'admin@peopleconnect.com',
       phone:    '9999999999',
-      password: hash,
+      password: 'admin123',   // plain text — model will hash it
       role:     'admin',
       district: 'Chennai',
       booth:    'Admin',
       isActive: true,
     });
 
-    console.log('✅ Admin created successfully!');
+    await admin.save();
+
+    console.log('✅ Admin created!');
     console.log('📧 Email:    admin@peopleconnect.com');
     console.log('🔒 Password: admin123');
-    process.exit();
+    process.exit(0);
   })
   .catch(err => {
     console.error('❌ Error:', err.message);

@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView,
+  ScrollView, ActivityIndicator, KeyboardAvoidingView,
   Platform, StatusBar,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 import { T } from '../../constants/theme';
+import PopupToast from '../../components/PopupToast';
+
+const LOGIN_TIMEOUT_MS = 10000;
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -13,17 +17,42 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [toast,    setToast]    = useState({ visible:false, message:'', type:'error' });
+
+  const showToast = (message, type = 'error') => setToast({ visible:true, message, type });
+  const hideToast = () => setToast(t => ({ ...t, visible:false }));
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing Fields', 'Please enter your email and password.'); return;
-    }
+    if (!email.trim()) { showToast('Please enter your email address.'); return; }
+    if (!password.trim()) { showToast('Please enter your password.'); return; }
+    if (!/\S+@\S+\.\S+/.test(email.trim())) { showToast('Please enter a valid email address.'); return; }
+
     setLoading(true);
+
+    // Timeout — don't hang forever
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      showToast('Connection timed out. Please check your internet and try again.', 'warning');
+    }, LOGIN_TIMEOUT_MS);
+
     try {
       await login(email.trim(), password);
+      clearTimeout(timeoutId);
     } catch (err) {
-      Alert.alert('Login Failed', err?.response?.data?.message || 'Invalid email or password.');
+      clearTimeout(timeoutId);
+      if (err?.code === 'ECONNABORTED' || err?.message?.includes('timeout')) {
+        showToast('Connection timed out. Please try again.', 'warning');
+      } else if (err?.response?.status === 401) {
+        showToast('Incorrect email or password. Please try again.');
+      } else if (err?.response?.status === 404) {
+        showToast('No account found with this email.');
+      } else if (!err?.response) {
+        showToast('Cannot connect to server. Check your internet connection.', 'warning');
+      } else {
+        showToast(err?.response?.data?.message || 'Login failed. Please try again.');
+      }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -32,17 +61,22 @@ export default function LoginScreen({ navigation }) {
     <View style={s.root}>
       <StatusBar backgroundColor={T.maroon} barStyle="light-content" />
 
+      {/* Popup toast */}
+      <PopupToast message={toast.message} type={toast.type} visible={toast.visible} onHide={hideToast} />
+
       {/* Maroon top */}
-      <View style={s.topBg}>
+      <LinearGradient colors={[T.maroon, T.maroonL]} style={s.topBg}>
+        <View style={s.decoCircle1} />
+        <View style={s.decoCircle2} />
         <View style={s.logoCircle}>
-          <Text style={{ fontSize: 36 }}>🏛️</Text>
+          <Text style={{ fontSize:36 }}>🏛️</Text>
         </View>
         <Text style={s.appName}>People Connect</Text>
         <Text style={s.tagline}>Tamil Nadu Public Service Platform</Text>
-      </View>
+      </LinearGradient>
 
       {/* White card */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS==='ios'?'padding':undefined} style={{ flex:1 }}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={s.card}>
             <Text style={s.cardTitle}>Welcome Back 👋</Text>
@@ -59,6 +93,8 @@ export default function LoginScreen({ navigation }) {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
               />
             </View>
 
@@ -66,45 +102,52 @@ export default function LoginScreen({ navigation }) {
             <View style={s.inputRow}>
               <Text style={s.icon}>🔒</Text>
               <TextInput
-                style={[s.input, { flex: 1 }]}
+                style={[s.input, { flex:1 }]}
                 placeholder="Enter your password"
                 placeholderTextColor={T.textM}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPass}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
               />
-              <TouchableOpacity onPress={() => setShowPass(v => !v)} style={{ padding: 8 }}>
-                <Text style={{ fontSize: 16 }}>{showPass ? '🙈' : '👁️'}</Text>
+              <TouchableOpacity onPress={() => setShowPass(v => !v)} style={{ padding:8 }}>
+                <Text style={{ fontSize:16 }}>{showPass ? '🙈' : '👁️'}</Text>
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={s.forgotRow} onPress={() => navigation.navigate('ForgotPassword')}>
-              <Text style={s.forgotText}>Forgot Password?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={s.forgotBtn}>
+              <Text style={s.forgotTxt}>Forgot Password?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[s.btn, loading && { opacity: 0.7 }]}
+              style={[s.btn, loading && { opacity:0.75 }]}
               onPress={handleLogin}
               disabled={loading}
               activeOpacity={0.85}
             >
-              {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>Sign In</Text>}
+              <LinearGradient colors={[T.maroon, T.maroonL]} style={s.btnGrad}>
+                {loading ? (
+                  <View style={{ flexDirection:'row', alignItems:'center', gap:10 }}>
+                    <ActivityIndicator color="#fff" size="small" />
+                    <Text style={s.btnTxt}>Signing in...</Text>
+                  </View>
+                ) : (
+                  <Text style={s.btnTxt}>Sign In →</Text>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
 
             <View style={s.divider}>
               <View style={s.divLine} />
-              <Text style={s.divText}>or</Text>
+              <Text style={s.divTxt}>or</Text>
               <View style={s.divLine} />
             </View>
 
-            <TouchableOpacity style={s.outlineBtn} onPress={() => navigation.navigate('Register')} activeOpacity={0.8}>
-              <Text style={s.outlineBtnText}>Create New Account</Text>
-            </TouchableOpacity>
-
-            <Text style={s.footerText}>
+            <Text style={s.footerTxt}>
               Don't have an account?{' '}
-              <Text style={{ color: T.maroon, fontWeight: '700' }} onPress={() => navigation.navigate('Register')}>
-                Register
+              <Text style={{ color:T.maroon, fontWeight:'700' }} onPress={() => navigation.navigate('Register')}>
+                Create Account
               </Text>
             </Text>
           </View>
@@ -115,27 +158,28 @@ export default function LoginScreen({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  root:       { flex: 1, backgroundColor: T.maroon },
-  topBg:      { alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 60 : 48, paddingBottom: 36 },
-  logoCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  appName:    { fontSize: 26, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
-  tagline:    { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 6 },
-  scroll:     { flexGrow: 1 },
-  card:       { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 28, paddingTop: 32, minHeight: '100%', elevation: 20 },
-  cardTitle:  { fontSize: 22, fontWeight: '800', color: T.text, marginBottom: 4 },
-  cardSub:    { fontSize: 14, color: T.textM, marginBottom: 28 },
-  label:      { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 8 },
-  inputRow:   { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, marginBottom: 18, paddingHorizontal: 14 },
-  icon:       { fontSize: 16, marginRight: 10 },
-  input:      { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
-  forgotRow:  { alignItems: 'flex-end', marginTop: -8, marginBottom: 24 },
-  forgotText: { fontSize: 13, color: T.maroon, fontWeight: '700' },
-  btn:        { backgroundColor: T.maroon, borderRadius: 50, paddingVertical: 16, alignItems: 'center', elevation: 4, shadowColor: T.maroon, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
-  btnText:    { fontSize: 16, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
-  divider:    { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
-  divLine:    { flex: 1, height: 1, backgroundColor: T.border },
-  divText:    { marginHorizontal: 12, color: T.textM, fontSize: 13 },
-  outlineBtn: { borderWidth: 2, borderColor: T.maroon, borderRadius: 50, paddingVertical: 14, alignItems: 'center', marginBottom: 16 },
-  outlineBtnText: { fontSize: 15, fontWeight: '700', color: T.maroon },
-  footerText: { textAlign: 'center', fontSize: 13, color: T.textL, marginTop: 4 },
+  root:        { flex:1, backgroundColor:T.maroon },
+  topBg:       { paddingTop:Platform.OS==='ios'?52:40, paddingBottom:36, alignItems:'center', paddingHorizontal:24, overflow:'hidden' },
+  decoCircle1: { position:'absolute', top:-40, right:-40, width:160, height:160, borderRadius:80, backgroundColor:'rgba(255,255,255,0.07)' },
+  decoCircle2: { position:'absolute', bottom:-20, left:-50, width:180, height:180, borderRadius:90, backgroundColor:'rgba(255,255,255,0.05)' },
+  logoCircle:  { width:80, height:80, borderRadius:40, backgroundColor:'rgba(255,255,255,0.15)', alignItems:'center', justifyContent:'center', marginBottom:14, borderWidth:2, borderColor:'rgba(255,255,255,0.25)' },
+  appName:     { fontSize:24, fontWeight:'900', color:'#fff' },
+  tagline:     { fontSize:12, color:'rgba(255,255,255,0.7)', marginTop:5 },
+  scroll:      { flexGrow:1 },
+  card:        { backgroundColor:'#fff', borderTopLeftRadius:32, borderTopRightRadius:32, padding:28, paddingTop:32, minHeight:'100%' },
+  cardTitle:   { fontSize:24, fontWeight:'800', color:T.text, marginBottom:6 },
+  cardSub:     { fontSize:14, color:T.textM, marginBottom:24 },
+  label:       { fontSize:13, fontWeight:'700', color:T.textL, marginBottom:8 },
+  inputRow:    { flexDirection:'row', alignItems:'center', borderWidth:1.5, borderColor:T.border, borderRadius:14, backgroundColor:T.bg, paddingHorizontal:14, marginBottom:16 },
+  icon:        { fontSize:16, marginRight:10 },
+  input:       { paddingVertical:14, fontSize:15, color:T.text },
+  forgotBtn:   { alignSelf:'flex-end', marginTop:-8, marginBottom:20 },
+  forgotTxt:   { fontSize:13, color:T.maroon, fontWeight:'600' },
+  btn:         { borderRadius:50, overflow:'hidden', elevation:4, shadowColor:T.maroon, shadowOpacity:0.4, shadowRadius:8, shadowOffset:{width:0,height:4} },
+  btnGrad:     { paddingVertical:16, alignItems:'center' },
+  btnTxt:      { fontSize:16, fontWeight:'800', color:'#fff', letterSpacing:0.5 },
+  divider:     { flexDirection:'row', alignItems:'center', marginVertical:20 },
+  divLine:     { flex:1, height:1, backgroundColor:T.border },
+  divTxt:      { marginHorizontal:12, color:T.textM, fontSize:13 },
+  footerTxt:   { textAlign:'center', fontSize:14, color:T.textL },
 });

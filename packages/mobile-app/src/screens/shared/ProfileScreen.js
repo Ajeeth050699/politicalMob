@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
@@ -6,6 +7,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 import { T } from '../../constants/theme';
+import { useLang } from '../../context/LanguageContext';
 
 const ROLE_META = {
   public: { label: 'CITIZEN',  icon: '👤', color: T.gold    },
@@ -14,6 +16,7 @@ const ROLE_META = {
 };
 
 export default function ProfileScreen({ navigation }) {
+  const { t, i18n } = useTranslation();
   const { userInfo, updateProfile, logout } = useAuth();
 
   const [name,   setName]   = useState(userInfo?.name  || '');
@@ -21,6 +24,7 @@ export default function ProfileScreen({ navigation }) {
   const [phone,  setPhone]  = useState(userInfo?.phone || '');
   const [saving, setSaving] = useState(false);
 
+  const { lang, changeLang } = useLang();
   const role = ROLE_META[userInfo?.role] || ROLE_META.public;
 
   const handleSave = async () => {
@@ -150,6 +154,31 @@ export default function ProfileScreen({ navigation }) {
             ))}
           </View>
 
+          {/* ── Language ── */}
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>🌐 Language / மொழி</Text>
+            <View style={langS.row}>
+              {[
+                { code:'en', label:'English', sub:'English' },
+                { code:'ta', label:'தமிழ்',   sub:'Tamil'   },
+              ].map(({ code, label, sub }) => {
+                const active = lang === code;
+                return (
+                  <TouchableOpacity
+                    key={code}
+                    style={[langS.btn, active && langS.btnActive]}
+                    onPress={() => changeLang(code)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={[langS.label, active && { color:'#fff' }]}>{label}</Text>
+                    <Text style={[langS.sub, active && { color:'rgba(255,255,255,0.75)' }]}>{sub}</Text>
+                    {active && <View style={langS.checkBadge}><Text style={{ fontSize:12 }}>✓</Text></View>}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
           {/* ── Logout ── */}
           <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
             <Text style={s.logoutTxt}>🚪 Logout</Text>
@@ -201,4 +230,13 @@ const s = StyleSheet.create({
   logoutBtn:  { backgroundColor: '#fff', borderRadius: 50, borderWidth: 2, borderColor: T.red + '60', paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
   logoutTxt:  { fontSize: 16, fontWeight: '800', color: T.red },
   version:    { textAlign: 'center', fontSize: 12, color: T.textM },
+});
+
+const langS = StyleSheet.create({
+  row:       { flexDirection:'row', gap:12 },
+  btn:       { flex:1, borderRadius:16, borderWidth:2, borderColor:T.border, padding:16, alignItems:'center', backgroundColor:T.bg },
+  btnActive: { backgroundColor:T.maroon, borderColor:T.maroon },
+  label:     { fontSize:18, fontWeight:'800', color:T.text, marginBottom:4 },
+  sub:       { fontSize:12, color:T.textM },
+  checkBadge:{ position:'absolute', top:8, right:8, width:22, height:22, borderRadius:11, backgroundColor:'rgba(255,255,255,0.25)', alignItems:'center', justifyContent:'center' },
 });

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const complaintSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     category: {
       type: String,
       enum: ['Street Light Problem', 'Road Damage', 'Garbage Issue', 'Water Supply Problem', 'Drainage Issue', 'Public Safety Issue', 'Others'],
@@ -15,6 +15,16 @@ const complaintSchema = new mongoose.Schema(
     priority:       { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     assignedWorker: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     proofPhoto:     { type: String },
+
+    // ── Citizen attachments (uploaded when filing complaint) ──────────
+    attachments: [
+      {
+        url:      { type: String, required: true },
+        type:     { type: String, enum: ['image', 'video'], default: 'image' },
+        filename: { type: String },
+      },
+    ],
+
     location: {
       lat: { type: Number },
       lng: { type: Number },

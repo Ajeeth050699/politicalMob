@@ -35,3 +35,61 @@ function App() {
 }
 
 export default App;
+
+
+// import { useEffect, useState } from "react";
+// import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+// import LandingPage from "./LandingPage";
+// import AdminLogin from "./AdminLogin";
+// import AdminRegister from "./AdminRegister";
+// import AdminForgotPassword from "./AdminForgotPassword";
+// import AdminDashboard from "./AdminDashboard";
+
+// // ── Auth helpers ───────────────────────────────────────────────────
+// const getUser = () => {
+//   try { return JSON.parse(localStorage.getItem("userInfo")); } catch { return null; }
+// };
+
+// // ── Protected route — redirect to /login if not logged in ──────────
+// function ProtectedRoute({ children }) {
+//   const user = getUser();
+//   if (!user) return <Navigate to="/login" replace />;
+//   return children;
+// }
+
+// // ── Public route — redirect to /dashboard if already logged in ─────
+// function PublicRoute({ children }) {
+//   const user = getUser();
+//   if (user) return <Navigate to="/dashboard" replace />;
+//   return children;
+// }
+
+// export default function App() {
+//   return (
+//     <BrowserRouter>
+//       <Routes>
+//         {/* Public pages — redirect to dashboard if logged in */}
+//         <Route path="/" element={
+//           <PublicRoute><LandingPage /></PublicRoute>
+//         } />
+//         <Route path="/login" element={
+//           <PublicRoute><AdminLogin /></PublicRoute>
+//         } />
+//         <Route path="/register" element={
+//           <PublicRoute><AdminRegister /></PublicRoute>
+//         } />
+//         <Route path="/forgot-password" element={
+//           <PublicRoute><AdminForgotPassword /></PublicRoute>
+//         } />
+
+//         {/* Protected — redirect to login if not logged in */}
+//         <Route path="/dashboard" element={
+//           <ProtectedRoute><AdminDashboard /></ProtectedRoute>
+//         } />
+
+//         {/* Catch all */}
+//         <Route path="*" element={<Navigate to="/" replace />} />
+//       </Routes>
+//     </BrowserRouter>
+//   );
+// }

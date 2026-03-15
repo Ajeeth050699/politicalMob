@@ -256,12 +256,49 @@ const getEmergencyContacts = asyncHandler(async (req, res) => {
   const contacts = await Emergency.find();
   if (contacts.length === 0) {
     return res.json([
-      { name: 'Police',           number: '100',  type: 'police'   },
-      { name: 'Ambulance',        number: '108',  type: 'ambulance'},
-      { name: 'Fire Service',     number: '101',  type: 'fire'     },
-      { name: 'Women Helpline',   number: '181',  type: 'women'    },
-      { name: 'Child Helpline',   number: '1098', type: 'child'    },
-      { name: 'District Control', number: '1077', type: 'district' },
+      // ── Police & Law ─────────────────────────────────────────
+      { name: 'Police',                number: '100',   type: 'police'   },
+      { name: 'Tamil Nadu Police',     number: '100',   type: 'police'   },
+      { name: 'Women Police Helpline', number: '1091',  type: 'police'   },
+      { name: 'Traffic Police',        number: '103',   type: 'police'   },
+      { name: 'Cyber Crime',           number: '1930',  type: 'police'   },
+
+      // ── Medical ───────────────────────────────────────────────
+      { name: 'Ambulance (108)',        number: '108',  type: 'ambulance'},
+      { name: 'Blood Bank',            number: '104',   type: 'ambulance'},
+      { name: 'CMCHIS Health Helpline',number: '14555', type: 'ambulance'},
+      { name: 'Mental Health Helpline',number: '10911', type: 'ambulance'},
+      { name: 'COVID Helpline TN',     number: '104',   type: 'ambulance'},
+
+      // ── Fire ─────────────────────────────────────────────────
+      { name: 'Fire Service',          number: '101',   type: 'fire'     },
+      { name: 'Fire & Rescue',         number: '101',   type: 'fire'     },
+
+      // ── Women & Child ─────────────────────────────────────────
+      { name: 'Women Helpline',        number: '181',   type: 'women'    },
+      { name: 'Domestic Violence',     number: '181',   type: 'women'    },
+      { name: 'Anti-Dowry Helpline',   number: '7708779997', type: 'women'},
+      { name: 'Child Helpline',        number: '1098',  type: 'child'    },
+      { name: 'Child Labour Helpline', number: '14567', type: 'child'    },
+      { name: 'POCSO Helpline',        number: '1098',  type: 'child'    },
+
+      // ── Disaster & District ───────────────────────────────────
+      { name: 'District Control Room', number: '1077',  type: 'district' },
+      { name: 'State Disaster Mgmt',   number: '1070',  type: 'district' },
+      { name: 'Flood Relief TN',       number: '1070',  type: 'district' },
+      { name: 'National Disaster',     number: '1078',  type: 'district' },
+
+      // ── Social Services ───────────────────────────────────────
+      { name: 'Senior Citizens',       number: '14567', type: 'social'   },
+      { name: 'Farmer Helpline',       number: '1551',  type: 'social'   },
+      { name: 'Anti-Corruption',       number: '1064',  type: 'social'   },
+      { name: 'Consumer Helpline',     number: '1915',  type: 'social'   },
+      { name: 'Road Accident (1073)',  number: '1073',  type: 'social'   },
+      { name: 'Railway Helpline',      number: '139',   type: 'social'   },
+      { name: 'Air Ambulance',         number: '9540161344', type: 'ambulance'},
+      { name: 'Suicide Prevention',    number: '10111', type: 'social'   },
+      { name: 'Drug Abuse Helpline',   number: '1800-11-0031', type: 'social'},
+      { name: 'Electricity Complaint', number: '1912',  type: 'social'   },
     ]);
   }
   res.json(contacts);

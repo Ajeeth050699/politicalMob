@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView,
+  ScrollView, ActivityIndicator, KeyboardAvoidingView,
   Platform, StatusBar,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../services/api';
+import PopupToast from '../../components/PopupToast';
 import { T, TN_DISTRICTS } from '../../constants/theme';
 
 // ─────────────────────────────────────────────────────────────────
@@ -90,6 +91,10 @@ export default function RegisterScreen({ navigation }) {
     confirmPassword: '', address: '', district: '',
   });
   const [otpCode,   setOtpCode]   = useState('');
+  const [toast,     setToast]     = useState({ visible:false, message:'', type:'error' });
+
+  const showToast = (message, type = 'error') => setToast({ visible:true, message, type });
+  const hideToast = () => setToast(t => ({ ...t, visible:false }));
   const [loading,   setLoading]   = useState(false);
   const [countdown, setCountdown] = useState(0);
 
@@ -105,19 +110,19 @@ export default function RegisterScreen({ navigation }) {
   // ── Validation ──────────────────────────────────────────────────
   const validateStep1 = () => {
     if (!form.name.trim()) {
-      Alert.alert('Required', 'Please enter your full name.'); return false;
+      showToast('Please enter your full name.'); return false;
     }
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.'); return false;
+      showToast('Please enter a valid email address.'); return false;
     }
     if (form.phone.replace(/\D/g, '').length < 10) {
-      Alert.alert('Invalid Phone', 'Please enter a valid 10-digit phone number.'); return false;
+      showToast('Please enter a valid 10-digit phone number.'); return false;
     }
     if (form.password.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters.'); return false;
+      showToast('Password must be at least 6 characters.'); return false;
     }
     if (form.password !== form.confirmPassword) {
-      Alert.alert('Password Mismatch', 'Passwords do not match. Please re-enter.'); return false;
+      showToast('Passwords do not match. Please re-enter.'); return false;
     }
     return true;
   };
@@ -134,17 +139,13 @@ export default function RegisterScreen({ navigation }) {
 
       if (res.data.otp) {
         // Dev mode — backend returns OTP so you can test without SMS
-        Alert.alert(
-          '📱 OTP (Dev Mode)',
-          `Your OTP is: ${res.data.otp}\n\nIn production this will be sent via SMS.`,
-          [{ text: 'OK' }]
-        );
+        showToast(`Dev OTP: ${res.data.otp} (check backend console)`, 'info');
       } else {
-        Alert.alert('OTP Sent ✅', `A 6-digit OTP has been sent to ${form.phone}`);
+        showToast(`OTP sent to ${form.phone}`, 'success');
       }
     } catch (err) {
       const msg = err?.response?.data?.message || 'Could not send OTP. Please try again.';
-      Alert.alert('Error', msg);
+      showToast(msg);
     } finally {
       setLoading(false);
     }
@@ -160,7 +161,7 @@ export default function RegisterScreen({ navigation }) {
   // ── Verify OTP ──────────────────────────────────────────────────
   const handleVerifyOtp = async () => {
     if (otpCode.length < 6) {
-      Alert.alert('Incomplete', 'Please enter the full 6-digit OTP.'); return;
+      showToast('Please enter the full 6-digit OTP.'); return;
     }
     setLoading(true);
     try {
@@ -168,7 +169,7 @@ export default function RegisterScreen({ navigation }) {
       setStep(3);
     } catch (err) {
       const msg = err?.response?.data?.message || 'Invalid or expired OTP. Please try again.';
-      Alert.alert('Verification Failed', msg);
+      showToast(msg);
       setOtpCode('');
     } finally {
       setLoading(false);
@@ -178,7 +179,7 @@ export default function RegisterScreen({ navigation }) {
   // ── Final Register ───────────────────────────────────────────────
   const handleRegister = async () => {
     if (!form.district) {
-      Alert.alert('Required', 'Please select your district.'); return;
+      showToast('Please select your district.'); return;
     }
     setLoading(true);
     try {
@@ -188,7 +189,7 @@ export default function RegisterScreen({ navigation }) {
       // AuthContext → AppNavigator handles redirect automatically
     } catch (err) {
       const msg = err?.response?.data?.message || 'Registration failed. Please try again.';
-      Alert.alert('Registration Failed', msg);
+      showToast(msg);
     } finally {
       setLoading(false);
     }
@@ -200,6 +201,7 @@ export default function RegisterScreen({ navigation }) {
   return (
     <View style={s.root}>
       <StatusBar backgroundColor={T.maroon} barStyle="light-content" />
+      <PopupToast message={toast.message} type={toast.type} visible={toast.visible} onHide={hideToast} />
 
       {/* ── Maroon header ── */}
       <View style={s.topBg}>

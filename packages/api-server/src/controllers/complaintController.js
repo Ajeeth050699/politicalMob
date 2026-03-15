@@ -34,20 +34,21 @@ const getComplaints = asyncHandler(async (req, res) => {
     status:         c.status,
     assignedWorker: c.assignedWorker?.name,
     proofPhoto:     c.proofPhoto,
+    attachments:    c.attachments || [],   // ← include attachments
     time:           c.createdAt,
   })));
 });
 
-// @desc   Create complaint
+// @desc   Create complaint with optional attachments
 // @route  POST /api/complaints
 // @access Private
 const createComplaint = asyncHandler(async (req, res) => {
-  const { category, description, booth, district, location } = req.body;
+  const { category, description, booth, district, location, attachments } = req.body;
 
   // Auto-assign worker from same booth
   const worker = await User.findOne({
-    role: 'worker',
-    booth: booth || req.user.booth,
+    role:     'worker',
+    booth:    booth || req.user.booth,
     isActive: true,
   });
 
@@ -59,12 +60,13 @@ const createComplaint = asyncHandler(async (req, res) => {
     district:       district || req.user.district,
     assignedWorker: worker?._id,
     location,
+    attachments:    attachments || [],   // array of { url, type, filename }
   });
 
   res.status(201).json(complaint);
 });
 
-// @desc   Get complaint by ID
+// @desc   Get complaint by ID (includes attachments)
 // @route  GET /api/complaints/:id
 // @access Private
 const getComplaintById = asyncHandler(async (req, res) => {
