@@ -554,11 +554,11 @@ export default function Home() {
 
     const url = authTab === 'login'
       ? `${API_URL}/api/auth/login`
-      : `${API_URL}/api/auth/signup`;
+      : `${API_URL}/api/auth/register`;
 
     const payload = authTab === 'login'
       ? { email: authForm.email, password: authForm.password }
-      : { name: authForm.name, email: authForm.email, password: authForm.password };
+      : { name: authForm.name, email: authForm.email, password: authForm.password, phone: authForm.phone, role: authForm.role };
 
     try {
       const { data } = await axios.post(url, payload);
