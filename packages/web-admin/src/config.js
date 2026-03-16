@@ -1,1 +1,1 @@
-export const API_URL = "https://politicalmob-api.onrender.com";
+export const API_URL = "https://politicalmob.onrender.com";
