@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
 import './Auth.css';
 
 function Signup() {
@@ -18,7 +19,7 @@ function Signup() {
       return;
     }
     try {
-      const { data } = await axios.post('http://localhost:5003/api/auth/signup', { name, email, password });
+      const { data } = await axios.post(`${API_URL}/api/auth/signup`, { name, email, password });
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate('/dashboard/overview');
     } catch (error) {

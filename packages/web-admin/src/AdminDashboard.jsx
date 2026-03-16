@@ -8,8 +8,9 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 
+import { API_URL } from "./config";
 // ── CONFIG ──────────────────────────────────────────────────────────
-const API = "http://localhost:5003";
+const API = API_URL;
 const getConfig = () => {
   const u = JSON.parse(localStorage.getItem("userInfo") || "{}");
   return { headers: { Authorization: `Bearer ${u.token}` } };

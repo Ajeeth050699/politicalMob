@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
-const API = "http://localhost:5003";
+import { API_URL } from "./config";
+
+const API = API_URL;
 const C = {
   maroon:"#7B1C1C", dark:"#5A1010", light:"#9B2C2C",
   gold:"#C9982A", goldL:"#E8B84B",

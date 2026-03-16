@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
 import './Auth.css';
 
 function ForgotPassword() {
@@ -10,7 +11,7 @@ function ForgotPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+      const { data } = await axios.post(`${API_URL}/api/auth/forgot-password`, { email });
       alert(data.message);
     } catch (error) {
       alert(error.response.data.message);

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+import { API_URL } from "../config";
 const THEMES = {
   light: {
     bg: "#FFFFFF",
@@ -552,8 +553,8 @@ export default function Home() {
     }
 
     const url = authTab === 'login'
-      ? 'http://localhost:5003/api/auth/login'
-      : 'http://localhost:5003/api/auth/signup';
+      ? `${API_URL}/api/auth/login`
+      : `${API_URL}/api/auth/signup`;
 
     const payload = authTab === 'login'
       ? { email: authForm.email, password: authForm.password }
