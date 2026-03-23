@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
@@ -9,8 +10,9 @@ import { T, STATUS_COLORS, PRIORITY_COLORS } from '../../constants/theme';
 
 const STATUS_ICONS = {
   'NEW':         '🆕',
+  'ACCEPTED':    '✅',
   'IN PROGRESS': '⚙️',
-  'COMPLETED':   '✅',
+  'COMPLETED':   '🎉',
 };
 
 const PRIORITY_ICONS = {
@@ -30,6 +32,7 @@ const CATEGORY_ICONS = {
 };
 
 export default function MyComplaintsScreen({ navigation }) {
+  const { t, i18n } = useTranslation();
   const [complaints, setComplaints] = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -52,7 +55,7 @@ export default function MyComplaintsScreen({ navigation }) {
     setRefreshing(true); await load(); setRefreshing(false);
   };
 
-  const FILTERS = ['ALL', 'NEW', 'IN PROGRESS', 'COMPLETED'];
+  const FILTERS = ['ALL', 'NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED'];
 
   const filtered = filter === 'ALL'
     ? complaints
@@ -60,6 +63,7 @@ export default function MyComplaintsScreen({ navigation }) {
 
   // Stats
   const newCount      = complaints.filter(c => c.status === 'NEW').length;
+  const acceptedCount = complaints.filter(c => c.status === 'ACCEPTED').length;
   const progressCount = complaints.filter(c => c.status === 'IN PROGRESS').length;
   const doneCount     = complaints.filter(c => c.status === 'COMPLETED').length;
 

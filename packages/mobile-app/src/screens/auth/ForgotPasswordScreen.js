@@ -14,13 +14,16 @@ export default function ForgotPasswordScreen({ navigation }) {
   const [sent,    setSent]    = useState(false);
 
   const handleSend = async () => {
+    console.log('Attempting to send OTP for email:', email.trim());
     if (!email.trim()) { Alert.alert('Required', 'Please enter your email address.'); return; }
     if (!/\S+@\S+\.\S+/.test(email)) { Alert.alert('Invalid', 'Please enter a valid email address.'); return; }
     setLoading(true);
     try {
-      await authAPI.forgotPassword(email.trim());
+      const response = await authAPI.forgotPassword(email.trim());
+      console.log('API Response:', response.data);
       setSent(true);
     } catch (err) {
+      console.error('API Error:', err.response?.data);
       Alert.alert('Error', err?.response?.data?.message || 'Could not send reset email. Please try again.');
     } finally {
       setLoading(false);

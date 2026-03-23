@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
@@ -33,6 +34,7 @@ function ImageViewer({ visible, uri, onClose }) {
 }
 
 export default function ComplaintDetail({ route, navigation }) {
+  const { t, i18n } = useTranslation();
   const { id } = route.params;
   const [complaint,    setComplaint]    = useState(null);
   const [loading,      setLoading]      = useState(true);
@@ -92,9 +94,9 @@ export default function ComplaintDetail({ route, navigation }) {
 
         {/* ── Status timeline ── */}
         <View style={s.timeline}>
-          {['NEW','IN PROGRESS','COMPLETED'].map((step,i) => {
+          {['NEW','ACCEPTED','IN PROGRESS','COMPLETED'].map((step,i) => {
             const isActive = complaint.status === step;
-            const isDone   = ['NEW','IN PROGRESS','COMPLETED'].indexOf(complaint.status) > i;
+            const isDone   = ['NEW','ACCEPTED','IN PROGRESS','COMPLETED'].indexOf(complaint.status) > i;
             return (
               <React.Fragment key={step}>
                 <View style={s.timelineStep}>
@@ -102,7 +104,7 @@ export default function ComplaintDetail({ route, navigation }) {
                     <Text style={{ fontSize:10, color:(isActive||isDone)?'#fff':T.textM }}>{isDone?'✓':i+1}</Text>
                   </View>
                   <Text style={[s.timelineLabel, (isActive||isDone) && { color:T.text, fontWeight:'700' }]}>
-                    {step==='IN PROGRESS'?'In Progress':step.charAt(0)+step.slice(1).toLowerCase()}
+                    {step==='IN PROGRESS'?'In Progress':step==='ACCEPTED'?'Accepted':step.charAt(0)+step.slice(1).toLowerCase()}
                   </Text>
                 </View>
                 {i<2 && <View style={[s.timelineLine, isDone && { backgroundColor:T.green }]} />}

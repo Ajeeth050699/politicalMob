@@ -119,6 +119,15 @@ export default function ProfileScreen({ navigation }) {
                     keyboardType={kb}
                     autoCapitalize={kb === 'email-address' ? 'none' : 'words'}
                   />
+                  {label === 'Phone Number' && (
+                    !userInfo.isPhoneVerified ? (
+                      <TouchableOpacity onPress={() => navigation.navigate('Verify', { phone: userInfo.phone })}>
+                        <Text style={{ color: T.gold, fontWeight: 'bold' }}>Verify</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <Text style={{ color: 'green', fontWeight: 'bold' }}>✓ Verified</Text>
+                    )
+                  )}
                 </View>
               </View>
             ))}

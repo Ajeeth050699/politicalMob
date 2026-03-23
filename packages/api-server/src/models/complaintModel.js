@@ -2,29 +2,58 @@ const mongoose = require('mongoose');
 
 const complaintSchema = new mongoose.Schema(
   {
-    user:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    // ── Who filed ──────────────────────────────────────────────────
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+
+    // ── Details ───────────────────────────────────────────────────
     category: {
       type: String,
-      enum: ['Street Light Problem', 'Road Damage', 'Garbage Issue', 'Water Supply Problem', 'Drainage Issue', 'Public Safety Issue', 'Others'],
+      enum: [
+        'Street Light Problem', 'Road Damage', 'Garbage Issue',
+        'Water Supply Problem', 'Drainage Issue', 'Public Safety Issue', 'Others',
+      ],
       required: true,
     },
-    description:    { type: String, required: true },
-    booth:          { type: String, required: true },
-    district:       { type: String, required: true },
-    status:         { type: String, enum: ['NEW', 'IN PROGRESS', 'COMPLETED'], default: 'NEW' },
-    priority:       { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
-    assignedWorker: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    proofPhoto:     { type: String },
+    description: { type: String, required: true },
 
-    // ── Citizen attachments (uploaded when filing complaint) ──────────
+    // ── Location matching ─────────────────────────────────────────
+    booth:    { type: String, required: true },
+    district: { type: String, required: true },
+    pincode:  { type: String },   // for fallback matching
+    address:  { type: String },
+
+    // ── Status flow: NEW → ACCEPTED → IN PROGRESS → COMPLETED ─────
+    status: {
+      type: String,
+      enum: ['NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED'],
+      default: 'NEW',
+    },
+    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+
+    // ── Agent assignment ──────────────────────────────────────────
+    assignedWorker: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    acceptedAt:     { type: Date },
+    lockedToAgent:  { type: Boolean, default: false },
+
+    // ── Proof ─────────────────────────────────────────────────────
+    proofPhoto: { type: String },
+    proofVideo: { type: String },
+
+    // ── Citizen attachments ───────────────────────────────────────
     attachments: [
       {
         url:      { type: String, required: true },
-        type:     { type: String, enum: ['image', 'video'], default: 'image' },
+        type:     { type: String, enum: ['image', 'video', 'document'], default: 'image' },
         filename: { type: String },
       },
     ],
 
+    // ── Fallback & escalation ─────────────────────────────────────
+    fallbackUsed:     { type: Boolean, default: false },
+    escalatedToAdmin: { type: Boolean, default: false },
+    escalatedAt:      { type: Date },
+
+    // ── Location ──────────────────────────────────────────────────
     location: {
       lat: { type: Number },
       lng: { type: Number },

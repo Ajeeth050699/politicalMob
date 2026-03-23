@@ -8,9 +8,8 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 
-import { API_URL } from "./config";
 // ── CONFIG ──────────────────────────────────────────────────────────
-const API = API_URL;
+const API = "http://localhost:5003";
 const getConfig = () => {
   const u = JSON.parse(localStorage.getItem("userInfo") || "{}");
   return { headers: { Authorization: `Bearer ${u.token}` } };
@@ -107,7 +106,7 @@ const generateComplaintsReport = (complaints, stats) => {
   const table = `<table>
     <thead><tr>${["#","Category","User","Booth","District","Priority","Status","Date"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
     <tbody>${complaints.map((c,i)=>{
-      const sc = {NEW:"background:#fef3c7;color:#f59e0b","IN PROGRESS":"background:#dbeafe;color:#3b82f6",COMPLETED:"background:#dcfce7;color:#22c55e"}[c.status]||"";
+      const sc = {NEW:"background:#fef3c7;color:#f59e0b",ACCEPTED:"background:#dbeafe;color:#3b82f6","IN PROGRESS":"background:#ede9fe;color:#8b5cf6",COMPLETED:"background:#dcfce7;color:#22c55e"}[c.status]||"";
       return `<tr>
         <td>${i+1}</td>
         <td><strong>${c.category||""}</strong></td>
@@ -429,7 +428,7 @@ export default function AdminDashboard() {
   };
 
   // ── HELPERS ───────────────────────────────────────────────────────
-  const ss = s => ({ NEW:{bg:T.amber+"22",color:T.amber},"IN PROGRESS":{bg:T.blue+"22",color:T.blue},COMPLETED:{bg:T.green+"22",color:T.green} }[s] || {bg:T.bg,color:T.textL});
+  const ss = s => ({ NEW:{bg:T.amber+"22",color:T.amber},ACCEPTED:{bg:T.blue+"22",color:T.blue},"IN PROGRESS":{bg:"#8b5cf622",color:"#8b5cf6"},COMPLETED:{bg:T.green+"22",color:T.green} }[s] || {bg:T.bg,color:T.textL});
   const pc = p => ({ high:T.red, medium:T.amber, low:T.green }[p] || T.textM);
 
   const filteredComplaints = complaints.filter(c =>
@@ -978,7 +977,7 @@ export default function AdminDashboard() {
       <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
         <ActionBtn label="+ File Complaint" onClick={() => setModal("addComplaint")} />
         <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-          {["ALL","NEW","IN PROGRESS","COMPLETED"].map(s=>(
+          {["ALL","NEW","ACCEPTED","IN PROGRESS","COMPLETED"].map(s=>(
             <button key={s} onClick={() => setFilterStatus(s)} style={{ padding:"7px 14px", borderRadius:50, border:`1.5px solid ${filterStatus===s?T.maroon:T.border}`, background:filterStatus===s?T.maroon:"transparent", color:filterStatus===s?"#fff":T.textL, fontFamily:"'Source Sans 3',sans-serif", fontSize:12, fontWeight:600, cursor:"pointer" }}>{s}</button>
           ))}
         </div>
@@ -1022,7 +1021,7 @@ export default function AdminDashboard() {
                   {/* Status update row */}
                   <div style={{ padding:"12px 22px", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap", borderBottom:`1px dashed ${T.border}` }}>
                     <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.textL }}>{al('updateStatus')}</span>
-                    {["NEW","IN PROGRESS","COMPLETED"].map(st=>(
+                    {["NEW","ACCEPTED","IN PROGRESS","COMPLETED"].map(st=>(
                       <button key={st} onClick={() => updateComplaintStatus(c.id, st)} style={{ padding:"7px 16px", borderRadius:50, border:`1.5px solid ${c.status===st?T.maroon:T.border}`, background:c.status===st?T.maroon:"#fff", color:c.status===st?"#fff":T.textL, fontFamily:"'Source Sans 3',sans-serif", fontSize:12, fontWeight:600, cursor:"pointer" }}>{st}</button>
                     ))}
                     <span style={{ marginLeft:"auto", fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>{al('reportedOn')} {c.time}</span>

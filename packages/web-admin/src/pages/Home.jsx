@@ -487,7 +487,7 @@ export default function Home() {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "Citizen",
+    role: "public",
   });
   const [authErrors, setAuthErrors] = useState({});
   const [authSuccess, setAuthSuccess] = useState(false);
@@ -561,6 +561,7 @@ export default function Home() {
       : { name: authForm.name, email: authForm.email, password: authForm.password, phone: authForm.phone, role: authForm.role };
 
     try {
+      setAuthErrors({}); // Clear previous errors
       const { data } = await axios.post(url, payload);
       localStorage.setItem('userInfo', JSON.stringify(data));
       setAuthSuccess(true);
@@ -573,13 +574,12 @@ export default function Home() {
           phone: "",
           password: "",
           confirmPassword: "",
-          role: "Citizen",
+          role: "public",
         });
         navigate('/dashboard/overview');
       }, 1500);
     } catch (error) {
       const message = error.response?.data?.message || `An unknown error occurred during ${authTab}.`;
-      alert(message);
       setAuthErrors({ api: message });
     }
   };
@@ -3002,24 +3002,24 @@ export default function Home() {
                             onClick={() =>
                               setAuthForm((v) => ({
                                 ...v,
-                                role: ["Citizen", "Party Worker", "Admin"][i],
+                                role: ["public", "worker", "admin"][i],
                               }))
                             }
                             style={{
                               flex: 1,
                               padding: "10px 6px",
                               borderRadius: 10,
-                              border: `1.5px solid ${authForm.role === ["Citizen", "Party Worker", "Admin"][i] ? C.maroon : C.border}`,
+                              border: `1.5px solid ${authForm.role === ["public", "worker", "admin"][i] ? C.maroon : C.border}`,
                               background:
                                 authForm.role ===
-                                ["Citizen", "Party Worker", "Admin"][i]
+                                ["public", "worker", "admin"][i]
                                   ? dark
                                     ? "rgba(192,82,74,0.15)"
                                     : "rgba(123,28,28,0.06)"
                                   : "transparent",
                               color:
                                 authForm.role ===
-                                ["Citizen", "Party Worker", "Admin"][i]
+                                ["public", "worker", "admin"][i]
                                   ? C.maroon
                                   : C.textLight,
                               fontFamily: "'Source Sans 3',sans-serif",
@@ -3036,6 +3036,23 @@ export default function Home() {
                           </button>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* API Error Message */}
+                  {authErrors.api && (
+                    <div style={{
+                      color: '#ef4444',
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      textAlign: 'center',
+                      fontFamily: "'Source Sans 3',sans-serif",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      marginBottom: 12,
+                    }}>
+                      {authErrors.api}
                     </div>
                   )}
 

@@ -2,18 +2,15 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─────────────────────────────────────────────────────────────────
-// Backend is running on PORT 5002
+// Backend is running on PORT 5003
 //
-// Android Emulator  →  http://10.0.2.2:5002   (maps to PC localhost)
-// iOS Simulator     →  http://localhost:5002
-// Physical device   →  http://YOUR_PC_IP:5002  (run `ipconfig` on Windows)
+// Android Emulator  →  http://10.0.2.2:5003   (maps to PC localhost)
+// iOS Simulator     →  http://localhost:5003
+// Physical device   →  http://YOUR_PC_IP:5003  (run `ipconfig` on Windows)
 // ─────────────────────────────────────────────────────────────────
-// export const BASE_URL = 'http://10.0.2.2:5003';
-// export const BASE_URL = 'http://192.168.0.102:5003';
-export const BASE_URL = 'https://politicalmob.onrender.com';
-
-// export const BASE_URL = 'http://localhost:5002';
-// export const BASE_URL = 'http://192.168.1.XXX:5002';
+export const BASE_URL = 'http://192.168.0.103:5003';
+// export const BASE_URL = 'http://localhost:5003';
+// export const BASE_URL = 'http://192.168.0.102:5003'; // ← your PC IP
 
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
@@ -43,18 +40,23 @@ export const authAPI = {
   updateFcmToken: (token)      => api.put('/auth/fcm-token', { fcmToken: token }),
   sendOtp:        (phone)      => api.post('/auth/send-otp', { phone }),
   verifyOtp:      (phone, otp) => api.post('/auth/verify-otp', { phone, otp }),
-  forgotPassword: (email)      => api.post('/auth/forgot-password', { email }),
-  resetPassword:  (token, password) => api.put(`/auth/reset-password/${token}`, { password }),
+  verifyPhoneEmail: (user_json_url)   => api.post('/auth/verify-phone-email', { user_json_url }), // ← phone.email
+  verifyBooth:      (booth, district) => api.post('/auth/verify-booth', { booth, district }),           // ← NEW
+  forgotPassword:   (email)           => api.post('/auth/forgot-password', { email }),
+  verifyResetOtp:  (email, otp)      => api.post('/auth/verify-reset-otp', { email, otp }), // ← NEW
+  resetPassword:   (email, otp, newPassword) => api.post('/auth/reset-password', { email, otp, newPassword }), // ← UPDATED
 };
 
 // ── COMPLAINTS ───────────────────────────────────────────────────
 export const complaintAPI = {
-  getAll:       (params)   => api.get('/complaints', { params }),
-  getById:      (id)       => api.get(`/complaints/${id}`),
-  create:       (data)     => api.post('/complaints', data),
-  updateStatus: (id, data) => api.put(`/complaints/${id}/status`, data),
-  uploadProof:  (id, data) => api.put(`/complaints/${id}/proof`, data),
-  delete:       (id)       => api.delete(`/complaints/${id}`),
+  getAll:          (params)   => api.get('/complaints', { params }),
+  getById:         (id)       => api.get(`/complaints/${id}`),
+  create:          (data)     => api.post('/complaints', data),
+  accept:          (id)       => api.put(`/complaints/${id}/accept`),   // ← NEW
+  updateStatus:    (id, data) => api.put(`/complaints/${id}/status`, data),
+  uploadProof:     (id, data) => api.put(`/complaints/${id}/proof`, data),
+  escalatePending: ()         => api.post('/complaints/escalate-pending'), // ← NEW
+  delete:          (id)       => api.delete(`/complaints/${id}`),
 };
 
 // ── WORKERS ──────────────────────────────────────────────────────

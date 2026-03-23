@@ -11,6 +11,7 @@ import { T } from "../constants/theme";
 import LoginScreen from "../screens/auth/LoginScreen";
 import RegisterScreen from "../screens/auth/RegisterScreen";
 import ForgotPasswordScreen from "../screens/auth/ForgotPasswordScreen";
+import VerifyScreen from "../screens/auth/VerifyScreen";
 
 // ── Public Screens ────────────────────────────────────────────────
 import HomeScreen from "../screens/public/HomeScreen";
@@ -139,6 +140,7 @@ export default function AppNavigator() {
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Verify" component={VerifyScreen} />
           <Stack.Screen
             name="ForgotPassword"
             component={ForgotPasswordScreen}
@@ -153,6 +155,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Exam" component={ExamScreen} />
           <Stack.Screen name="Camps" component={CampsScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Verify" component={VerifyScreen} />
         </>
       ) : (
         // ── Worker stack ──
@@ -160,6 +163,7 @@ export default function AppNavigator() {
           <Stack.Screen name="WorkerTabs" component={WorkerTabs} />
           <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Verify" component={VerifyScreen} />
         </>
       )}
     </Stack.Navigator>

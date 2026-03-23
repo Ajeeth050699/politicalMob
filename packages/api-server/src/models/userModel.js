@@ -1,23 +1,40 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-
-const crypto = require('crypto');
+const bcrypt   = require('bcryptjs');
+const crypto   = require('crypto');
 
 const userSchema = new mongoose.Schema(
   {
     name:     { type: String, required: true },
     email:    { type: String, required: true, unique: true },
     phone:    { type: String },
-    password: { type: String, required: true, select: false },
+    password: { type: String, required: true },
     role:     { type: String, enum: ['admin', 'worker', 'public'], default: 'public' },
     booth:    { type: String },
     district: { type: String },
     address:  { type: String },
-    isActive: { type: Boolean, default: true },
+    pincode:  { type: String },          // booth fallback matching
+
+    isActive:        { type: Boolean, default: true },
+    isPhoneVerified: { type: Boolean, default: false },
+    isEmailVerified: { type: Boolean, default: false },
+
     fcmToken: { type: String },
 
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
+    // Phone OTP (registration)
+    phoneVerificationOtp:        { type: String },
+    phoneVerificationOtpExpires: { type: Date   },
+
+    // Email verification
+    emailVerificationToken:        { type: String },
+    emailVerificationTokenExpires: { type: Date  },
+
+    // Password reset (token)
+    resetPasswordToken:  { type: String },
+    resetPasswordExpire: { type: Date   },
+
+    // Password reset (OTP - for web admin forgot password)
+    resetOtp:       { type: String },
+    resetOtpExpire: { type: Date   },
   },
   { timestamps: true }
 );
@@ -29,26 +46,15 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+userSchema.methods.matchPassword = async function (entered) {
+  return await bcrypt.compare(entered, this.password);
 };
 
-// Generate and hash password token
 userSchema.methods.getResetPasswordToken = function () {
-  // Generate token
-  const resetToken = crypto.randomBytes(20).toString('hex');
-
-  // Hash token and set to resetPasswordToken field
-  this.resetPasswordToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-
-  // Set expire
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 mins
-
-  return resetToken;
+  const token = crypto.randomBytes(20).toString('hex');
+  this.resetPasswordToken  = crypto.createHash('sha256').update(token).digest('hex');
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  return token;
 };
-
 
 module.exports = mongoose.model('User', userSchema);
