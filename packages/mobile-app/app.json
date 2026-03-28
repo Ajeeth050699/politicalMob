@@ -57,7 +57,9 @@
       "router": {},
       "eas": {
         "projectId": "cb86888d-9b21-4046-94e1-788a903137d2"
-      }
+      },
+       "API_URL_DEV": "http://192.168.0.101:5003",
+      "API_URL_PROD": "https://politicalmob.onrender.com"
     }
   }
 }

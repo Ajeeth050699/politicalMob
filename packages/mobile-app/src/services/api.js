@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from "expo-constants";
 
 // ─────────────────────────────────────────────────────────────────
 // Backend is running on PORT 5003
@@ -9,7 +10,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Physical device   →  http://YOUR_PC_IP:5003  (run `ipconfig` on Windows)
 // ─────────────────────────────────────────────────────────────────
 // export const BASE_URL = 'http://192.168.0.103:5003';
-export const BASE_URL = 'http://192.168.0.101:5003';
+const BASE_URL = __DEV__
+  ? Constants.expoConfig.extra.API_URL_DEV
+  : Constants.expoConfig.extra.API_URL_PROD;
 // export const BASE_URL = 'http://localhost:5003';
 // export const BASE_URL = 'http://192.168.0.102:5003'; // ← your PC IP
 
