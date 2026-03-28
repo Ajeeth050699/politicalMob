@@ -8,7 +8,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // iOS Simulator     →  http://localhost:5003
 // Physical device   →  http://YOUR_PC_IP:5003  (run `ipconfig` on Windows)
 // ─────────────────────────────────────────────────────────────────
-export const BASE_URL = 'http://192.168.0.103:5003';
+// export const BASE_URL = 'http://192.168.0.103:5003';
+export const BASE_URL = 'http://192.168.0.101:5003';
 // export const BASE_URL = 'http://localhost:5003';
 // export const BASE_URL = 'http://192.168.0.102:5003'; // ← your PC IP
 
