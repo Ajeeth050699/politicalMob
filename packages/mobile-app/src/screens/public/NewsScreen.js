@@ -15,7 +15,8 @@ const LEVEL_META = {
 
 const FILTERS = ['All', 'State', 'District', 'Booth'];
 
-export default function NewsScreen() {
+// ── Accept navigation prop ──────────────────────────────────────────
+export default function NewsScreen({ navigation }) {
   const [news,       setNews]       = useState([]);
   const [filter,     setFilter]     = useState('All');
   const [loading,    setLoading]    = useState(true);
@@ -41,10 +42,22 @@ export default function NewsScreen() {
   const districtCnt = news.filter(n => n.level === 'District').length;
   const boothCnt    = news.filter(n => n.level === 'Booth').length;
 
+  // ── Navigate to NewsDetail, passing the tapped news + full list ──
+  const handleNewsPress = (item) => {
+    navigation.navigate('NewsDetail', {
+      news: item,
+      allNews: news,   // so related news works in detail screen
+    });
+  };
+
   const renderItem = ({ item: n }) => {
     const meta = LEVEL_META[n.level] || LEVEL_META.State;
     return (
-      <View style={s.card}>
+      <TouchableOpacity
+        style={s.card}
+        onPress={() => handleNewsPress(n)}
+        activeOpacity={0.85}
+      >
         <View style={[s.levelBox, { backgroundColor: meta.bg }]}>
           <Text style={{ fontSize: 22 }}>{meta.icon}</Text>
         </View>
@@ -58,7 +71,9 @@ export default function NewsScreen() {
             <Text style={s.cardDate}>📅 {n.date}</Text>
           </View>
         </View>
-      </View>
+        {/* Chevron hint */}
+        <Text style={s.chevron}>›</Text>
+      </TouchableOpacity>
     );
   };
 
@@ -143,21 +158,23 @@ const s = StyleSheet.create({
   countNum:    { fontSize: 20, fontWeight: '900' },
   countLabel:  { fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 2, fontWeight: '600' },
 
-  filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
-  filterChip:  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
+  filterRow:        { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterChip:       { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
   filterChipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
-  filterTxt:   { fontSize: 13, fontWeight: '600', color: T.textL },
+  filterTxt:        { fontSize: 13, fontWeight: '600', color: T.textL },
 
-  card:        { backgroundColor: '#fff', borderRadius: 18, padding: 16, marginBottom: 12, flexDirection: 'row', gap: 14, borderWidth: 1, borderColor: T.border, elevation: 3, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10 },
-  levelBox:    { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  cardTitle:   { fontSize: 15, fontWeight: '700', color: T.text, lineHeight: 21 },
-  cardDesc:    { fontSize: 12, color: T.textL, marginTop: 4, lineHeight: 17 },
-  cardMeta:    { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
-  levelBadge:  { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 50 },
+  // Card — now a TouchableOpacity
+  card:         { backgroundColor: '#fff', borderRadius: 18, padding: 16, marginBottom: 12, flexDirection: 'row', gap: 14, borderWidth: 1, borderColor: T.border, elevation: 3, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, alignItems: 'center' },
+  levelBox:     { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  cardTitle:    { fontSize: 15, fontWeight: '700', color: T.text, lineHeight: 21 },
+  cardDesc:     { fontSize: 12, color: T.textL, marginTop: 4, lineHeight: 17 },
+  cardMeta:     { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  levelBadge:   { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 50 },
   levelBadgeTxt:{ fontSize: 11, fontWeight: '700' },
-  cardDate:    { fontSize: 11, color: T.textM },
+  cardDate:     { fontSize: 11, color: T.textM },
+  chevron:      { fontSize: 22, color: '#ccc', marginLeft: 4 },
 
-  empty:       { alignItems: 'center', paddingVertical: 60 },
-  emptyTitle:  { fontSize: 20, fontWeight: '800', color: T.text, marginBottom: 8 },
-  emptySub:    { fontSize: 14, color: T.textM, textAlign: 'center' },
+  empty:        { alignItems: 'center', paddingVertical: 60 },
+  emptyTitle:   { fontSize: 20, fontWeight: '800', color: T.text, marginBottom: 8 },
+  emptySub:     { fontSize: 14, color: T.textM, textAlign: 'center' },
 });

@@ -26,6 +26,7 @@ import CampsScreen from "../screens/public/CampsScreen"; // ← added
 // ── Shared Screens ────────────────────────────────────────────────
 import ProfileScreen from "../screens/shared/ProfileScreen";
 import ComplaintDetail from "../screens/shared/ComplaintDetail";
+import NewsDetailScreen from "../screens/shared/NewsDetailScreen";
 
 // ── Worker Screens ────────────────────────────────────────────────
 import WorkerDashboard from "../screens/worker/WorkerDashboard";
@@ -148,23 +149,25 @@ export default function AppNavigator() {
         </>
       ) : userInfo.role === "public" ? (
         // ── Public stack ──
-        <>
-          <Stack.Screen name="PublicTabs" component={PublicTabs} />
-          <Stack.Screen name="AddComplaint" component={AddComplaintScreen} />
-          <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
-          <Stack.Screen name="Exam" component={ExamScreen} />
-          <Stack.Screen name="Camps" component={CampsScreen} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
-          <Stack.Screen name="Verify" component={VerifyScreen} />
-        </>
+       <>
+  <Stack.Screen name="PublicTabs" component={PublicTabs} />
+  <Stack.Screen name="AddComplaint" component={AddComplaintScreen} />
+  <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
+  <Stack.Screen name="NewsDetail" component={NewsDetailScreen} /> 
+  <Stack.Screen name="Exam" component={ExamScreen} />
+  <Stack.Screen name="Camps" component={CampsScreen} />
+  <Stack.Screen name="Profile" component={ProfileScreen} />
+  <Stack.Screen name="Verify" component={VerifyScreen} />
+</>
       ) : (
-        // ── Worker stack ──
-        <>
-          <Stack.Screen name="WorkerTabs" component={WorkerTabs} />
-          <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
-          <Stack.Screen name="Verify" component={VerifyScreen} />
-        </>
+       // ── Worker stack ──
+<>
+  <Stack.Screen name="WorkerTabs" component={WorkerTabs} />
+  <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
+  <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />  
+  <Stack.Screen name="Profile" component={ProfileScreen} />
+  <Stack.Screen name="Verify" component={VerifyScreen} />
+</>
       )}
     </Stack.Navigator>
   );
