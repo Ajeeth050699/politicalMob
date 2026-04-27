@@ -50,6 +50,7 @@ const complaintSchema = new mongoose.Schema(
 
     // ── Fallback & escalation ─────────────────────────────────────
     fallbackUsed:     { type: Boolean, default: false },
+    routingLevel:     { type: String, enum: ['booth', 'pincode', 'nearby', 'admin'], default: 'booth' },
     escalatedToAdmin: { type: Boolean, default: false },
     escalatedAt:      { type: Date },
 

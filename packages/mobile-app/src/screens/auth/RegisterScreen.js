@@ -140,6 +140,9 @@ export default function RegisterScreen({ navigation }) {
   // Step 3 - location
   const handleStep3 = async () => {
     if (!form.district) { showToast('Please select your district.'); return; }
+    if (!form.booth.trim()) { showToast('Please enter your booth number.'); return; }
+    if (!form.pincode.trim()) { showToast('Please enter your pincode.'); return; }
+    if (!form.address.trim()) { showToast('Please enter your address or area.'); return; }
     if (form.role==='worker' && form.booth) {
       setLoading(true);
       try {
@@ -238,7 +241,7 @@ export default function RegisterScreen({ navigation }) {
                     <View style={s.resendRow}>
                       {countdown>0
                         ? <Text style={s.resendTimer}>Resend in <Text style={{fontWeight:'800',color:T.maroon}}>{countdown}s</Text></Text>
-                        : <TouchableOpacity onPress={handleSendOtp}><Text style={s.resendLink}>Didn't receive? <Text style={{color:T.maroon,fontWeight:'800'}}>Resend OTP</Text></Text></TouchableOpacity>
+                        : <TouchableOpacity onPress={handleSendOtp}><Text style={s.resendLink}>Did not receive? <Text style={{color:T.maroon,fontWeight:'800'}}>Resend OTP</Text></Text></TouchableOpacity>
                       }
                     </View>
                     <TouchableOpacity style={[s.btn,(otpCode.length<6||loading)&&{opacity:0.6}]} onPress={handleVerifyOtp} disabled={otpCode.length<6||loading} activeOpacity={0.85}>
@@ -263,9 +266,9 @@ export default function RegisterScreen({ navigation }) {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Field label="Booth Number" icon="🏠" value={form.booth}   onChange={set('booth')}   placeholder={form.role==='worker'?'Required — your assigned booth':'Optional'} hint={form.role==='worker'?'Required for agents':'Helps assign your complaint to the right agent'} />
-                <Field label="Pincode"      icon="📮" value={form.pincode} onChange={set('pincode')} placeholder="6-digit pincode" keyboard="numeric" hint="Used for fallback complaint routing" />
-                <Field label="Address"      icon="🏘️" value={form.address} onChange={set('address')} placeholder="Door no, street, area" />
+                <Field label="Booth Number *" icon="🏠" value={form.booth}   onChange={set('booth')}   placeholder={form.role==='worker'?'Your assigned booth':'Your booth number'} hint={form.role==='worker'?'Required for agents':'Required to assign complaints to the right booth agent'} />
+                <Field label="Pincode *"      icon="📮" value={form.pincode} onChange={set('pincode')} placeholder="6-digit pincode" keyboard="numeric" hint="Used for fallback complaint routing" />
+                <Field label="Address *"      icon="🏘️" value={form.address} onChange={set('address')} placeholder="Door no, street, area" />
                 {boothInfo && (
                   <View style={[s.infoCard,{backgroundColor:boothInfo.workerCount>0?'#FEF3C7':'#DCFCE7'}]}>
                     <Text style={{fontSize:20}}>{boothInfo.workerCount>0?'👥':'🎉'}</Text>

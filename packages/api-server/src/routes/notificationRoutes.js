@@ -6,7 +6,13 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 // GET /api/notifications
 router.get('/', protect, asyncHandler(async (req, res) => {
-  const notifs = await Notification.find().sort({ createdAt: -1 }).limit(50);
+  const notifs = await Notification.find({
+    $or: [
+      { user: req.user._id },
+      { targetRole: 'all' },
+      { targetRole: req.user.role },
+    ],
+  }).sort({ createdAt: -1 }).limit(50);
   res.json(notifs.map((n) => ({
     id: n._id, msg: n.msg, type: n.type, time: n.createdAt,
   })));

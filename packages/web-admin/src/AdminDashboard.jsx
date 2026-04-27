@@ -3,13 +3,14 @@ import i18n from "./i18n";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "./config";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 
 // ── CONFIG ──────────────────────────────────────────────────────────
-const API = "http://localhost:5003";
+const API = API_URL;
 const getConfig = () => {
   const u = JSON.parse(localStorage.getItem("userInfo") || "{}");
   return { headers: { Authorization: `Bearer ${u.token}` } };

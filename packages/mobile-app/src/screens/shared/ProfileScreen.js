@@ -22,6 +22,9 @@ export default function ProfileScreen({ navigation }) {
   const [name,   setName]   = useState(userInfo?.name  || '');
   const [email,  setEmail]  = useState(userInfo?.email || '');
   const [phone,  setPhone]  = useState(userInfo?.phone || '');
+  const [booth,  setBooth]  = useState(userInfo?.booth || '');
+  const [pincode,setPincode]= useState(userInfo?.pincode || '');
+  const [address,setAddress]= useState(userInfo?.address || '');
   const [saving, setSaving] = useState(false);
 
   const { lang, changeLang } = useLang();
@@ -32,7 +35,7 @@ export default function ProfileScreen({ navigation }) {
     if (!email.trim()) { Alert.alert('Required', 'Email cannot be empty.'); return; }
     setSaving(true);
     try {
-      await updateProfile({ name, email, phone });
+      await updateProfile({ name, email, phone, booth, pincode, address });
       Alert.alert('✅ Updated!', 'Your profile has been saved successfully.');
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.message || 'Failed to update profile');
@@ -105,6 +108,9 @@ export default function ProfileScreen({ navigation }) {
               { label: 'Full Name',     icon: '👤', value: name,  setter: setName,  placeholder: 'Enter your name',    kb: 'default'       },
               { label: 'Email Address', icon: '✉️', value: email, setter: setEmail, placeholder: 'Enter your email',   kb: 'email-address' },
               { label: 'Phone Number',  icon: '📱', value: phone, setter: setPhone, placeholder: 'Enter phone number', kb: 'phone-pad'     },
+              { label: 'Booth Number',  icon: '🏠', value: booth, setter: setBooth, placeholder: 'Enter booth number', kb: 'default' },
+              { label: 'Pincode',       icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
+              { label: 'Address / Area',icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
             ].map(({ label, icon, value, setter, placeholder, kb }) => (
               <View key={label} style={{ marginBottom: 14 }}>
                 <Text style={s.label}>{label}</Text>
@@ -154,6 +160,8 @@ export default function ProfileScreen({ navigation }) {
               { label: 'Role',     value: userInfo?.role?.toUpperCase(), icon: role.icon },
               { label: 'District', value: userInfo?.district || '—',     icon: '📍'      },
               { label: 'Booth',    value: userInfo?.booth    || '—',     icon: '🏠'      },
+              { label: 'Pincode',  value: userInfo?.pincode  || '—',     icon: '📮'      },
+              { label: 'Address',  value: userInfo?.address  || '—',     icon: '📌'      },
             ].map(({ label, value, icon }) => (
               <View key={label} style={s.infoRow}>
                 <Text style={s.infoIcon}>{icon}</Text>

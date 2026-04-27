@@ -5,9 +5,41 @@ const User         = require('../models/userModel');
 // ── In-app notification helper ─────────────────────────────────────
 const notify = async (userId, msg, type = 'complaint') => {
   try {
-    const Notification = require('../models/Other');
+    const { Notification } = require('../models/otherModels');
     await Notification.create({ user: userId, msg, type });
   } catch {}
+};
+
+const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+
+const workerCanSeeComplaint = (worker, complaint) => {
+  if (!worker || !complaint) return false;
+  if (String(complaint.assignedWorker || '') === String(worker._id || '')) return true;
+  if (same(complaint.booth, worker.booth)) return true;
+  if (complaint.fallbackUsed && worker.pincode && same(complaint.pincode, worker.pincode)) return true;
+  if (complaint.routingLevel === 'nearby' && worker.district && same(complaint.district, worker.district)) return true;
+  if (complaint.escalatedToAdmin) return true;
+  return false;
+};
+
+const findRoutingAgents = async ({ booth, pincode, district }) => {
+  let agents = [];
+  let routingLevel = 'booth';
+
+  if (booth) agents = await User.find({ role: 'worker', booth, isActive: true });
+
+  if (agents.length === 0 && pincode) {
+    agents = await User.find({ role: 'worker', pincode, isActive: true });
+    if (agents.length > 0) routingLevel = 'pincode';
+  }
+
+  if (agents.length === 0 && district) {
+    agents = await User.find({ role: 'worker', district, isActive: true });
+    if (agents.length > 0) routingLevel = 'nearby';
+  }
+
+  if (agents.length === 0) routingLevel = 'admin';
+  return { agents, routingLevel, fallbackUsed: routingLevel === 'pincode' || routingLevel === 'nearby' };
 };
 
 // ── Format complaint for response ─────────────────────────────────
@@ -31,8 +63,12 @@ const fmt = (c) => ({
   proofVideo:       c.proofVideo,
   attachments:      c.attachments   || [],
   fallbackUsed:     c.fallbackUsed,
+  routingLevel:     c.routingLevel,
   escalatedToAdmin: c.escalatedToAdmin,
+  address:          c.address,
+  location:         c.location,
   time:             c.createdAt,
+  createdAt:        c.createdAt,
 });
 
 // ─────────────────────────────────────────────────────────────────
@@ -53,6 +89,9 @@ const getComplaints = asyncHandler(async (req, res) => {
     ];
     if (req.user.pincode) {
       orConditions.push({ pincode: req.user.pincode, fallbackUsed: true });
+    }
+    if (req.user.district) {
+      orConditions.push({ district: req.user.district, routingLevel: 'nearby' });
     }
     filter.$or = orConditions;
   }
@@ -85,23 +124,11 @@ const createComplaint = asyncHandler(async (req, res) => {
   const userPincode  = pincode  || req.user.pincode;
   const userDistrict = district || req.user.district;
 
-  let agents       = [];
-  let fallbackUsed = false;
-
-  // 1. Same booth
-  agents = await User.find({ role: 'worker', booth: userBooth, isActive: true });
-
-  // 2. Same pincode fallback
-  if (agents.length === 0 && userPincode) {
-    agents = await User.find({ role: 'worker', pincode: userPincode, isActive: true });
-    if (agents.length > 0) fallbackUsed = true;
-  }
-
-  // 3. Same district fallback
-  if (agents.length === 0) {
-    agents = await User.find({ role: 'worker', district: userDistrict, isActive: true });
-    if (agents.length > 0) fallbackUsed = true;
-  }
+  const { agents, routingLevel, fallbackUsed } = await findRoutingAgents({
+    booth: userBooth,
+    pincode: userPincode,
+    district: userDistrict,
+  });
 
   const escalateImmediately = agents.length === 0;
 
@@ -116,6 +143,7 @@ const createComplaint = asyncHandler(async (req, res) => {
     location,
     attachments:      attachments || [],
     fallbackUsed,
+    routingLevel,
     escalatedToAdmin: escalateImmediately,
     escalatedAt:      escalateImmediately ? new Date() : undefined,
   });
@@ -124,7 +152,7 @@ const createComplaint = asyncHandler(async (req, res) => {
   for (const agent of agents) {
     await notify(
       agent._id,
-      `🆕 New complaint in your ${fallbackUsed ? 'nearby area' : 'booth'}: ${category}`,
+      `New complaint in your ${routingLevel === 'booth' ? 'booth' : 'nearby area'}: ${category}`,
       'complaint'
     );
   }
@@ -152,6 +180,12 @@ const getComplaintById = asyncHandler(async (req, res) => {
     .populate('user',           'name phone address')
     .populate('assignedWorker', 'name phone');
   if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+  if (req.user.role === 'public' && String(complaint.user?._id || complaint.user) !== String(req.user._id)) {
+    res.status(403); throw new Error('Access denied. You can only view your own complaints.');
+  }
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
+    res.status(403); throw new Error('Access denied. This complaint is outside your assigned area.');
+  }
   res.json(fmt(complaint));
 });
 
@@ -160,6 +194,13 @@ const getComplaintById = asyncHandler(async (req, res) => {
 // Atomic accept — first agent wins, complaint locked to them
 // ─────────────────────────────────────────────────────────────────
 const acceptComplaint = asyncHandler(async (req, res) => {
+  const complaint = await Complaint.findById(req.params.id);
+  if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
+    res.status(403);
+    throw new Error('Access denied. This complaint is outside your assigned area.');
+  }
+
   // Atomic update — prevents race condition if two agents tap simultaneously
   const updated = await Complaint.findOneAndUpdate(
     { _id: req.params.id, status: 'NEW' },  // only matches if still NEW
@@ -194,6 +235,10 @@ const acceptComplaint = asyncHandler(async (req, res) => {
 const updateComplaintStatus = asyncHandler(async (req, res) => {
   const complaint = await Complaint.findById(req.params.id);
   if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
+    res.status(403);
+    throw new Error('Access denied. This complaint is outside your assigned area.');
+  }
 
   // Enforce agent lock
   if (
@@ -240,6 +285,10 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
 const uploadProof = asyncHandler(async (req, res) => {
   const complaint = await Complaint.findById(req.params.id);
   if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
+    res.status(403);
+    throw new Error('Access denied. This complaint is outside your assigned area.');
+  }
 
   if (
     req.user.role === 'worker' &&

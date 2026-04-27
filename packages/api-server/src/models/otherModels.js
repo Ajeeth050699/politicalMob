@@ -65,6 +65,7 @@ const examResultSchema = new mongoose.Schema(
 // ── Notification ──────────────────────────────────────────────────
 const notificationSchema = new mongoose.Schema(
   {
+    user:           { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     msg:            { type: String, required: true },
     type:           { type: String, enum: ['complaint', 'worker', 'camp', 'news', 'announcement'], default: 'announcement' },
     targetRole:     { type: String, enum: ['all', 'public', 'worker', 'admin'], default: 'all' },

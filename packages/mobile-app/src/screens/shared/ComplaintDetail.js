@@ -6,8 +6,10 @@ import {
   Dimensions, Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import { complaintAPI } from '../../services/api';
 import { T, STATUS_COLORS, PRIORITY_COLORS } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,9 +37,11 @@ function ImageViewer({ visible, uri, onClose }) {
 
 export default function ComplaintDetail({ route, navigation }) {
   const { t, i18n } = useTranslation();
+  const { userInfo } = useAuth();
   const { id } = route.params;
   const [complaint,    setComplaint]    = useState(null);
   const [loading,      setLoading]      = useState(true);
+  const [uploading,    setUploading]    = useState(false);
   const [viewerUri,    setViewerUri]    = useState(null);
   const [viewerVisible,setViewerVisible]= useState(false);
 
@@ -57,13 +61,42 @@ export default function ComplaintDetail({ route, navigation }) {
   const pc       = PRIORITY_COLORS[complaint.priority] || T.amber;
   const catIcon  = CATEGORY_ICONS[complaint.category] || '📝';
   const attachments = complaint.attachments || [];
+  const isAssignedWorker =
+    userInfo?.role === 'worker' &&
+    (complaint.assignedWorkerId === userInfo?._id || complaint.assignedWorker === userInfo?.name);
+
+  const uploadCompletionProof = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== 'granted') return;
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        quality: 0.85,
+        videoMaxDuration: 60,
+      });
+      if (result.canceled) return;
+
+      const asset = result.assets[0];
+      setUploading(true);
+      const payload = asset.type === 'video'
+        ? { videoUrl: asset.uri }
+        : { photoUrl: asset.uri };
+      const { data } = await complaintAPI.uploadProof(id, payload);
+      setComplaint(data);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const rows = [
     { label:'Description',     value:complaint.description,                          icon:'📝' },
     { label:'Booth',           value:complaint.booth,                                icon:'🏠' },
     { label:'District',        value:complaint.district,                             icon:'📍' },
-    { label:'Submitted By',    value:complaint.user?.name || 'Unknown',              icon:'👤' },
-    { label:'Assigned Worker', value:complaint.assignedWorker?.name || 'Pending assignment', icon:'👷' },
+    { label:'Submitted By',    value:complaint.user || complaint.user?.name || 'Unknown',              icon:'👤' },
+    { label:'Assigned Worker', value:complaint.assignedWorker || complaint.assignedWorker?.name || 'Pending assignment', icon:'👷' },
+    { label:'Pincode',         value:complaint.pincode || 'Not provided',             icon:'📮' },
+    { label:'Address',         value:complaint.address || 'Not provided',             icon:'📌' },
     { label:'Date Submitted',  value:new Date(complaint.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}), icon:'📅' },
   ];
 
@@ -188,6 +221,34 @@ export default function ComplaintDetail({ route, navigation }) {
             </View>
           )}
 
+          {complaint.proofVideo && (
+            <View style={s.proofCard}>
+              <Text style={{ fontSize:24 }}>🎥</Text>
+              <View style={{ flex:1 }}>
+                <Text style={s.proofTitle}>Resolution Video Uploaded</Text>
+                <Text style={s.proofSub}>Worker has submitted video proof</Text>
+              </View>
+              <TouchableOpacity onPress={() => Linking.openURL(complaint.proofVideo).catch(() => {})}>
+                <View style={s.proofBadge}><Text style={s.proofBadgeTxt}>Open</Text></View>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {isAssignedWorker && complaint.status === 'IN PROGRESS' && (
+            <TouchableOpacity
+              style={[s.completeBtn, uploading && { opacity: 0.7 }]}
+              onPress={uploadCompletionProof}
+              disabled={uploading}
+              activeOpacity={0.85}
+            >
+              <LinearGradient colors={[T.maroon, T.maroonL]} style={s.completeBtnGrad}>
+                <Text style={s.completeBtnTxt}>
+                  {uploading ? 'Uploading proof...' : '📸 Upload Proof & Complete'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+
           {!complaint.assignedWorker && (
             <View style={s.infoCard}>
               <Text style={{ fontSize:20 }}>ℹ️</Text>
@@ -257,6 +318,9 @@ const s = StyleSheet.create({
   proofSub:   { fontSize:12, color:'#166534', marginTop:2 },
   proofBadge: { backgroundColor:'#16a34a', paddingHorizontal:10, paddingVertical:5, borderRadius:50 },
   proofBadgeTxt:{ color:'#fff', fontSize:11, fontWeight:'700' },
+  completeBtn: { borderRadius:50, overflow:'hidden', marginBottom:10, elevation:4, shadowColor:T.maroon, shadowOpacity:0.35, shadowRadius:10 },
+  completeBtnGrad: { paddingVertical:15, alignItems:'center' },
+  completeBtnTxt: { color:'#fff', fontSize:15, fontWeight:'800' },
 
   infoCard:   { backgroundColor:'#fef3c7', borderRadius:16, padding:16, flexDirection:'row', alignItems:'flex-start', gap:12, borderWidth:1, borderColor:'#d97706'+'40' },
   infoTxt:    { fontSize:13, color:'#92400e', flex:1, lineHeight:19 },

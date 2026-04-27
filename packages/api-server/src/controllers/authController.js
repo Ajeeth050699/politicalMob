@@ -18,7 +18,15 @@ const register = asyncHandler(async (req, res) => {
     booth, district, address, pincode,
   } = req.body;
 
-  const userExists = await User.findOne({ email });
+  const digits = phone ? String(phone).replace(/\D/g, '') : '';
+  const normalizedEmail = email || (digits ? `${digits}@phone.local` : undefined);
+  if (!normalizedEmail) { res.status(400); throw new Error('Email or phone number is required'); }
+  if (!district) { res.status(400); throw new Error('District is required'); }
+  if (!booth) { res.status(400); throw new Error('Booth number is required'); }
+  if (!address) { res.status(400); throw new Error('Address is required'); }
+  if (!pincode) { res.status(400); throw new Error('Pincode is required'); }
+
+  const userExists = await User.findOne({ email: normalizedEmail });
   if (userExists) { res.status(400); throw new Error('Email already exists'); }
 
   if (phone) {
@@ -27,7 +35,7 @@ const register = asyncHandler(async (req, res) => {
   }
 
   const user = await User.create({
-    name, email, password, phone,
+    name, email: normalizedEmail, password, phone,
     role:    role    || 'public',
     booth:   booth   || '',
     district: district || '',
@@ -60,6 +68,7 @@ const register = asyncHandler(async (req, res) => {
       role:            user.role,
       booth:           user.booth,
       district:        user.district,
+      address:         user.address,
       pincode:         user.pincode,
       token:           generateToken(user._id),
       isPhoneVerified: user.isPhoneVerified,
@@ -75,9 +84,12 @@ const register = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────────────────────────
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) { res.status(400); throw new Error('Please provide email and password'); }
+  if (!email || !password) { res.status(400); throw new Error('Please provide email/mobile and password'); }
 
-  const user = await User.findOne({ email }).select('+password');
+  const loginId = String(email).trim();
+  const user = await User.findOne({
+    $or: [{ email: loginId }, { phone: loginId }],
+  }).select('+password');
   if (user && (await user.matchPassword(password))) {
     res.json({
       _id:             user._id,
@@ -87,6 +99,7 @@ const login = asyncHandler(async (req, res) => {
       role:            user.role,
       booth:           user.booth,
       district:        user.district,
+      address:         user.address,
       pincode:         user.pincode,
       token:           generateToken(user._id),
       isPhoneVerified: user.isPhoneVerified,
@@ -376,9 +389,25 @@ const resetPassword = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────────────────────────
 const verifyBooth = asyncHandler(async (req, res) => {
   const { booth, district } = req.body;
-  // TODO: Implement booth verification logic
-  console.log(`Verifying booth ${booth} in ${district}`);
-  res.json({ message: 'Booth verification placeholder' });
+  if (!booth || !district) {
+    res.status(400); throw new Error('Booth and district are required');
+  }
+
+  const workerCount = await User.countDocuments({
+    role: 'worker',
+    booth,
+    district,
+    isActive: true,
+  });
+
+  res.json({
+    booth,
+    district,
+    workerCount,
+    message: workerCount > 0
+      ? `${workerCount} active agent(s) already cover this booth.`
+      : 'No active agent found for this booth yet. You can register to cover it.',
+  });
 });
 
 module.exports = {

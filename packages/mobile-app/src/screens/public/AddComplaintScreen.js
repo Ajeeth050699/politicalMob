@@ -16,6 +16,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import * as Location from "expo-location";
 import { complaintAPI } from "../../services/api";
 import { T, COMPLAINT_CATEGORIES, TN_DISTRICTS } from "../../constants/theme";
 import { useAuth } from "../../context/AuthContext";
@@ -48,6 +49,11 @@ function PermissionModal({ visible, type, onClose }) {
       icon: "📄",
       title: "File Access Required",
       msg: "To attach documents as proof, please allow file access in your device settings.",
+    },
+    location: {
+      icon: "📍",
+      title: "Location Permission Required",
+      msg: "To auto detect your complaint location, please allow location access in your device settings.",
     },
   }[type] || {
     icon: "📎",
@@ -171,6 +177,9 @@ export default function AddComplaintScreen({ navigation }) {
     description: "",
     booth: userInfo?.booth || "",
     district: userInfo?.district || "Chennai",
+    pincode: userInfo?.pincode || "",
+    address: userInfo?.address || "",
+    location: null,
   });
   const [attachments, setAttachments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -187,6 +196,57 @@ export default function AddComplaintScreen({ navigation }) {
   const hideToast = () => setToast((t) => ({ ...t, visible: false }));
   const showPermModal = (type) => setPermType(type);
   const hidePermModal = () => setPermType("");
+
+  const detectLocation = async () => {
+    setLoading(true);
+    try {
+      const current = await Location.getForegroundPermissionsAsync();
+      if (current.status !== "granted") {
+        const asked = await Location.requestForegroundPermissionsAsync();
+        if (asked.status !== "granted") {
+          showPermModal("location");
+          return;
+        }
+      }
+
+      const pos = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      const coords = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+      };
+
+      let updates = { location: coords };
+      try {
+        const places = await Location.reverseGeocodeAsync({
+          latitude: coords.lat,
+          longitude: coords.lng,
+        });
+        const place = places?.[0];
+        if (place) {
+          const detectedAddress = [
+            place.name,
+            place.street,
+            place.subregion,
+            place.city,
+          ].filter(Boolean).join(", ");
+          updates = {
+            ...updates,
+            address: form.address || detectedAddress,
+            pincode: form.pincode || place.postalCode || "",
+          };
+        }
+      } catch {}
+
+      setForm((f) => ({ ...f, ...updates }));
+      showToast("Location detected and added.", "success");
+    } catch {
+      showToast("Unable to detect location. Please enter address manually.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addFiles = (items) => {
     setAttachments((prev) => {
@@ -328,6 +388,10 @@ export default function AddComplaintScreen({ navigation }) {
       showToast("Please enter your booth number.");
       return;
     }
+    if (!form.pincode.trim()) {
+      showToast("Please enter your pincode.");
+      return;
+    }
     setLoading(true);
     try {
       await complaintAPI.create({
@@ -444,6 +508,16 @@ export default function AddComplaintScreen({ navigation }) {
             <Text style={s.sIcon}>📍</Text>
             <Text style={s.sTitle}>Location *</Text>
           </View>
+          <TouchableOpacity
+            style={s.locationBtn}
+            onPress={detectLocation}
+            activeOpacity={0.85}
+            disabled={loading}
+          >
+            <Text style={s.locationBtnTxt}>
+              {form.location ? "📍 Location detected" : "📍 Auto detect location"}
+            </Text>
+          </TouchableOpacity>
           <View style={s.inputRow}>
             <Text style={s.iIcon}>🏠</Text>
             <TextInput
@@ -452,6 +526,28 @@ export default function AddComplaintScreen({ navigation }) {
               placeholderTextColor={T.textM}
               value={form.booth}
               onChangeText={(v) => setForm((f) => ({ ...f, booth: v }))}
+            />
+          </View>
+          <View style={[s.inputRow, { marginTop: 10 }]}>
+            <Text style={s.iIcon}>📮</Text>
+            <TextInput
+              style={s.input}
+              placeholder="Pincode"
+              placeholderTextColor={T.textM}
+              value={form.pincode}
+              keyboardType="numeric"
+              maxLength={6}
+              onChangeText={(v) => setForm((f) => ({ ...f, pincode: v }))}
+            />
+          </View>
+          <View style={[s.inputRow, { marginTop: 10 }]}>
+            <Text style={s.iIcon}>📌</Text>
+            <TextInput
+              style={s.input}
+              placeholder="Address / area"
+              placeholderTextColor={T.textM}
+              value={form.address}
+              onChangeText={(v) => setForm((f) => ({ ...f, address: v }))}
             />
           </View>
           <ScrollView
@@ -594,6 +690,8 @@ export default function AddComplaintScreen({ navigation }) {
               ["Category", `${CATEGORY_ICONS[form.category]} ${form.category}`],
               ["District", `📍 ${form.district}`],
               ...(form.booth ? [["Booth", `🏠 ${form.booth}`]] : []),
+              ...(form.pincode ? [["Pincode", `📮 ${form.pincode}`]] : []),
+              ...(form.location ? [["GPS", `${form.location.lat.toFixed(5)}, ${form.location.lng.toFixed(5)}`]] : []),
               ["Attachments", `📎 ${attachments.length} file(s)`],
             ].map(([l, v]) => (
               <View key={l} style={s.summaryRow}>
@@ -851,6 +949,16 @@ const s = StyleSheet.create({
   },
   iIcon: { fontSize: 16, marginRight: 10 },
   input: { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
+  locationBtn: {
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: T.maroon,
+    backgroundColor: "#FFF8E7",
+    paddingVertical: 12,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  locationBtnTxt: { fontSize: 14, color: T.maroonD, fontWeight: "800" },
   distChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
