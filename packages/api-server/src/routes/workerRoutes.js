@@ -9,6 +9,7 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 router.get('/', protect, asyncHandler(async (req, res) => {
   const { district, search } = req.query;
   let filter = { role: 'worker' };
+  if (req.user.role === 'admin' && req.user.district) filter.district = req.user.district;
   if (district && district !== 'ALL') filter.district = district;
   let workers = await User.find(filter).select('-password');
   if (search) {

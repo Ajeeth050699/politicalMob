@@ -453,6 +453,8 @@ const ExportMenu = ({ onCSV, onHTML, onWord }) => {
 // ════════════════════════════════════════════════════════════════════
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const currentUser = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const isSuperAdmin = currentUser.role === "superadmin";
   const [page, setPage] = useState("dashboard");
   const [sideOpen, setSideOpen] = useState(true);
   const [mobileSideOpen, setMobileSideOpen] = useState(false);
@@ -477,6 +479,7 @@ export default function AdminDashboard() {
   const [districtData, setDistrictData] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [workers, setWorkers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [newsItems, setNewsItems] = useState([]);
   const [camps, setCamps] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -522,6 +525,7 @@ export default function AdminDashboard() {
       axios.get(`${API}/api/notifications`, cfg),
       axios.get(`${API}/api/analytics/stats`, cfg),
       axios.get(`${API}/api/education/certificates/count`, cfg),
+      axios.get(`${API}/api/users`, cfg),
     ]);
     const ok = (i) =>
       results[i].status === "fulfilled" ? results[i].value.data : null;
@@ -538,6 +542,7 @@ export default function AdminDashboard() {
     if (ok(10)) setNotifications(ok(10));
     if (ok(11)) setAnalyticsStats(ok(11));
     if (ok(12)) setCertCount(ok(12).count || 0);
+    if (ok(13)) setUsers(ok(13));
   };
   useEffect(() => {
     fetchAll();
@@ -1427,6 +1432,7 @@ export default function AdminDashboard() {
     { id: "education", label: "Education", icon: "📚" },
     { id: "analytics", label: "Analytics", icon: "📈" },
     { id: "notifications", label: "Notifications", icon: "🔔" },
+    ...(isSuperAdmin ? [{ id: "superadmin", label: "Super Admin", icon: "SA" }] : []),
   ];
 
   const navigateTo = (id) => {
@@ -4560,6 +4566,99 @@ export default function AdminDashboard() {
   };
 
   // ── ATTACHMENT VIEWER ─────────────────────────────────────────────
+  const PageSuperAdmin = () => {
+    const [roleFilter, setRoleFilter] = useState("ALL");
+    const [q, setQ] = useState("");
+    const [form, setForm] = useState({
+      name: "", email: "", phone: "", password: "", role: "admin",
+      booth: "", district: "Chennai", address: "", pincode: "",
+    });
+    const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+    const visibleUsers = users.filter((u) => {
+      const roleOk = roleFilter === "ALL" || u.role === roleFilter;
+      const text = `${u.name || ""} ${u.email || ""} ${u.phone || ""} ${u.booth || ""} ${u.district || ""}`.toLowerCase();
+      return roleOk && text.includes(q.toLowerCase());
+    });
+    const createUser = async (e) => {
+      e.preventDefault();
+      try {
+        const { data } = await axios.post(`${API}/api/users`, form, getConfig());
+        setUsers((p) => [data, ...p]);
+        setForm({ name: "", email: "", phone: "", password: "", role: "admin", booth: "", district: "Chennai", address: "", pincode: "" });
+        showToast("User created");
+      } catch (err) { alert(err?.response?.data?.message || "Failed to create user"); }
+    };
+    const toggleActive = async (u) => {
+      try {
+        const { data } = await axios.put(`${API}/api/users/${u.id}`, { isActive: !u.isActive }, getConfig());
+        setUsers((p) => p.map((x) => (x.id === u.id ? data : x)));
+        showToast(data.isActive ? "User activated" : "User deactivated");
+      } catch (err) { alert(err?.response?.data?.message || "Failed to update user"); }
+    };
+    const deleteUser = async (u) => {
+      if (!window.confirm(`Delete ${u.name}?`)) return;
+      try {
+        await axios.delete(`${API}/api/users/${u.id}`, getConfig());
+        setUsers((p) => p.filter((x) => x.id !== u.id));
+        showToast("User deleted");
+      } catch (err) { alert(err?.response?.data?.message || "Failed to delete user"); }
+    };
+    const roleCounts = ["superadmin", "admin", "worker", "public"].map((role) => ({ role, count: users.filter((u) => u.role === role).length }));
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4,1fr)", gap: 12 }}>
+          {roleCounts.map(({ role, count }) => (
+            <div key={role} style={{ background: "#fff", borderRadius: 14, padding: 18, border: `1px solid ${T.border}` }}>
+              <div style={{ fontSize: 12, color: T.textM, fontWeight: 700, textTransform: "uppercase" }}>{role}</div>
+              <div style={{ fontSize: 30, color: role === "superadmin" ? T.red : T.maroon, fontWeight: 900 }}>{count}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: "#fff", borderRadius: 16, padding: 18, border: `1px solid ${T.border}` }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: T.text, marginBottom: 14 }}>Create Account</div>
+          <form onSubmit={createUser} style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4,1fr)", gap: 12 }}>
+            <input style={iSx} placeholder="Name" value={form.name} onChange={set("name")} required />
+            <input style={iSx} placeholder="Email" value={form.email} onChange={set("email")} required />
+            <input style={iSx} placeholder="Mobile" value={form.phone} onChange={set("phone")} />
+            <input style={iSx} placeholder="Password" value={form.password} onChange={set("password")} required />
+            <select style={sSx} value={form.role} onChange={set("role")}>{["admin", "worker", "public", "superadmin"].map((r) => <option key={r} value={r}>{r}</option>)}</select>
+            <input style={iSx} placeholder="Booth number" value={form.booth} onChange={set("booth")} />
+            <DistrictSelect value={form.district} onChange={set("district")} />
+            <input style={iSx} placeholder="Pincode" value={form.pincode} onChange={set("pincode")} />
+            <input style={{ ...iSx, gridColumn: isMobile ? "auto" : "span 3" }} placeholder="Address / area" value={form.address} onChange={set("address")} />
+            <button type="submit" style={{ border: "none", borderRadius: 12, background: T.maroon, color: "#fff", fontWeight: 800, cursor: "pointer" }}>Create</button>
+          </form>
+        </div>
+        <div style={{ background: "#fff", borderRadius: 16, padding: 18, border: `1px solid ${T.border}` }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+            <input style={{ ...iSx, flex: 1, minWidth: 220 }} placeholder="Search users..." value={q} onChange={(e) => setQ(e.target.value)} />
+            <select style={{ ...sSx, width: 180 }} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>{["ALL", "superadmin", "admin", "worker", "public"].map((r) => <option key={r} value={r}>{r}</option>)}</select>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
+              <thead><tr style={{ background: T.bg }}>{["Name", "Role", "Mobile", "Booth", "District", "Pincode", "Status", "Actions"].map((h) => <th key={h} style={{ textAlign: "left", padding: 12, fontSize: 12, color: T.textM }}>{h}</th>)}</tr></thead>
+              <tbody>{visibleUsers.map((u) => (
+                <tr key={u.id} style={{ borderBottom: `1px solid ${T.border}` }}>
+                  <td style={{ padding: 12 }}><div style={{ fontWeight: 700 }}>{u.name}</div><div style={{ fontSize: 12, color: T.textM }}>{u.email}</div></td>
+                  <td style={{ padding: 12, textTransform: "capitalize" }}>{u.role}</td>
+                  <td style={{ padding: 12 }}>{u.phone || "-"}</td>
+                  <td style={{ padding: 12 }}>{u.booth || "-"}</td>
+                  <td style={{ padding: 12 }}>{u.district || "-"}</td>
+                  <td style={{ padding: 12 }}>{u.pincode || "-"}</td>
+                  <td style={{ padding: 12, color: u.isActive ? T.green : T.red, fontWeight: 700 }}>{u.isActive ? "Active" : "Inactive"}</td>
+                  <td style={{ padding: 12 }}>
+                    <button onClick={() => toggleActive(u)} style={{ marginRight: 8, padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.border}`, background: T.bg, cursor: "pointer" }}>{u.isActive ? "Disable" : "Enable"}</button>
+                    <button onClick={() => deleteUser(u)} disabled={u.id === currentUser._id} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.red}40`, background: `${T.red}10`, color: T.red, cursor: "pointer", opacity: u.id === currentUser._id ? 0.5 : 1 }}>Delete</button>
+                  </td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const AttachViewerModal = () => {
     if (!attachViewer) return null;
     const { items, index } = attachViewer;
@@ -4749,6 +4848,7 @@ export default function AdminDashboard() {
     education: <PageEducation />,
     analytics: <PageAnalytics />,
     notifications: <PageNotifications />,
+    superadmin: isSuperAdmin ? <PageSuperAdmin /> : <PageDashboard />,
   };
 
   return (

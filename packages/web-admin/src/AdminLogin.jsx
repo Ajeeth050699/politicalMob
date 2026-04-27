@@ -59,7 +59,7 @@ export default function AdminLogin() {
     try {
       const { data } = await axios.post(`${API}/api/auth/login`, { email:form.email.trim(), password:form.password });
       clearTimeout(tid);
-      if (!["admin","worker"].includes(data.role)) { showToast("Access denied. Admin credentials required."); setLoading(false); return; }
+      if (!["admin","superadmin"].includes(data.role)) { showToast("Access denied. Admin credentials required."); setLoading(false); return; }
       localStorage.setItem("userInfo", JSON.stringify(data));
       showToast("Login successful!", "success");
       setTimeout(() => navigate("/dashboard", { replace:true }), 700);

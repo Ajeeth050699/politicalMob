@@ -99,7 +99,7 @@ const getComplaints = asyncHandler(async (req, res) => {
 
   if (status   && status   !== 'ALL') filter.status   = status;
   if (district && district !== 'ALL') filter.district = district;
-  if (booth    && req.user.role === 'admin') filter.booth = booth;
+  if (booth    && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.booth = booth;
   if (category) filter.category = category;
 
   const complaints = await Complaint.find(filter)
@@ -159,7 +159,7 @@ const createComplaint = asyncHandler(async (req, res) => {
 
   // Escalate to admins if no agents found
   if (escalateImmediately) {
-    const admins = await User.find({ role: 'admin', isActive: true });
+    const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
     for (const admin of admins) {
       await notify(admin._id, `⚠️ No agents for: ${category} in booth ${userBooth}`, 'complaint');
     }
@@ -253,7 +253,7 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
   const oldStatus    = complaint.status;
   complaint.status   = req.body.status   || complaint.status;
   complaint.priority = req.body.priority || complaint.priority;
-  if (req.body.assignedWorker && req.user.role === 'admin') {
+  if (req.body.assignedWorker && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
     complaint.assignedWorker = req.body.assignedWorker;
   }
   await complaint.save();
@@ -335,7 +335,7 @@ const escalatePending = asyncHandler(async (req, res) => {
     createdAt:        { $lt: TWO_HOURS_AGO },
   });
 
-  const admins = await User.find({ role: 'admin', isActive: true });
+  const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
 
   for (const c of pending) {
     c.escalatedToAdmin = true;

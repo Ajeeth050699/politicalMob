@@ -91,6 +91,7 @@ const login = asyncHandler(async (req, res) => {
     $or: [{ email: loginId }, { phone: loginId }],
   }).select('+password');
   if (user && (await user.matchPassword(password))) {
+    if (!user.isActive) { res.status(403); throw new Error('Account is disabled'); }
     res.json({
       _id:             user._id,
       name:            user.name,

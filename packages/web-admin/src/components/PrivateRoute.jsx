@@ -2,8 +2,8 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const PrivateRoute = () => {
-  const userInfo = localStorage.getItem('userInfo');
-  return userInfo ? <Outlet /> : <Navigate to="/login" replace />;
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+  return ['admin', 'superadmin'].includes(userInfo?.role) ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;

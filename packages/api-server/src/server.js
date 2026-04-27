@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
 const authRoutes         = require('./routes/authRoutes');
+const userRoutes         = require('./routes/userRoutes');
 const dashboardRoutes    = require('./routes/dashboardRoutes');
 const complaintRoutes    = require('./routes/complaintRoutes');
 const workerRoutes       = require('./routes/workerRoutes');
@@ -45,6 +46,7 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 app.use('/api/auth',          authRoutes);
+app.use('/api/users',         userRoutes);
 app.use('/api/dashboard',     dashboardRoutes);
 app.use('/api/complaints',    complaintRoutes);
 app.use('/api/workers',       workerRoutes);

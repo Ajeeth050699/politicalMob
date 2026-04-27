@@ -14,6 +14,10 @@ function Login() {
     e.preventDefault();
     try {
       const { data } = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+      if (!['admin', 'superadmin'].includes(data.role)) {
+        alert('Access denied. Admin or super admin account required.');
+        return;
+      }
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate('/dashboard/overview');
     } catch (error) {

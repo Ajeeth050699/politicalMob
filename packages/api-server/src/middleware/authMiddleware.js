@@ -25,7 +25,7 @@ const protect = asyncHandler(async (req, res, next) => {
 
 // Admin only
 const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
     next();
   } else {
     res.status(403);
@@ -33,9 +33,18 @@ const adminOnly = (req, res, next) => {
   }
 };
 
+const superAdminOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'superadmin') {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Access denied: Super admin only');
+  }
+};
+
 // Admin or Worker
 const workerOrAdmin = (req, res, next) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'worker')) {
+  if (req.user && (req.user.role === 'superadmin' || req.user.role === 'admin' || req.user.role === 'worker')) {
     next();
   } else {
     res.status(403);
@@ -43,4 +52,4 @@ const workerOrAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly, workerOrAdmin };
+module.exports = { protect, adminOnly, superAdminOnly, workerOrAdmin };
