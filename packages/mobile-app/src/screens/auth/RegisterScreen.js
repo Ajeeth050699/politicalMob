@@ -160,6 +160,7 @@ export default function RegisterScreen({ navigation }) {
   const handleStep3 = async () => {
     if (!form.district) { showToast('Please select your district.'); return; }
     if (!form.ward) { showToast('Please select your assembly constituency / ward.'); return; }
+    if (!form.booth.trim()) { showToast('Please enter your booth number.'); return; }
     if (!form.pincode.trim()) { showToast('Please enter your pincode.'); return; }
     if (!form.address.trim()) { showToast('Please enter your address or area.'); return; }
     if ((form.role==='worker' || form.role==='agent') && form.ward) {
@@ -180,7 +181,7 @@ export default function RegisterScreen({ navigation }) {
       await register({
         name:form.name, email:form.email||undefined,
         password:form.password, phone:verifiedPhone,
-        role:form.role, ward:form.ward, booth:form.ward, district:form.district,
+        role:form.role, ward:form.ward, booth:form.booth, district:form.district,
         address:form.address, pincode:form.pincode,
       });
     } catch(err) {
@@ -289,7 +290,7 @@ export default function RegisterScreen({ navigation }) {
                 <View style={s.pickerWrap}>
                   <Picker
                     selectedValue={form.ward}
-                    onValueChange={(value) => setForm((f) => ({ ...f, ward: value, booth: value }))}
+                    onValueChange={(value) => setForm((f) => ({ ...f, ward: value }))}
                   >
                     <Picker.Item label="Select your ward" value="" />
                     {wards.map((w) => (
@@ -298,6 +299,7 @@ export default function RegisterScreen({ navigation }) {
                   </Picker>
                 </View>
                 <Text style={fs.hint}>Complaints are automatically routed to workers and agents assigned to this ward.</Text>
+                <Field label="Booth Number *" icon="🏠" value={form.booth} onChange={set('booth')} placeholder="Enter booth number" keyboard="numeric" />
                 <Field label="Pincode *"      icon="📮" value={form.pincode} onChange={set('pincode')} placeholder="6-digit pincode" keyboard="numeric" hint="Used for fallback complaint routing" />
                 <Field label="Address *"      icon="🏘️" value={form.address} onChange={set('address')} placeholder="Door no, street, area" />
                 {boothInfo && (

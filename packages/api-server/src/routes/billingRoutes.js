@@ -51,12 +51,13 @@ router.post('/subscribe', protect, asyncHandler(async (req, res) => {
     amount: plan.amount,
     currency: plan.currency,
     interval: plan.interval,
-    status: provider === 'manual' ? 'pending' : 'created',
+    status: provider === 'manual' ? 'active' : 'created', // Treat manual as active for testing
     provider,
     providerOrderId: providerOrder?.id,
     currentPeriodStart: now,
     currentPeriodEnd: expires,
   };
+  user.role = plan.role; // Update user role upon subscription
   await user.save();
 
   res.status(201).json({
@@ -65,6 +66,39 @@ router.post('/subscribe', protect, asyncHandler(async (req, res) => {
     order: providerOrder,
     subscription: user.subscription,
   });
+}));
+
+router.get('/history', protect, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  // Mock billing history based on current subscription
+  const history = [];
+  if (user.subscription && user.subscription.currentPeriodStart) {
+    history.push({
+      id: `INV-${Date.now()}`,
+      date: user.subscription.currentPeriodStart,
+      amount: user.subscription.amount,
+      currency: user.subscription.currency,
+      status: 'Paid',
+      plan: user.subscription.planRole,
+    });
+  }
+  res.json({ history });
+}));
+
+router.post('/cancel', protect, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (user.subscription) {
+    user.subscription.status = 'cancelled';
+    user.role = 'public'; // Revert role
+    await user.save();
+  }
+  res.json({ message: 'Subscription cancelled', subscription: user.subscription });
+}));
+
+router.put('/auto-renew', protect, asyncHandler(async (req, res) => {
+  // Mock endpoint to toggle auto-renew
+  const { autoRenew } = req.body;
+  res.json({ message: 'Auto-renew updated', autoRenew });
 }));
 
 module.exports = router;

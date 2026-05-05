@@ -50,7 +50,7 @@ const register = asyncHandler(async (req, res) => {
     role:    requestedRole,
     ward:    matchedWard.name,
     wardNo:  wardNo || matchedWard.id,
-    booth:   matchedWard.name,
+    booth:   booth || matchedWard.name,
     district: district || '',
     address: address || '',
     pincode: pincode || '',
@@ -174,12 +174,14 @@ const updateProfile = asyncHandler(async (req, res) => {
   user.name     = req.body.name     || user.name;
   user.email    = req.body.email    || user.email;
   user.phone    = req.body.phone    || user.phone;
-  if (req.body.ward !== undefined || req.body.booth !== undefined) {
-    const matchedWard = findWard(req.body.ward || req.body.booth);
+  if (req.body.ward !== undefined) {
+    const matchedWard = findWard(req.body.ward);
     if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
     user.ward = matchedWard.name;
     user.wardNo = matchedWard.id;
-    user.booth = matchedWard.name;
+  }
+  if (req.body.booth !== undefined) {
+    user.booth = req.body.booth;
   }
   user.district = req.body.district !== undefined ? req.body.district : user.district;
   user.address  = req.body.address  !== undefined ? req.body.address  : user.address;

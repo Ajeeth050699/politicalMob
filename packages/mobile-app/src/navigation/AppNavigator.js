@@ -25,6 +25,7 @@ import CampsScreen from "../screens/public/CampsScreen"; // ← added
 
 // ── Shared Screens ────────────────────────────────────────────────
 import ProfileScreen from "../screens/shared/ProfileScreen";
+import BillingScreen from "../screens/shared/BillingScreen";
 import ComplaintDetail from "../screens/shared/ComplaintDetail";
 import NewsDetailScreen from "../screens/shared/NewsDetailScreen";
 
@@ -147,7 +148,7 @@ export default function AppNavigator() {
             component={ForgotPasswordScreen}
           />
         </>
-      ) : userInfo.role === "public" ? (
+      ) : userInfo.role === "public" || userInfo.role === "citizen" ? (
         // ── Public stack ──
        <>
   <Stack.Screen name="PublicTabs" component={PublicTabs} />
@@ -157,6 +158,7 @@ export default function AppNavigator() {
   <Stack.Screen name="Exam" component={ExamScreen} />
   <Stack.Screen name="Camps" component={CampsScreen} />
   <Stack.Screen name="Profile" component={ProfileScreen} />
+  <Stack.Screen name="Billing" component={BillingScreen} />
   <Stack.Screen name="Verify" component={VerifyScreen} />
 </>
       ) : (
@@ -166,6 +168,7 @@ export default function AppNavigator() {
   <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
   <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />  
   <Stack.Screen name="Profile" component={ProfileScreen} />
+  <Stack.Screen name="Billing" component={BillingScreen} />
   <Stack.Screen name="Verify" component={VerifyScreen} />
 </>
       )}

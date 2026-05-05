@@ -61,6 +61,9 @@ export const systemAPI = {
 export const billingAPI = {
   getPlans:  () => api.get('/billing/plans'),
   subscribe: (role) => api.post('/billing/subscribe', { role }),
+  getHistory: () => api.get('/billing/history'),
+  cancel:    () => api.post('/billing/cancel'),
+  autoRenew: (autoRenew) => api.put('/billing/auto-renew', { autoRenew }),
 };
 
 export const complaintAPI = {

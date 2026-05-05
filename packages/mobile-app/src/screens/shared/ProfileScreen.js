@@ -22,6 +22,8 @@ export default function ProfileScreen({ navigation }) {
   const [name,   setName]   = useState(userInfo?.name  || '');
   const [email,  setEmail]  = useState(userInfo?.email || '');
   const [phone,  setPhone]  = useState(userInfo?.phone || '');
+  const [district,setDistrict]= useState(userInfo?.district || '');
+  const [ward,   setWard]   = useState(userInfo?.ward || '');
   const [booth,  setBooth]  = useState(userInfo?.booth || '');
   const [pincode,setPincode]= useState(userInfo?.pincode || '');
   const [address,setAddress]= useState(userInfo?.address || '');
@@ -35,7 +37,7 @@ export default function ProfileScreen({ navigation }) {
     if (!email.trim()) { Alert.alert('Required', 'Email cannot be empty.'); return; }
     setSaving(true);
     try {
-      await updateProfile({ name, email, phone, booth, pincode, address });
+      await updateProfile({ name, email, phone, booth, pincode, address, district, ward });
       Alert.alert('✅ Updated!', 'Your profile has been saved successfully.');
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.message || 'Failed to update profile');
@@ -62,7 +64,7 @@ export default function ProfileScreen({ navigation }) {
 
         {/* ── Hero Header ── */}
         <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-          {navigation.canGoBack() && (
+          {navigation?.canGoBack && navigation.canGoBack() && navigation?.getState?.()?.index > 0 && (
             <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
               <Text style={s.backTxt}>← Back</Text>
             </TouchableOpacity>
@@ -92,7 +94,7 @@ export default function ProfileScreen({ navigation }) {
             )}
             {userInfo?.booth && (
               <View style={s.pill}>
-                <Text style={s.pillTxt}>🏠 {userInfo.booth}</Text>
+                <Text style={s.pillTxt}>🏠 {userInfo.ward || userInfo.booth}</Text>
               </View>
             )}
           </View>
@@ -108,8 +110,9 @@ export default function ProfileScreen({ navigation }) {
               { label: 'Full Name',     icon: '👤', value: name,  setter: setName,  placeholder: 'Enter your name',    kb: 'default'       },
               { label: 'Email Address', icon: '✉️', value: email, setter: setEmail, placeholder: 'Enter your email',   kb: 'email-address' },
               { label: 'Phone Number',  icon: '📱', value: phone, setter: null, placeholder: 'Enter phone number', kb: 'phone-pad', readonly: true },
-              { label: 'District',      icon: '📍', value: userInfo?.district || '', setter: null, placeholder: 'District', kb: 'default', readonly: true },
-              { label: 'Booth Number',  icon: '🏠', value: booth, setter: null, placeholder: 'Enter booth number', kb: 'default', readonly: true },
+              { label: 'District',      icon: '📍', value: district, setter: setDistrict, placeholder: 'District', kb: 'default', readonly: !!userInfo?.district },
+              { label: 'Ward',          icon: '🏛️', value: ward, setter: setWard, placeholder: 'Ward', kb: 'default', readonly: !!userInfo?.ward },
+              { label: 'Booth Number',  icon: '🏠', value: booth, setter: setBooth, placeholder: 'Enter booth number', kb: 'default', readonly: !!userInfo?.booth },
               { label: 'Pincode',       icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
               { label: 'Address / Area',icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
             ].map(({ label, icon, value, setter, placeholder, kb, readonly }) => (
@@ -161,7 +164,7 @@ export default function ProfileScreen({ navigation }) {
             {[
               { label: 'Role',     value: userInfo?.role?.toUpperCase(), icon: role.icon },
               { label: 'District', value: userInfo?.district || '—',     icon: '📍'      },
-              { label: 'Booth',    value: userInfo?.booth    || '—',     icon: '🏠'      },
+              { label: 'Ward',     value: userInfo?.ward || userInfo?.booth || '—',     icon: '🏠'      },
               { label: 'Pincode',  value: userInfo?.pincode  || '—',     icon: '📮'      },
               { label: 'Address',  value: userInfo?.address  || '—',     icon: '📌'      },
             ].map(({ label, value, icon }) => (
@@ -197,6 +200,20 @@ export default function ProfileScreen({ navigation }) {
               })}
             </View>
           </View>
+
+          {/* ── Pricing & Billing ── */}
+          <TouchableOpacity 
+            style={[s.section, { flexDirection: 'row', alignItems: 'center' }]} 
+            onPress={() => navigation.navigate('Billing')} 
+            activeOpacity={0.85}
+          >
+            <Text style={{ fontSize: 24, marginRight: 12 }}>💳</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: T.text }}>Pricing & Billing</Text>
+              <Text style={{ fontSize: 13, color: T.textM, marginTop: 2 }}>Manage your plan and invoices</Text>
+            </View>
+            <Text style={{ fontSize: 20, color: T.textM }}>›</Text>
+          </TouchableOpacity>
 
           {/* ── Logout ── */}
           <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>

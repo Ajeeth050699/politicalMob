@@ -103,6 +103,21 @@ export default function WorkerDashboard({ navigation }) {
           </View>
         </LinearGradient>
 
+        {(!userInfo?.district || !userInfo?.ward || !userInfo?.booth) && (
+          <TouchableOpacity 
+            style={{ backgroundColor: '#FEF3C7', marginHorizontal: 16, marginTop: 16, padding: 16, borderRadius: 14, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#F59E0B40' }}
+            onPress={() => navigation.navigate('Profile')}
+            activeOpacity={0.8}
+          >
+            <Text style={{ fontSize: 24, marginRight: 12 }}>⚠️</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#92400e', marginBottom: 2 }}>Complete your profile</Text>
+              <Text style={{ fontSize: 12, color: '#92400e' }}>Tap here to update your Ward, Booth, and District to receive proper complaint assignments.</Text>
+            </View>
+            <Text style={{ fontSize: 20, color: '#92400e' }}>›</Text>
+          </TouchableOpacity>
+        )}
+
         {/* ── Quick actions ── */}
         <View style={s.section}>
           <Text style={s.sectionTitle}>Quick Actions</Text>
