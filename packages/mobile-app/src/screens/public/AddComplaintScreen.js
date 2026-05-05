@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,10 +14,11 @@ import {
   Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Location from "expo-location";
-import { complaintAPI } from "../../services/api";
+import { complaintAPI, systemAPI } from "../../services/api";
 import { T, COMPLAINT_CATEGORIES, TN_DISTRICTS } from "../../constants/theme";
 import { useAuth } from "../../context/AuthContext";
 import PopupToast from "../../components/PopupToast";
@@ -122,9 +123,9 @@ function AttachPickerSheet({
       fn: onGallery,
     },
     {
-      icon: "📄",
-      label: "Attach Document",
-      sub: "PDF, Word or other files",
+      icon: "🎙️",
+      label: "Attach Voice / Document",
+      sub: "Audio recording, PDF or other files",
       fn: onDocument,
     },
   ];
@@ -175,13 +176,15 @@ export default function AddComplaintScreen({ navigation }) {
   const [form, setForm] = useState({
     category: "",
     description: "",
-    booth: userInfo?.booth || "",
+    ward: userInfo?.ward || userInfo?.booth || "",
+    booth: userInfo?.ward || userInfo?.booth || "",
     district: userInfo?.district || "Chennai",
     pincode: userInfo?.pincode || "",
     address: userInfo?.address || "",
     location: null,
   });
   const [attachments, setAttachments] = useState([]);
+  const [wards, setWards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [permType, setPermType] = useState("");
@@ -196,6 +199,18 @@ export default function AddComplaintScreen({ navigation }) {
   const hideToast = () => setToast((t) => ({ ...t, visible: false }));
   const showPermModal = (type) => setPermType(type);
   const hidePermModal = () => setPermType("");
+
+  useEffect(() => {
+    const loadWards = async () => {
+      try {
+        const { data } = await systemAPI.getWards();
+        setWards(data?.wards || []);
+      } catch {
+        setWards([]);
+      }
+    };
+    loadWards();
+  }, []);
 
   const detectLocation = async () => {
     setLoading(true);
@@ -354,6 +369,7 @@ export default function AddComplaintScreen({ navigation }) {
           "application/pdf",
           "image/*",
           "video/*",
+          "audio/*",
           "application/msword",
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         ],
@@ -364,7 +380,7 @@ export default function AddComplaintScreen({ navigation }) {
         addFiles(
           result.assets.map((a) => ({
             uri: a.uri,
-            type: "document",
+            type: a.mimeType?.startsWith("audio/") ? "audio" : "document",
             filename: a.name,
           })),
         );
@@ -384,8 +400,8 @@ export default function AddComplaintScreen({ navigation }) {
       showToast("Please describe the issue (min 10 chars).");
       return;
     }
-    if (!form.booth.trim()) {
-      showToast("Please enter your booth number.");
+    if (!form.ward) {
+      showToast("Please select your assembly constituency / ward.");
       return;
     }
     if (!form.pincode.trim()) {
@@ -417,11 +433,11 @@ export default function AddComplaintScreen({ navigation }) {
   };
 
   const typeColor = (t) =>
-    t === "video" ? "#3b82f6" : t === "document" ? T.gold : T.green;
+    t === "video" ? "#3b82f6" : t === "document" ? T.gold : t === "audio" ? T.maroon : T.green;
   const typeLabel = (t) =>
-    t === "video" ? "VID" : t === "document" ? "DOC" : "IMG";
+    t === "video" ? "VID" : t === "document" ? "DOC" : t === "audio" ? "AUD" : "IMG";
   const typeIcon = (t) =>
-    t === "video" ? "🎥" : t === "document" ? "📄" : "🖼️";
+    t === "video" ? "🎥" : t === "document" ? "📄" : t === "audio" ? "🎙️" : "🖼️";
 
   return (
     <View style={s.root}>
@@ -518,15 +534,16 @@ export default function AddComplaintScreen({ navigation }) {
               {form.location ? "📍 Location detected" : "📍 Auto detect location"}
             </Text>
           </TouchableOpacity>
-          <View style={s.inputRow}>
-            <Text style={s.iIcon}>🏠</Text>
-            <TextInput
-              style={s.input}
-              placeholder="Booth number (e.g. Booth 12)"
-              placeholderTextColor={T.textM}
-              value={form.booth}
-              onChangeText={(v) => setForm((f) => ({ ...f, booth: v }))}
-            />
+          <View style={s.pickerWrap}>
+            <Picker
+              selectedValue={form.ward}
+              onValueChange={(value) => setForm((f) => ({ ...f, ward: value, booth: value }))}
+            >
+              <Picker.Item label="Select assembly constituency / ward" value="" />
+              {wards.map((w) => (
+                <Picker.Item key={w.id} label={`${w.id}. ${w.name}`} value={w.name} />
+              ))}
+            </Picker>
           </View>
           <View style={[s.inputRow, { marginTop: 10 }]}>
             <Text style={s.iIcon}>📮</Text>
@@ -689,7 +706,7 @@ export default function AddComplaintScreen({ navigation }) {
             {[
               ["Category", `${CATEGORY_ICONS[form.category]} ${form.category}`],
               ["District", `📍 ${form.district}`],
-              ...(form.booth ? [["Booth", `🏠 ${form.booth}`]] : []),
+              ...(form.ward ? [["Ward", `🏠 ${form.ward}`]] : []),
               ...(form.pincode ? [["Pincode", `📮 ${form.pincode}`]] : []),
               ...(form.location ? [["GPS", `${form.location.lat.toFixed(5)}, ${form.location.lng.toFixed(5)}`]] : []),
               ["Attachments", `📎 ${attachments.length} file(s)`],
@@ -949,6 +966,13 @@ const s = StyleSheet.create({
   },
   iIcon: { fontSize: 16, marginRight: 10 },
   input: { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
+  pickerWrap: {
+    borderWidth: 1.5,
+    borderColor: T.border,
+    borderRadius: 14,
+    backgroundColor: T.bg,
+    overflow: "hidden",
+  },
   locationBtn: {
     borderRadius: 14,
     borderWidth: 1.5,

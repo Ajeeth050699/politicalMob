@@ -437,7 +437,7 @@ export default function AdminDashboard() {
     (filterDistrict==="ALL" || c.district===filterDistrict)
   );
   const filteredWorkers = workers.filter(w =>
-    [(w.name||""),(w.ward||w.booth||""),(w.district||"")].some(v => v.toLowerCase().includes(searchWorker.toLowerCase()))
+    [(w.name||""),(w.booth||""),(w.district||"")].some(v => v.toLowerCase().includes(searchWorker.toLowerCase()))
   );
 
   // ════════════════════════════════════════════════════════════════════
@@ -463,7 +463,7 @@ export default function AdminDashboard() {
             <Field label="Email"       icon="✉️"><input style={iSx} required type="email" value={f.email}    onChange={set("email")}    placeholder="Email address" /></Field>
             <Field label="Phone"       icon="📱"><input style={iSx} required value={f.phone}    onChange={set("phone")}    placeholder="10-digit number" /></Field>
             <Field label="Password"    icon="🔒"><input style={iSx} required type="password" value={f.password} onChange={set("password")} placeholder="Min 6 chars" /></Field>
-            <Field label="Ward / Assembly Constituency"   icon="🏠"><input style={iSx} required value={f.booth}    onChange={set("booth")}    placeholder="e.g. Kolathur" /></Field>
+            <Field label="Booth No."   icon="🏠"><input style={iSx} required value={f.booth}    onChange={set("booth")}    placeholder="e.g. Booth 12" /></Field>
             <Field label="District"    icon="📍"><DistrictSelect value={f.district} onChange={set("district")} /></Field>
           </div>
           <SubmitBtn loading={loading} label="✅ Create Worker Account" />
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
             <textarea style={{...iSx,minHeight:90,resize:"vertical"}} required value={f.description} onChange={set("description")} placeholder="Describe the issue..." />
           </Field>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <Field label="Ward" icon="🏠"><input style={iSx} required value={f.booth} onChange={set("booth")} placeholder="Assembly constituency" /></Field>
+            <Field label="Booth" icon="🏠"><input style={iSx} required value={f.booth} onChange={set("booth")} placeholder="Booth number" /></Field>
             <Field label="District" icon="📍"><DistrictSelect value={f.district} onChange={set("district")} /></Field>
           </div>
           <SubmitBtn loading={loading} label="🚀 Submit Complaint" />

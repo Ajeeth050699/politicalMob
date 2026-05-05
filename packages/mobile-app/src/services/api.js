@@ -45,13 +45,24 @@ export const authAPI = {
   sendOtp:        (phone)      => api.post('/auth/send-otp', { phone }),
   verifyOtp:      (phone, otp) => api.post('/auth/verify-otp', { phone, otp }),
   verifyPhoneEmail: (user_json_url)   => api.post('/auth/verify-phone-email', { user_json_url }), // ← phone.email
-  verifyBooth:      (booth, district) => api.post('/auth/verify-booth', { booth, district }),           // ← NEW
+  verifyBooth:      (booth, district) => api.post('/auth/verify-booth', { booth, district }),
+  verifyWard:       (ward, district)  => api.post('/auth/verify-booth', { ward, district }),
   forgotPassword:   (email)           => api.post('/auth/forgot-password', { email }),
   verifyResetOtp:  (email, otp)      => api.post('/auth/verify-reset-otp', { email, otp }), // ← NEW
   resetPassword:   (email, otp, newPassword) => api.post('/auth/reset-password', { email, otp, newPassword }), // ← UPDATED
 };
 
 // ── COMPLAINTS ───────────────────────────────────────────────────
+export const systemAPI = {
+  getWards:   () => api.get('/system/wards'),
+  getPricing: () => api.get('/system/pricing'),
+};
+
+export const billingAPI = {
+  getPlans:  () => api.get('/billing/plans'),
+  subscribe: (role) => api.post('/billing/subscribe', { role }),
+};
+
 export const complaintAPI = {
   getAll:          (params)   => api.get('/complaints', { params }),
   getById:         (id)       => api.get(`/complaints/${id}`),

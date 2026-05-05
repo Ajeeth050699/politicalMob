@@ -4,6 +4,8 @@ const User = require('../models/userModel');
 const Complaint = require('../models/complaintModel');
 const generateToken = require('../utils/generateToken');
 const { protect, adminOnly, superAdminOnly } = require('../middleware/authMiddleware');
+const { findWard } = require('../constants/wards');
+const { getPlanForRole } = require('../constants/subscriptions');
 
 const router = express.Router();
 
@@ -14,10 +16,13 @@ const publicUser = (u) => ({
   email: u.email,
   phone: u.phone,
   role: u.role,
+  ward: u.ward,
+  wardNo: u.wardNo,
   booth: u.booth,
   district: u.district,
   address: u.address,
   pincode: u.pincode,
+  subscription: u.subscription,
   isActive: u.isActive,
   createdAt: u.createdAt,
 });
@@ -30,7 +35,7 @@ router.get('/', protect, adminOnly, asyncHandler(async (req, res) => {
   if (district && district !== 'ALL') filter.district = district;
 
   if (req.user.role !== 'superadmin') {
-    filter.role = { $in: ['public', 'worker'] };
+    filter.role = { $in: ['public', 'citizen', 'worker', 'agent'] };
     if (req.user.district) filter.district = req.user.district;
   }
 
@@ -41,7 +46,7 @@ router.get('/', protect, adminOnly, asyncHandler(async (req, res) => {
       (u.name || '').toLowerCase().includes(q) ||
       (u.email || '').toLowerCase().includes(q) ||
       (u.phone || '').toLowerCase().includes(q) ||
-      (u.booth || '').toLowerCase().includes(q)
+      (u.ward || u.booth || '').toLowerCase().includes(q)
     );
   }
 
@@ -61,10 +66,10 @@ router.get('/', protect, adminOnly, asyncHandler(async (req, res) => {
 }));
 
 router.post('/', protect, adminOnly, asyncHandler(async (req, res) => {
-  const { name, email, phone, password, role, booth, district, address, pincode } = req.body;
-  const requestedRole = role || 'public';
+  const { name, email, phone, password, role, ward, booth, district, address, pincode } = req.body;
+  const requestedRole = role === 'citizen' ? 'public' : (role || 'public');
 
-  if (!['public', 'worker', 'admin', 'superadmin'].includes(requestedRole)) {
+  if (!['public', 'citizen', 'worker', 'agent', 'admin', 'superadmin'].includes(requestedRole)) {
     res.status(400); throw new Error('Invalid role');
   }
   if (['admin', 'superadmin'].includes(requestedRole) && req.user.role !== 'superadmin') {
@@ -73,20 +78,40 @@ router.post('/', protect, adminOnly, asyncHandler(async (req, res) => {
   if (!name || !email || !password) {
     res.status(400); throw new Error('Name, email and password are required');
   }
-  if (['public', 'worker'].includes(requestedRole) && (!booth || !district || !address || !pincode)) {
-    res.status(400); throw new Error('Booth, district, address and pincode are required');
+  const matchedWard = ['public', 'citizen', 'worker', 'agent'].includes(requestedRole)
+    ? findWard(ward || booth)
+    : null;
+  if (['public', 'citizen', 'worker', 'agent'].includes(requestedRole) && (!matchedWard || !district || !address || !pincode)) {
+    res.status(400); throw new Error('Ward, district, address and pincode are required');
   }
 
   const exists = await User.findOne({ email });
   if (exists) { res.status(400); throw new Error('Email already registered'); }
 
+  const plan = getPlanForRole(requestedRole);
+  const now = new Date();
+  const periodEnd = new Date(now);
+  periodEnd.setMonth(periodEnd.getMonth() + 1);
+
   const user = await User.create({
     name, email, phone, password,
     role: requestedRole,
-    booth: booth || '',
+    ward: matchedWard?.name || '',
+    wardNo: matchedWard?.id,
+    booth: matchedWard?.name || booth || '',
     district: district || '',
     address: address || '',
     pincode: pincode || '',
+    subscription: ['public', 'citizen', 'worker', 'agent'].includes(requestedRole) ? {
+      planRole: plan.role,
+      amount: plan.amount,
+      currency: plan.currency,
+      interval: plan.interval,
+      status: 'pending',
+      provider: 'manual',
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
+    } : undefined,
   });
 
   const out = publicUser(user);
@@ -102,6 +127,9 @@ router.put('/:id', protect, adminOnly, asyncHandler(async (req, res) => {
   }
 
   const nextRole = req.body.role || user.role;
+  if (!['public', 'citizen', 'worker', 'agent', 'admin', 'superadmin'].includes(nextRole)) {
+    res.status(400); throw new Error('Invalid role');
+  }
   if (['admin', 'superadmin'].includes(nextRole) && req.user.role !== 'superadmin') {
     res.status(403); throw new Error('Only super admin can assign admin roles');
   }
@@ -110,7 +138,17 @@ router.put('/:id', protect, adminOnly, asyncHandler(async (req, res) => {
   user.email = req.body.email ?? user.email;
   user.phone = req.body.phone ?? user.phone;
   user.role = nextRole;
-  user.booth = req.body.booth ?? user.booth;
+  if (req.body.ward !== undefined || req.body.booth !== undefined) {
+    const matchedWard = findWard(req.body.ward || req.body.booth);
+    if (['public', 'citizen', 'worker', 'agent'].includes(nextRole) && !matchedWard) {
+      res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required');
+    }
+    if (matchedWard) {
+      user.ward = matchedWard.name;
+      user.wardNo = matchedWard.id;
+      user.booth = matchedWard.name;
+    }
+  }
   user.district = req.body.district ?? user.district;
   user.address = req.body.address ?? user.address;
   user.pincode = req.body.pincode ?? user.pincode;

@@ -17,6 +17,8 @@ const complaintSchema = new mongoose.Schema(
     description: { type: String, required: true },
 
     // ── Location matching ─────────────────────────────────────────
+    ward:     { type: String, required: true },
+    wardNo:   { type: Number },
     booth:    { type: String, required: true },
     district: { type: String, required: true },
     pincode:  { type: String },   // for fallback matching
@@ -43,14 +45,14 @@ const complaintSchema = new mongoose.Schema(
     attachments: [
       {
         url:      { type: String, required: true },
-        type:     { type: String, enum: ['image', 'video', 'document'], default: 'image' },
+        type:     { type: String, enum: ['image', 'video', 'document', 'audio'], default: 'image' },
         filename: { type: String },
       },
     ],
 
     // ── Fallback & escalation ─────────────────────────────────────
     fallbackUsed:     { type: Boolean, default: false },
-    routingLevel:     { type: String, enum: ['booth', 'pincode', 'nearby', 'admin'], default: 'booth' },
+    routingLevel:     { type: String, enum: ['ward', 'booth', 'pincode', 'nearby', 'admin'], default: 'ward' },
     escalatedToAdmin: { type: Boolean, default: false },
     escalatedAt:      { type: Date },
 

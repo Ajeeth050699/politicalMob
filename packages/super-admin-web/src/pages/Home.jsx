@@ -50,7 +50,7 @@ const THEMES = {
 
 const T = {
   en: {
-    brand: "People Connect",
+    brand: "Super Admin Portal",
     tagline: "Tamil Nadu · Political Public Service Platform",
     nav: ["Services", "How It Works", "Emergency", "Education"],
     loginBtn: "Login",
@@ -204,7 +204,7 @@ const T = {
       },
       {
         title: "Admin",
-        links: ["Admin Login", "Super Admin Login", "Worker Portal", "Analytics", "Support"],
+        links: ["Admin Login", "Worker Portal", "Analytics", "Support"],
       },
     ],
     loginTitle: "Welcome Back",
@@ -563,8 +563,8 @@ export default function Home() {
     try {
       setAuthErrors({}); // Clear previous errors
       const { data } = await axios.post(url, payload);
-      if (authTab === 'login' && !['admin', 'superadmin'].includes(data.role)) {
-        setAuthErrors({ api: 'Access denied. Admin or super admin account required.' });
+      if (authTab === 'login' && data.role !== 'superadmin') {
+        setAuthErrors({ api: 'Access denied. Super admin account required.' });
         return;
       }
       localStorage.setItem('userInfo', JSON.stringify(data));
@@ -2018,7 +2018,7 @@ export default function Home() {
                 {col.links.map((l, j) => (
                   <div key={j} style={{ marginBottom: 9 }}>
                     <a
-                      href={l === 'Super Admin Login' ? 'http://localhost:5174' : '#'}
+                      href="#"
                       className="hov-gold"
                       style={{
                         fontFamily: "'Source Sans 3',sans-serif",

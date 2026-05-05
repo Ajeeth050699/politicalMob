@@ -225,9 +225,6 @@ export default function LandingPage() {
           <button className="btn-outline" onClick={() => navigate("/login")} style={{ padding:"14px 32px", borderRadius:50, border:"2px solid rgba(255,255,255,0.35)", background:"transparent", color:"#fff", fontFamily:"'Source Sans 3',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer" }}>
             Admin Login
           </button>
-          <button className="btn-outline" onClick={() => window.location.href='http://localhost:5174'} style={{ padding:"14px 32px", borderRadius:50, border:"2px solid rgba(255,255,255,0.35)", background:"transparent", color:"#fff", fontFamily:"'Source Sans 3',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer" }}>
-            Super Admin
-          </button>
         </div>
       </section>
 

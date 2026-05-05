@@ -6,8 +6,9 @@ import {
   Platform, StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../context/AuthContext';
-import { authAPI } from '../../services/api';
+import { authAPI, systemAPI } from '../../services/api';
 import PopupToast from '../../components/PopupToast';
 import { T, TN_DISTRICTS } from '../../constants/theme';
 
@@ -84,11 +85,13 @@ export default function RegisterScreen({ navigation }) {
   const [countdown,     setCountdown]     = useState(0);
   const [verifiedPhone, setVerifiedPhone] = useState('');
   const [boothInfo,     setBoothInfo]     = useState(null);
+  const [wards,         setWards]         = useState([]);
+  const [pricing,       setPricing]       = useState({});
   const [phoneInput,    setPhoneInput]    = useState('');
   const [toast,         setToast]         = useState({visible:false,message:'',type:'error'});
   const [form, setForm] = useState({
     name:'', email:'', password:'', confirmPassword:'',
-    district:'', booth:'', pincode:'', address:'', role:'public',
+    district:'', ward:'', booth:'', pincode:'', address:'', role:'public',
   });
 
   const set = k => v => setForm(f=>({...f,[k]:v}));
@@ -99,6 +102,22 @@ export default function RegisterScreen({ navigation }) {
     const id=setTimeout(()=>setCountdown(c=>c-1),1000);
     return ()=>clearTimeout(id);
   },[countdown]);
+
+  useEffect(() => {
+    const loadSystemData = async () => {
+      try {
+        const [wardsRes, pricingRes] = await Promise.all([
+          systemAPI.getWards(),
+          systemAPI.getPricing(),
+        ]);
+        setWards(wardsRes.data?.wards || []);
+        setPricing(pricingRes.data?.plans || {});
+      } catch {
+        setWards([]);
+      }
+    };
+    loadSystemData();
+  }, []);
 
   // Step 1 validation
   const handleStep1 = () => {
@@ -140,13 +159,13 @@ export default function RegisterScreen({ navigation }) {
   // Step 3 - location
   const handleStep3 = async () => {
     if (!form.district) { showToast('Please select your district.'); return; }
-    if (!form.booth.trim()) { showToast('Please enter your booth number.'); return; }
+    if (!form.ward) { showToast('Please select your assembly constituency / ward.'); return; }
     if (!form.pincode.trim()) { showToast('Please enter your pincode.'); return; }
     if (!form.address.trim()) { showToast('Please enter your address or area.'); return; }
-    if (form.role==='worker' && form.booth) {
+    if ((form.role==='worker' || form.role==='agent') && form.ward) {
       setLoading(true);
       try {
-        const res = await authAPI.verifyBooth(form.booth, form.district);
+        const res = await authAPI.verifyWard(form.ward, form.district);
         setBoothInfo(res.data);
       } catch { setBoothInfo(null); }
       finally { setLoading(false); }
@@ -161,7 +180,7 @@ export default function RegisterScreen({ navigation }) {
       await register({
         name:form.name, email:form.email||undefined,
         password:form.password, phone:verifiedPhone,
-        role:form.role, booth:form.booth, district:form.district,
+        role:form.role, ward:form.ward, booth:form.ward, district:form.district,
         address:form.address, pincode:form.pincode,
       });
     } catch(err) {
@@ -206,7 +225,7 @@ export default function RegisterScreen({ navigation }) {
                 <Field label="Confirm Password *" icon="🔒" value={form.confirmPassword} onChange={set('confirmPassword')} placeholder="Re-enter password" secure />
                 <Text style={fs.label}>I am registering as *</Text>
                 <View style={{flexDirection:'row',gap:10,marginBottom:20}}>
-                  {[{v:'public',l:'🏠 Citizen',d:'File complaints'},{v:'worker',l:'👷 Agent',d:'Resolve complaints'}].map(r=>(
+                  {[{v:'public',l:'Citizen',d:'Rs. 1/month'},{v:'worker',l:'Worker',d:'Rs. 10/month'},{v:'agent',l:'Agent',d:'Rs. 100/month'}].map(r=>(
                     <TouchableOpacity key={r.v} style={[s.roleCard,form.role===r.v&&s.roleCardActive]} onPress={()=>set('role')(r.v)} activeOpacity={0.85}>
                       <Text style={[s.roleLabel,form.role===r.v&&{color:'#fff'}]}>{r.l}</Text>
                       <Text style={[s.roleDesc,form.role===r.v&&{color:'rgba(255,255,255,0.75)'}]}>{r.d}</Text>
@@ -266,7 +285,19 @@ export default function RegisterScreen({ navigation }) {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Field label="Booth Number *" icon="🏠" value={form.booth}   onChange={set('booth')}   placeholder={form.role==='worker'?'Your assigned booth':'Your booth number'} hint={form.role==='worker'?'Required for agents':'Required to assign complaints to the right booth agent'} />
+                <Text style={fs.label}>Assembly Constituency / Ward *</Text>
+                <View style={s.pickerWrap}>
+                  <Picker
+                    selectedValue={form.ward}
+                    onValueChange={(value) => setForm((f) => ({ ...f, ward: value, booth: value }))}
+                  >
+                    <Picker.Item label="Select your ward" value="" />
+                    {wards.map((w) => (
+                      <Picker.Item key={w.id} label={`${w.id}. ${w.name}`} value={w.name} />
+                    ))}
+                  </Picker>
+                </View>
+                <Text style={fs.hint}>Complaints are automatically routed to workers and agents assigned to this ward.</Text>
                 <Field label="Pincode *"      icon="📮" value={form.pincode} onChange={set('pincode')} placeholder="6-digit pincode" keyboard="numeric" hint="Used for fallback complaint routing" />
                 <Field label="Address *"      icon="🏘️" value={form.address} onChange={set('address')} placeholder="Door no, street, area" />
                 {boothInfo && (
@@ -290,9 +321,10 @@ export default function RegisterScreen({ navigation }) {
                     ['Name',     form.name,           '👤'],
                     ['Phone',    verifiedPhone,        '📱'],
                     ['Email',    form.email||'—',      '✉️'],
-                    ['Role',     form.role==='worker'?'Agent / Worker':'Citizen','🎭'],
+                    ['Role',     form.role==='agent'?'Agent':form.role==='worker'?'Worker':'Citizen','🎭'],
+                    ['Plan',     `Rs. ${(pricing[form.role] || pricing.public)?.amount || (form.role==='agent'?100:form.role==='worker'?10:1)}/month`, '₹'],
                     ['District', form.district,        '📍'],
-                    ['Booth',    form.booth   ||'—',   '🏠'],
+                    ['Ward',     form.ward    ||'—',   '🏠'],
                     ['Pincode',  form.pincode ||'—',   '📮'],
                   ].map(([l,v,i])=>(
                     <View key={l} style={s.summaryRow}>
@@ -302,11 +334,11 @@ export default function RegisterScreen({ navigation }) {
                     </View>
                   ))}
                 </View>
-                {form.role==='worker' && (
+                {(form.role==='worker' || form.role==='agent') && (
                   <View style={s.workerBanner}>
                     <Text style={{fontSize:20}}>👷</Text>
                     <Text style={{flex:1,fontSize:13,color:'#1e40af',lineHeight:19}}>
-                      As an agent, you will receive new complaints from booth <Text style={{fontWeight:'800'}}>{form.booth||form.district}</Text>. First to accept a complaint gets it locked to you.
+                      As a {form.role}, you will receive new complaints from <Text style={{fontWeight:'800'}}>{form.ward||form.district}</Text>. First to accept a complaint gets it locked to you.
                     </Text>
                   </View>
                 )}
@@ -363,6 +395,7 @@ const s = StyleSheet.create({
   distChipActive: {backgroundColor:T.maroon,borderColor:T.maroon},
   distTxt:    {fontSize:13,color:T.textL,fontWeight:'600'},
   infoCard:   {flexDirection:'row',gap:12,alignItems:'flex-start',borderRadius:14,padding:14,marginBottom:16,borderWidth:1,borderColor:'rgba(0,0,0,0.08)'},
+  pickerWrap: {borderWidth:1.5,borderColor:T.border,borderRadius:14,backgroundColor:T.bg,marginBottom:6,overflow:'hidden'},
   workerBanner:{flexDirection:'row',gap:12,alignItems:'flex-start',backgroundColor:'#DBEAFE',borderRadius:14,padding:14,marginBottom:16,borderWidth:1,borderColor:'#3b82f640'},
   summaryCard:  {backgroundColor:T.goldP,borderRadius:16,padding:16,marginBottom:16,borderWidth:1,borderColor:'#C9982A40'},
   summaryTitle: {fontSize:14,fontWeight:'800',color:T.maroonD,marginBottom:14},

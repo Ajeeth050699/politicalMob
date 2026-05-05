@@ -44,7 +44,7 @@ const superAdminOnly = (req, res, next) => {
 
 // Admin or Worker
 const workerOrAdmin = (req, res, next) => {
-  if (req.user && (req.user.role === 'superadmin' || req.user.role === 'admin' || req.user.role === 'worker')) {
+  if (req.user && (req.user.role === 'superadmin' || req.user.role === 'admin' || req.user.role === 'worker' || req.user.role === 'agent')) {
     next();
   } else {
     res.status(403);

@@ -4576,7 +4576,7 @@ export default function AdminDashboard() {
     const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
     const visibleUsers = users.filter((u) => {
       const roleOk = roleFilter === "ALL" || u.role === roleFilter;
-      const text = `${u.name || ""} ${u.email || ""} ${u.phone || ""} ${u.ward || ""} ${u.booth || ""} ${u.district || ""}`.toLowerCase();
+      const text = `${u.name || ""} ${u.email || ""} ${u.phone || ""} ${u.booth || ""} ${u.district || ""}`.toLowerCase();
       return roleOk && text.includes(q.toLowerCase());
     });
     const createUser = async (e) => {
@@ -4621,8 +4621,8 @@ export default function AdminDashboard() {
             <input style={iSx} placeholder="Email" value={form.email} onChange={set("email")} required />
             <input style={iSx} placeholder="Mobile" value={form.phone} onChange={set("phone")} />
             <input style={iSx} placeholder="Password" value={form.password} onChange={set("password")} required />
-            <select style={sSx} value={form.role} onChange={set("role")}>{["admin", "worker", "agent", "public", "superadmin"].map((r) => <option key={r} value={r}>{r}</option>)}</select>
-            <input style={iSx} placeholder="Ward / assembly constituency" value={form.booth} onChange={set("booth")} />
+            <select style={sSx} value={form.role} onChange={set("role")}>{["admin", "worker", "public", "superadmin"].map((r) => <option key={r} value={r}>{r}</option>)}</select>
+            <input style={iSx} placeholder="Booth number" value={form.booth} onChange={set("booth")} />
             <DistrictSelect value={form.district} onChange={set("district")} />
             <input style={iSx} placeholder="Pincode" value={form.pincode} onChange={set("pincode")} />
             <input style={{ ...iSx, gridColumn: isMobile ? "auto" : "span 3" }} placeholder="Address / area" value={form.address} onChange={set("address")} />
@@ -4632,7 +4632,7 @@ export default function AdminDashboard() {
         <div style={{ background: "#fff", borderRadius: 16, padding: 18, border: `1px solid ${T.border}` }}>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
             <input style={{ ...iSx, flex: 1, minWidth: 220 }} placeholder="Search users..." value={q} onChange={(e) => setQ(e.target.value)} />
-            <select style={{ ...sSx, width: 180 }} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>{["ALL", "superadmin", "admin", "worker", "agent", "public"].map((r) => <option key={r} value={r}>{r}</option>)}</select>
+            <select style={{ ...sSx, width: 180 }} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>{["ALL", "superadmin", "admin", "worker", "public"].map((r) => <option key={r} value={r}>{r}</option>)}</select>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
@@ -4642,7 +4642,7 @@ export default function AdminDashboard() {
                   <td style={{ padding: 12 }}><div style={{ fontWeight: 700 }}>{u.name}</div><div style={{ fontSize: 12, color: T.textM }}>{u.email}</div></td>
                   <td style={{ padding: 12, textTransform: "capitalize" }}>{u.role}</td>
                   <td style={{ padding: 12 }}>{u.phone || "-"}</td>
-                  <td style={{ padding: 12 }}>{u.ward || u.booth || "-"}</td>
+                  <td style={{ padding: 12 }}>{u.booth || "-"}</td>
                   <td style={{ padding: 12 }}>{u.district || "-"}</td>
                   <td style={{ padding: 12 }}>{u.pincode || "-"}</td>
                   <td style={{ padding: 12, color: u.isActive ? T.green : T.red, fontWeight: 700 }}>{u.isActive ? "Active" : "Inactive"}</td>

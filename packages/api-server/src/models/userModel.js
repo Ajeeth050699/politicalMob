@@ -8,7 +8,9 @@ const userSchema = new mongoose.Schema(
     email:    { type: String, required: true, unique: true },
     phone:    { type: String },
     password: { type: String, required: true },
-    role:     { type: String, enum: ['superadmin', 'admin', 'worker', 'public'], default: 'public' },
+    role:     { type: String, enum: ['superadmin', 'admin', 'worker', 'agent', 'public', 'citizen'], default: 'public' },
+    ward:     { type: String },
+    wardNo:   { type: Number },
     booth:    { type: String },
     district: { type: String },
     address:  { type: String },
@@ -19,6 +21,18 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: { type: Boolean, default: false },
 
     fcmToken: { type: String },
+
+    subscription: {
+      planRole:           { type: String, enum: ['public', 'citizen', 'worker', 'agent'] },
+      amount:             { type: Number },
+      currency:           { type: String, default: 'INR' },
+      interval:           { type: String, default: 'month' },
+      status:             { type: String, enum: ['pending', 'created', 'active', 'past_due', 'cancelled'], default: 'pending' },
+      provider:           { type: String },
+      providerOrderId:    { type: String },
+      currentPeriodStart: { type: Date },
+      currentPeriodEnd:   { type: Date },
+    },
 
     // Phone OTP (registration)
     phoneVerificationOtp:        { type: String },

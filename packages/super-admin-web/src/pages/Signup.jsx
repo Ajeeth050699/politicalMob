@@ -5,27 +5,25 @@ import axios from 'axios';
 import { API_URL } from '../config';
 import './Auth.css';
 
-function Login() {
+function Signup() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Passwords don't match!");
+      return;
+    }
     try {
-      const { data } = await axios.post(`${API_URL}/api/auth/login`, { email, password });
-      if (!['admin', 'superadmin'].includes(data.role)) {
-        alert('Access denied. Admin or super admin account required.');
-        return;
-      }
+      const { data } = await axios.post(`${API_URL}/api/auth/signup`, { name, email, password });
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate('/dashboard/overview');
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-        (error.request ? `Cannot reach backend at ${API_URL}. Check that the API server is running.` : error.message) ||
-        'Login failed.'
-      );
+      alert(error.response.data.message);
     }
   };
 
@@ -34,8 +32,19 @@ function Login() {
       <Row>
         <Col md="12">
           <div className="auth-form">
-            <h2 className="text-center">Login</h2>
+            <h2 className="text-center">Sign Up</h2>
             <Form onSubmit={handleSubmit}>
+              <Form.Group controlId="formBasicName">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </Form.Group>
+
               <Form.Group controlId="formBasicEmail">
                 <Form.Label>Email address</Form.Label>
                 <Form.Control
@@ -57,15 +66,23 @@ function Login() {
                   required
                 />
               </Form.Group>
+
+              <Form.Group controlId="formBasicConfirmPassword">
+                <Form.Label>Confirm Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </Form.Group>
               <Button variant="primary" type="submit" className="w-100 mt-3">
-                Login
+                Sign Up
               </Button>
             </Form>
             <div className="text-center mt-3">
-              <Link to="/forgot-password">Forgot Password?</Link>
-            </div>
-            <div className="text-center mt-3">
-              Don't have an account? <Link to="/signup">Sign Up</Link>
+              Already have an account? <Link to="/login">Login</Link>
             </div>
           </div>
         </Col>
@@ -74,4 +91,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Signup;

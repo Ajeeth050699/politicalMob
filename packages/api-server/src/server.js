@@ -13,6 +13,9 @@ const educationRoutes    = require('./routes/educationRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const analyticsRoutes    = require('./routes/analyticsRoutes');
 const emergencyRoutes    = require('./routes/emergencyRoutes');
+const systemRoutes       = require('./routes/systemRoutes');
+const billingRoutes      = require('./routes/billingRoutes');
+const realtimeRoutes     = require('./routes/realtimeRoutes');
 
 dotenv.config();
 
@@ -21,6 +24,7 @@ const app = express();
 const allowedOrigins = [
   'https://political-mob.vercel.app', // Deployed frontend
   'http://localhost:5173',            // Local Vite dev server
+  'http://localhost:5174',            // Local Vite dev server (Super Admin)
   'http://localhost:8081',            // Local Expo dev server
 ];
 
@@ -55,6 +59,9 @@ app.use('/api/education',     educationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics',     analyticsRoutes);
 app.use('/api/emergency',     emergencyRoutes);
+app.use('/api/system',        systemRoutes);
+app.use('/api/billing',       billingRoutes);
+app.use('/api/realtime',      realtimeRoutes);
 
 app.get('/', (req, res) => {
   res.send('PoliticalMob API is running!');

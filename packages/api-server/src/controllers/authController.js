@@ -4,6 +4,8 @@ const generateToken = require('../utils/generateToken');
 const crypto       = require('crypto');
 const sendEmail    = require('../utils/sendEmail');
 const sendSms      = require('../utils/sendSms');
+const { findWard } = require('../constants/wards');
+const { getPlanForRole } = require('../constants/subscriptions');
 
 // ── In-memory OTP stores (fast, no DB writes needed) ───────────────
 const registrationOtpStore = {};  // for new registration phone verify
@@ -15,14 +17,17 @@ const resetOtpStore        = {};  // for forgot-password flow
 const register = asyncHandler(async (req, res) => {
   const {
     name, email, password, phone, role,
-    booth, district, address, pincode,
+    ward, wardNo, booth, district, address, pincode,
   } = req.body;
 
   const digits = phone ? String(phone).replace(/\D/g, '') : '';
+  if (digits.length < 10) { res.status(400); throw new Error('Valid phone number is required'); }
   const normalizedEmail = email || (digits ? `${digits}@phone.local` : undefined);
   if (!normalizedEmail) { res.status(400); throw new Error('Email or phone number is required'); }
   if (!district) { res.status(400); throw new Error('District is required'); }
-  if (!booth) { res.status(400); throw new Error('Booth number is required'); }
+  const wardName = ward || booth;
+  const matchedWard = findWard(wardName);
+  if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
   if (!address) { res.status(400); throw new Error('Address is required'); }
   if (!pincode) { res.status(400); throw new Error('Pincode is required'); }
 
@@ -34,13 +39,31 @@ const register = asyncHandler(async (req, res) => {
     if (phoneExists) { res.status(400); throw new Error('Phone number already taken'); }
   }
 
+  const requestedRole = role === 'citizen' ? 'public' : (role || 'public');
+  const plan = getPlanForRole(requestedRole);
+  const now = new Date();
+  const periodEnd = new Date(now);
+  periodEnd.setMonth(periodEnd.getMonth() + 1);
+
   const user = await User.create({
     name, email: normalizedEmail, password, phone,
-    role:    role    || 'public',
-    booth:   booth   || '',
+    role:    requestedRole,
+    ward:    matchedWard.name,
+    wardNo:  wardNo || matchedWard.id,
+    booth:   matchedWard.name,
     district: district || '',
     address: address || '',
     pincode: pincode || '',
+    subscription: {
+      planRole: plan.role,
+      amount: plan.amount,
+      currency: plan.currency,
+      interval: plan.interval,
+      status: 'pending',
+      provider: 'manual',
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
+    },
   });
 
   if (user) {
@@ -66,10 +89,13 @@ const register = asyncHandler(async (req, res) => {
       email:           user.email,
       phone:           user.phone,
       role:            user.role,
+      ward:            user.ward,
+      wardNo:          user.wardNo,
       booth:           user.booth,
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
+      subscription:    user.subscription,
       token:           generateToken(user._id),
       isPhoneVerified: user.isPhoneVerified,
       isEmailVerified: user.isEmailVerified,
@@ -98,10 +124,13 @@ const login = asyncHandler(async (req, res) => {
       email:           user.email,
       phone:           user.phone,
       role:            user.role,
+      ward:            user.ward,
+      wardNo:          user.wardNo,
       booth:           user.booth,
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
+      subscription:    user.subscription,
       token:           generateToken(user._id),
       isPhoneVerified: user.isPhoneVerified,
       isEmailVerified: user.isEmailVerified,
@@ -123,10 +152,13 @@ const getProfile = asyncHandler(async (req, res) => {
     email:           user.email,
     phone:           user.phone,
     role:            user.role,
+    ward:            user.ward,
+    wardNo:          user.wardNo,
     booth:           user.booth,
     district:        user.district,
     address:         user.address,
     pincode:         user.pincode,
+    subscription:    user.subscription,
     isPhoneVerified: user.isPhoneVerified,
     isEmailVerified: user.isEmailVerified,
   });
@@ -142,7 +174,13 @@ const updateProfile = asyncHandler(async (req, res) => {
   user.name     = req.body.name     || user.name;
   user.email    = req.body.email    || user.email;
   user.phone    = req.body.phone    || user.phone;
-  user.booth    = req.body.booth    !== undefined ? req.body.booth    : user.booth;
+  if (req.body.ward !== undefined || req.body.booth !== undefined) {
+    const matchedWard = findWard(req.body.ward || req.body.booth);
+    if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
+    user.ward = matchedWard.name;
+    user.wardNo = matchedWard.id;
+    user.booth = matchedWard.name;
+  }
   user.district = req.body.district !== undefined ? req.body.district : user.district;
   user.address  = req.body.address  !== undefined ? req.body.address  : user.address;
   user.pincode  = req.body.pincode  !== undefined ? req.body.pincode  : user.pincode;
@@ -155,6 +193,8 @@ const updateProfile = asyncHandler(async (req, res) => {
     email:    saved.email,
     phone:    saved.phone,
     role:     saved.role,
+    ward:     saved.ward,
+    wardNo:   saved.wardNo,
     booth:    saved.booth,
     district: saved.district,
     address:  saved.address,
@@ -389,25 +429,28 @@ const resetPassword = asyncHandler(async (req, res) => {
 // POST /api/auth/verify-booth
 // ─────────────────────────────────────────────────────────────────
 const verifyBooth = asyncHandler(async (req, res) => {
-  const { booth, district } = req.body;
-  if (!booth || !district) {
-    res.status(400); throw new Error('Booth and district are required');
+  const { booth, ward, district } = req.body;
+  const matchedWard = findWard(ward || booth);
+  if (!matchedWard || !district) {
+    res.status(400); throw new Error('Ward and district are required');
   }
 
   const workerCount = await User.countDocuments({
-    role: 'worker',
-    booth,
+    role: { $in: ['worker', 'agent'] },
+    ward: matchedWard.name,
     district,
     isActive: true,
   });
 
   res.json({
-    booth,
+    ward: matchedWard.name,
+    wardNo: matchedWard.id,
+    booth: matchedWard.name,
     district,
     workerCount,
     message: workerCount > 0
-      ? `${workerCount} active agent(s) already cover this booth.`
-      : 'No active agent found for this booth yet. You can register to cover it.',
+      ? `${workerCount} active worker/agent(s) already cover this ward.`
+      : 'No active worker or agent found for this ward yet. You can register to cover it.',
   });
 });
 
