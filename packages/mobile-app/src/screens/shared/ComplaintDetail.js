@@ -94,9 +94,11 @@ export default function ComplaintDetail({ route, navigation }) {
     { label:'Booth',           value:complaint.booth,                                icon:'🏠' },
     { label:'District',        value:complaint.district,                             icon:'📍' },
     { label:'Submitted By',    value:complaint.user || complaint.user?.name || 'Unknown',              icon:'👤' },
+    { label:'Contact Phone',   value:complaint.userPhone || 'Not provided',          icon:'📞' },
     { label:'Assigned Worker', value:complaint.assignedWorker || complaint.assignedWorker?.name || 'Pending assignment', icon:'👷' },
     { label:'Pincode',         value:complaint.pincode || 'Not provided',             icon:'📮' },
     { label:'Address',         value:complaint.address || 'Not provided',             icon:'📌' },
+    { label:'GPS Location',    value:complaint.location ? `${complaint.location.lat.toFixed(5)}, ${complaint.location.lng.toFixed(5)}` : 'Not provided', icon:'🧭' },
     { label:'Date Submitted',  value:new Date(complaint.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}), icon:'📅' },
   ];
 

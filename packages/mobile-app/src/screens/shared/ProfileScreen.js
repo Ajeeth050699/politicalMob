@@ -107,23 +107,25 @@ export default function ProfileScreen({ navigation }) {
             {[
               { label: 'Full Name',     icon: '👤', value: name,  setter: setName,  placeholder: 'Enter your name',    kb: 'default'       },
               { label: 'Email Address', icon: '✉️', value: email, setter: setEmail, placeholder: 'Enter your email',   kb: 'email-address' },
-              { label: 'Phone Number',  icon: '📱', value: phone, setter: setPhone, placeholder: 'Enter phone number', kb: 'phone-pad'     },
-              { label: 'Booth Number',  icon: '🏠', value: booth, setter: setBooth, placeholder: 'Enter booth number', kb: 'default' },
+              { label: 'Phone Number',  icon: '📱', value: phone, setter: null, placeholder: 'Enter phone number', kb: 'phone-pad', readonly: true },
+              { label: 'District',      icon: '📍', value: userInfo?.district || '', setter: null, placeholder: 'District', kb: 'default', readonly: true },
+              { label: 'Booth Number',  icon: '🏠', value: booth, setter: null, placeholder: 'Enter booth number', kb: 'default', readonly: true },
               { label: 'Pincode',       icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
               { label: 'Address / Area',icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
-            ].map(({ label, icon, value, setter, placeholder, kb }) => (
+            ].map(({ label, icon, value, setter, placeholder, kb, readonly }) => (
               <View key={label} style={{ marginBottom: 14 }}>
                 <Text style={s.label}>{label}</Text>
-                <View style={s.inputRow}>
+                <View style={[s.inputRow, readonly && { backgroundColor: '#f3f4f6' }]}>
                   <Text style={s.inputIcon}>{icon}</Text>
                   <TextInput
-                    style={s.input}
+                    style={[s.input, readonly && { color: T.textM }]}
                     value={value}
                     onChangeText={setter}
                     placeholder={placeholder}
                     placeholderTextColor={T.textM}
                     keyboardType={kb}
                     autoCapitalize={kb === 'email-address' ? 'none' : 'words'}
+                    editable={!readonly}
                   />
                   {label === 'Phone Number' && (
                     !userInfo.isPhoneVerified ? (

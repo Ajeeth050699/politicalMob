@@ -23,6 +23,7 @@ const complaintSchema = new mongoose.Schema(
     district: { type: String, required: true },
     pincode:  { type: String },   // for fallback matching
     address:  { type: String },
+    citizenPhone: { type: String }, // Explicit phone number for worker to contact
 
     // ── Status flow: NEW → ACCEPTED → IN PROGRESS → COMPLETED ─────
     status: {

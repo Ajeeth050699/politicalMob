@@ -14,12 +14,12 @@ import {
   Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Location from "expo-location";
+import { Audio } from "expo-av";
 import { complaintAPI, systemAPI } from "../../services/api";
-import { T, COMPLAINT_CATEGORIES, TN_DISTRICTS } from "../../constants/theme";
+import { T, COMPLAINT_CATEGORIES } from "../../constants/theme";
 import { useAuth } from "../../context/AuthContext";
 import PopupToast from "../../components/PopupToast";
 
@@ -108,6 +108,8 @@ function AttachPickerSheet({
   onCamera,
   onGallery,
   onDocument,
+  onRecord,
+  isRecording
 }) {
   const OPTIONS = [
     {
@@ -124,9 +126,15 @@ function AttachPickerSheet({
     },
     {
       icon: "🎙️",
-      label: "Attach Voice / Document",
-      sub: "Audio recording, PDF or other files",
+      label: "Attach Document",
+      sub: "PDF or other files",
       fn: onDocument,
+    },
+    {
+      icon: isRecording ? "🛑" : "⏺️",
+      label: isRecording ? "Stop Recording" : "Record Audio",
+      sub: isRecording ? "Tap to stop" : "Record an audio message",
+      fn: onRecord,
     },
   ];
   return (
@@ -182,12 +190,47 @@ export default function AddComplaintScreen({ navigation }) {
     pincode: userInfo?.pincode || "",
     address: userInfo?.address || "",
     location: null,
+    citizenPhone: userInfo?.phone || "",
   });
   const [attachments, setAttachments] = useState([]);
   const [wards, setWards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [recording, setRecording] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
   const [permType, setPermType] = useState("");
+
+  const handleRecord = async () => {
+    if (isRecording) {
+      setIsRecording(false);
+      try {
+        await recording.stopAndUnloadAsync();
+        const uri = recording.getURI();
+        addFiles([{ uri, type: "audio", filename: "recording.m4a" }]);
+        setRecording(null);
+        setSheetVisible(false);
+      } catch (err) {}
+    } else {
+      try {
+        const current = await Audio.requestPermissionsAsync();
+        if (current.status !== "granted") {
+          showPermModal("audio");
+          return;
+        }
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        });
+        const { recording } = await Audio.Recording.createAsync(
+          Audio.RecordingOptionsPresets.HIGH_QUALITY
+        );
+        setRecording(recording);
+        setIsRecording(true);
+      } catch (err) {
+        showToast("Failed to start recording");
+      }
+    }
+  };
   const [toast, setToast] = useState({
     visible: false,
     message: "",
@@ -534,16 +577,21 @@ export default function AddComplaintScreen({ navigation }) {
               {form.location ? "📍 Location detected" : "📍 Auto detect location"}
             </Text>
           </TouchableOpacity>
-          <View style={s.pickerWrap}>
-            <Picker
-              selectedValue={form.ward}
-              onValueChange={(value) => setForm((f) => ({ ...f, ward: value, booth: value }))}
-            >
-              <Picker.Item label="Select assembly constituency / ward" value="" />
-              {wards.map((w) => (
-                <Picker.Item key={w.id} label={`${w.id}. ${w.name}`} value={w.name} />
-              ))}
-            </Picker>
+          <View style={[s.inputRow, { marginTop: 10, backgroundColor: '#f3f4f6' }]}>
+            <Text style={s.iIcon}>🏠</Text>
+            <TextInput
+              style={[s.input, { color: T.textM }]}
+              value={form.ward || "Ward not assigned"}
+              editable={false}
+            />
+          </View>
+          <View style={[s.inputRow, { marginTop: 10, backgroundColor: '#f3f4f6' }]}>
+            <Text style={s.iIcon}>📍</Text>
+            <TextInput
+              style={[s.input, { color: T.textM }]}
+              value={form.district || "District not assigned"}
+              editable={false}
+            />
           </View>
           <View style={[s.inputRow, { marginTop: 10 }]}>
             <Text style={s.iIcon}>📮</Text>
@@ -567,29 +615,14 @@ export default function AddComplaintScreen({ navigation }) {
               onChangeText={(v) => setForm((f) => ({ ...f, address: v }))}
             />
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginTop: 10 }}
-          >
-            {TN_DISTRICTS.map((d) => (
-              <TouchableOpacity
-                key={d}
-                style={[s.distChip, form.district === d && s.distActive]}
-                onPress={() => setForm((f) => ({ ...f, district: d }))}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    s.distTxt,
-                    form.district === d && { color: "#fff", fontWeight: "700" },
-                  ]}
-                >
-                  {d}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <View style={[s.inputRow, { marginTop: 10, backgroundColor: '#f3f4f6' }]}>
+            <Text style={s.iIcon}>📞</Text>
+            <TextInput
+              style={[s.input, { color: T.textM }]}
+              value={form.citizenPhone || "Phone not assigned"}
+              editable={false}
+            />
+          </View>
         </View>
 
         {/* Attachments */}
@@ -750,6 +783,8 @@ export default function AddComplaintScreen({ navigation }) {
         onCamera={handleCamera}
         onGallery={handleGallery}
         onDocument={handleDocument}
+        onRecord={handleRecord}
+        isRecording={isRecording}
       />
       <PermissionModal
         visible={!!permType}

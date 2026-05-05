@@ -61,7 +61,7 @@ const fmt = (c) => ({
   description:      c.description,
   user:             c.user?.name    || 'Unknown',
   userId:           c.user?._id,
-  userPhone:        c.user?.phone,
+  userPhone:        c.citizenPhone  || c.user?.phone,
   ward:             c.ward || c.booth,
   wardNo:           c.wardNo,
   booth:            c.booth,
@@ -133,7 +133,7 @@ const getComplaints = asyncHandler(async (req, res) => {
 const createComplaint = asyncHandler(async (req, res) => {
   const {
     category, description, ward, booth, district,
-    pincode, address, location, attachments,
+    pincode, address, location, attachments, citizenPhone
   } = req.body;
 
   const matchedWard = findWard(ward || booth || req.user.ward || req.user.booth);
@@ -165,6 +165,7 @@ const createComplaint = asyncHandler(async (req, res) => {
     pincode:          userPincode,
     address,
     location,
+    citizenPhone,
     attachments:      attachments || [],
     fallbackUsed,
     routingLevel,

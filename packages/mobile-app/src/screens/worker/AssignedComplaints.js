@@ -39,6 +39,7 @@ function AcceptModal({ visible, complaint, onConfirm, onCancel, loading }) {
               <Text style={m.infoTxt}>📋 {complaint.category}</Text>
               <Text style={m.infoTxt}>🏠 {complaint.booth} · 📍 {complaint.district}</Text>
               <Text style={m.infoTxt}>👤 {complaint.user}</Text>
+              {complaint.userPhone && <Text style={m.infoTxt}>📞 {complaint.userPhone}</Text>}
             </View>
           )}
           <View style={m.btnRow}>
@@ -149,6 +150,7 @@ export default function AssignedComplaints({ navigation }) {
           <View style={{ flex:1 }}>
             <Text style={s.catTxt} numberOfLines={1}>{c.category}</Text>
             <Text style={s.metaTxt}>👤 {c.user} · 🏠 {c.booth}</Text>
+            {c.userPhone && <Text style={s.metaTxt}>📞 {c.userPhone}</Text>}
           </View>
           <View style={[s.statusBadge, { backgroundColor:sm.bg }]}>
             <Text style={{ fontSize:10 }}>{sm.icon}</Text>
