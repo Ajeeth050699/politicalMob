@@ -22,7 +22,8 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  'https://political-mob.vercel.app', // Deployed frontend
+  'https://political-mob.vercel.app',
+  'https://political-mob-21fu.vercel.app/', // Deployed frontend // Deployed frontend
   'http://localhost:5173',            // Local Vite dev server
   'http://localhost:5174',            // Local Vite dev server (Super Admin)
   'http://localhost:8081',            // Local Expo dev server
