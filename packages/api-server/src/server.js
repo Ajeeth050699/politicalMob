@@ -30,6 +30,7 @@ const allowedOrigins = [
 ];
 
 if (process.env.CORS_ALLOWED_ORIGINS) {
+
   // Add origins from environment variable, splitting by comma
   allowedOrigins.push(...process.env.CORS_ALLOWED_ORIGINS.split(','));
 }

@@ -3,6 +3,15 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { API_URL } from "../config";
+const TN_DISTRICTS = [
+  "Ariyalur","Chengalpattu","Chennai","Coimbatore","Cuddalore","Dharmapuri",
+  "Dindigul","Erode","Kallakurichi","Kancheepuram","Kanyakumari","Karur",
+  "Krishnagiri","Madurai","Mayiladuthurai","Nagapattinam","Namakkal","Nilgiris",
+  "Perambalur","Pudukkottai","Ramanathapuram","Ranipet","Salem","Sivaganga",
+  "Tenkasi","Thanjavur","Theni","Thoothukudi","Tiruchirappalli","Tirunelveli",
+  "Tirupathur","Tiruppur","Tiruvallur","Tiruvannamalai","Tiruvarur","Vellore",
+  "Viluppuram","Virudhunagar",
+];
 const THEMES = {
   light: {
     bg: "#FFFFFF",
@@ -487,7 +496,10 @@ export default function Home() {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "public",
+    district: "Chennai",
+    ward: "",
+    tamilNaduAccess: false,
+    role: "admin",
   });
   const [authErrors, setAuthErrors] = useState({});
   const [authSuccess, setAuthSuccess] = useState(false);
@@ -532,6 +544,8 @@ export default function Home() {
     if (authTab === "signup" && authForm.password !== authForm.confirmPassword)
       e.confirmPassword = true;
     if (authTab === "signup" && !authForm.phone.trim()) e.phone = true;
+    if (authTab === "signup" && !authForm.district && !authForm.tamilNaduAccess)
+      e.district = true;
     setAuthErrors(e);
     return !Object.keys(e).length;
   };
@@ -558,7 +572,16 @@ export default function Home() {
 
     const payload = authTab === 'login'
       ? { email: authForm.email, password: authForm.password }
-      : { name: authForm.name, email: authForm.email, password: authForm.password, phone: authForm.phone, role: authForm.role };
+      : {
+          name: authForm.name,
+          email: authForm.email,
+          password: authForm.password,
+          phone: authForm.phone,
+          role: "admin",
+          district: authForm.district,
+          ward: authForm.ward || undefined,
+          tamilNaduAccess: authForm.tamilNaduAccess,
+        };
 
     try {
       setAuthErrors({}); // Clear previous errors
@@ -578,7 +601,10 @@ export default function Home() {
           phone: "",
           password: "",
           confirmPassword: "",
-          role: "public",
+          district: "Chennai",
+          ward: "",
+          tamilNaduAccess: false,
+          role: "admin",
         });
         navigate('/dashboard/overview');
       }, 1500);
@@ -2986,6 +3012,86 @@ export default function Home() {
                     </div>
                   )}
 
+                  {/* Admin access fields for signup */}
+                  {authTab === "signup" && (
+                    <>
+                      <div>
+                        <label
+                          style={{
+                            fontFamily: "'Source Sans 3',sans-serif",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.textLight,
+                            display: "block",
+                            marginBottom: 5,
+                          }}
+                        >
+                          District *
+                        </label>
+                        <select
+                          value={authForm.district}
+                          onChange={(e) =>
+                            setAuthForm((v) => ({ ...v, district: e.target.value }))
+                          }
+                          style={inp(authErrors.district, authForm.district)}
+                        >
+                          {TN_DISTRICTS.map((district) => (
+                            <option key={district} value={district}>
+                              {district}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            fontFamily: "'Source Sans 3',sans-serif",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.textLight,
+                            display: "block",
+                            marginBottom: 5,
+                          }}
+                        >
+                          Thokuthi / Constituency
+                        </label>
+                        <input
+                          value={authForm.ward}
+                          placeholder="Example: Sivakasi"
+                          onChange={(e) =>
+                            setAuthForm((v) => ({ ...v, ward: e.target.value }))
+                          }
+                          style={inp(false, authForm.ward)}
+                        />
+                      </div>
+
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          fontFamily: "'Source Sans 3',sans-serif",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.textLight,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={authForm.tamilNaduAccess}
+                          onChange={(e) =>
+                            setAuthForm((v) => ({
+                              ...v,
+                              tamilNaduAccess: e.target.checked,
+                            }))
+                          }
+                        />
+                        Tamil Nadu overall access
+                      </label>
+                    </>
+                  )}
+
                   {/* Role selector for signup */}
                   {authTab === "signup" && (
                     <div>
@@ -3002,30 +3108,28 @@ export default function Home() {
                         {tx.roleLabel}
                       </label>
                       <div style={{ display: "flex", gap: 10 }}>
-                        {tx.roles.map((role, i) => (
+                        {["Admin"].map((role, i) => (
                           <button
                             key={i}
                             onClick={() =>
                               setAuthForm((v) => ({
                                 ...v,
-                                role: ["public", "worker", "admin"][i],
+                                role: "admin",
                               }))
                             }
                             style={{
                               flex: 1,
                               padding: "10px 6px",
                               borderRadius: 10,
-                              border: `1.5px solid ${authForm.role === ["public", "worker", "admin"][i] ? C.maroon : C.border}`,
+                              border: `1.5px solid ${authForm.role === "admin" ? C.maroon : C.border}`,
                               background:
-                                authForm.role ===
-                                ["public", "worker", "admin"][i]
+                                authForm.role === "admin"
                                   ? dark
                                     ? "rgba(192,82,74,0.15)"
                                     : "rgba(123,28,28,0.06)"
                                   : "transparent",
                               color:
-                                authForm.role ===
-                                ["public", "worker", "admin"][i]
+                                authForm.role === "admin"
                                   ? C.maroon
                                   : C.textLight,
                               fontFamily: "'Source Sans 3',sans-serif",
