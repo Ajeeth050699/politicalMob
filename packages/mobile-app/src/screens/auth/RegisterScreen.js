@@ -91,7 +91,7 @@ export default function RegisterScreen({ navigation }) {
   const [toast,         setToast]         = useState({visible:false,message:'',type:'error'});
   const [form, setForm] = useState({
     name:'', email:'', password:'', confirmPassword:'',
-    district:'', ward:'', booth:'', pincode:'', address:'', role:'public',
+    district:'', ward:'', wardNo:'', pincode:'', address:'', role:'public',
   });
 
   const set = k => v => setForm(f=>({...f,[k]:v}));
@@ -159,8 +159,8 @@ export default function RegisterScreen({ navigation }) {
   // Step 3 - location
   const handleStep3 = async () => {
     if (!form.district) { showToast('Please select your district.'); return; }
-    if (!form.ward) { showToast('Please select your assembly constituency / ward.'); return; }
-    if (!form.booth.trim()) { showToast('Please enter your booth number.'); return; }
+    if (!form.ward) { showToast('Please select your Thokuthi.'); return; }
+    if (!form.wardNo.trim()) { showToast('Please enter your ward number.'); return; }
     if (!form.pincode.trim()) { showToast('Please enter your pincode.'); return; }
     if (!form.address.trim()) { showToast('Please enter your address or area.'); return; }
     if ((form.role==='worker' || form.role==='agent') && form.ward) {
@@ -181,7 +181,7 @@ export default function RegisterScreen({ navigation }) {
       await register({
         name:form.name, email:form.email||undefined,
         password:form.password, phone:verifiedPhone,
-        role:form.role, ward:form.ward, booth:form.booth, district:form.district,
+        role:form.role, ward:form.ward, wardNo:Number(form.wardNo), district:form.district,
         address:form.address, pincode:form.pincode,
       });
     } catch(err) {
@@ -192,7 +192,7 @@ export default function RegisterScreen({ navigation }) {
   const TITLES = [
     {title:'Personal Info',          sub:'Enter your name and password'},
     {title:'Verify Phone 📱',        sub:'Verify your phone number securely'},
-    {title:'Your Location 📍',       sub:'Select your district and booth'},
+    {title:'Your Location 📍',       sub:'Select your district, Thokuthi and ward number'},
     {title:'Confirm & Register ✅',  sub:'Review and create your account'},
   ];
 
@@ -286,20 +286,20 @@ export default function RegisterScreen({ navigation }) {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Text style={fs.label}>Assembly Constituency / Ward *</Text>
+                <Text style={fs.label}>Thokuthi *</Text>
                 <View style={s.pickerWrap}>
                   <Picker
                     selectedValue={form.ward}
                     onValueChange={(value) => setForm((f) => ({ ...f, ward: value }))}
                   >
-                    <Picker.Item label="Select your ward" value="" />
+                    <Picker.Item label="Select your Thokuthi" value="" />
                     {wards.map((w) => (
                       <Picker.Item key={w.id} label={`${w.id}. ${w.name}`} value={w.name} />
                     ))}
                   </Picker>
                 </View>
-                <Text style={fs.hint}>Complaints are automatically routed to workers and agents assigned to this ward.</Text>
-                <Field label="Booth Number *" icon="🏠" value={form.booth} onChange={set('booth')} placeholder="Enter booth number" keyboard="numeric" />
+                <Text style={fs.hint}>Complaints are automatically routed to workers and agents assigned to this Thokuthi and ward number.</Text>
+                <Field label="Ward Number *" icon="🏠" value={form.wardNo} onChange={set('wardNo')} placeholder="Enter ward number" keyboard="numeric" />
                 <Field label="Pincode *"      icon="📮" value={form.pincode} onChange={set('pincode')} placeholder="6-digit pincode" keyboard="numeric" hint="Used for fallback complaint routing" />
                 <Field label="Address *"      icon="🏘️" value={form.address} onChange={set('address')} placeholder="Door no, street, area" />
                 {boothInfo && (
@@ -326,7 +326,8 @@ export default function RegisterScreen({ navigation }) {
                     ['Role',     form.role==='agent'?'Agent':form.role==='worker'?'Worker':'Citizen','🎭'],
                     ['Plan',     `Rs. ${(pricing[form.role] || pricing.public)?.amount || (form.role==='agent'?100:form.role==='worker'?10:1)}/month`, '₹'],
                     ['District', form.district,        '📍'],
-                    ['Ward',     form.ward    ||'—',   '🏠'],
+                    ['Thokuthi', form.ward    ||'—',   '🏠'],
+                    ['Ward No',  form.wardNo  ||'—',   '🔢'],
                     ['Pincode',  form.pincode ||'—',   '📮'],
                   ].map(([l,v,i])=>(
                     <View key={l} style={s.summaryRow}>

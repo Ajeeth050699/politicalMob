@@ -15,6 +15,8 @@ const userSchema = new mongoose.Schema(
     district: { type: String },
     address:  { type: String },
     pincode:  { type: String },          // booth fallback matching
+    profilePhoto: { type: String },
+    tamilNaduAccess: { type: Boolean, default: false },
 
     isActive:        { type: Boolean, default: true },
     isPhoneVerified: { type: Boolean, default: false },

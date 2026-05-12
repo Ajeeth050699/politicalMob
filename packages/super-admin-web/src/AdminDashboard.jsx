@@ -354,6 +354,7 @@ export default function AdminDashboard() {
   // Filters
   const [filterStatus,   setFilterStatus]   = useState("ALL");
   const [filterDistrict, setFilterDistrict] = useState("ALL");
+  const [complaintSearch,setComplaintSearch]= useState("");
   const [searchWorker,   setSearchWorker]   = useState("");
   const [activeRow,      setActiveRow]      = useState(null);
 
@@ -434,7 +435,9 @@ export default function AdminDashboard() {
 
   const filteredComplaints = complaints.filter(c =>
     (filterStatus==="ALL" || c.status===filterStatus) &&
-    (filterDistrict==="ALL" || c.district===filterDistrict)
+    (filterDistrict==="ALL" || c.district===filterDistrict) &&
+    [c.ward,c.booth,c.wardNo,c.pincode,c.assignedWorker,c.assignedWorkerId,c.user,c.category,c.status]
+      .some(v => String(v || "").toLowerCase().includes(complaintSearch.toLowerCase()))
   );
   const filteredWorkers = workers.filter(w =>
     [(w.name||""),(w.booth||""),(w.district||"")].some(v => v.toLowerCase().includes(searchWorker.toLowerCase()))
@@ -444,7 +447,7 @@ export default function AdminDashboard() {
   // MODALS
   // ════════════════════════════════════════════════════════════════════
   const AddWorkerModal = () => {
-    const [f, setF] = useState({ name:"", email:"", phone:"", password:"", booth:"", district:"Chennai" });
+    const [f, setF] = useState({ name:"", email:"", phone:"", password:"", ward:"", wardNo:"", pincode:"", district:"Chennai" });
     const [loading, setLoading] = useState(false);
     const set = k => e => setF(p => ({...p,[k]:e.target.value}));
     const submit = async e => {
@@ -463,7 +466,9 @@ export default function AdminDashboard() {
             <Field label="Email"       icon="✉️"><input style={iSx} required type="email" value={f.email}    onChange={set("email")}    placeholder="Email address" /></Field>
             <Field label="Phone"       icon="📱"><input style={iSx} required value={f.phone}    onChange={set("phone")}    placeholder="10-digit number" /></Field>
             <Field label="Password"    icon="🔒"><input style={iSx} required type="password" value={f.password} onChange={set("password")} placeholder="Min 6 chars" /></Field>
-            <Field label="Booth No."   icon="🏠"><input style={iSx} required value={f.booth}    onChange={set("booth")}    placeholder="e.g. Booth 12" /></Field>
+            <Field label="Thokuthi"   icon="🏠"><input style={iSx} required value={f.ward}    onChange={set("ward")}    placeholder="e.g. Sivakasi" /></Field>
+            <Field label="Ward Number" icon="🔢"><input style={iSx} required value={f.wardNo} onChange={set("wardNo")} placeholder="e.g. 52" /></Field>
+            <Field label="Pincode" icon="📮"><input style={iSx} required value={f.pincode} onChange={set("pincode")} placeholder="6-digit pincode" /></Field>
             <Field label="District"    icon="📍"><DistrictSelect value={f.district} onChange={set("district")} /></Field>
           </div>
           <SubmitBtn loading={loading} label="✅ Create Worker Account" />
@@ -983,11 +988,12 @@ export default function AdminDashboard() {
           ))}
         </div>
         <DistrictFilterSelect value={filterDistrict} onChange={e => setFilterDistrict(e.target.value)} />
+        <input placeholder="Search Thokuthi, ward no, pincode, worker..." value={complaintSearch} onChange={e=>setComplaintSearch(e.target.value)} style={{ ...iSx, flex:"1 1 260px", width:"auto" }} />
         <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.textM }}>{filteredComplaints.length} results</span>
         <div style={{ marginLeft:"auto" }}>
           <ExportMenu
             label="Complaints"
-            onCSV={() => exportToCSV(filteredComplaints, "complaints.csv", ["ID","Category","User","Booth","District","Priority","Status"])}
+            onCSV={() => exportToCSV(filteredComplaints, "complaints.csv", ["ID","Category","User","WardNo","Pincode","District","Priority","Status"])}
             onHTML={() => exportToHTML(generateComplaintsReport(filteredComplaints, stats), "complaints_report")}
             onWord={() => exportToHTML(generateComplaintsReport(filteredComplaints, stats), "complaints_report")}
           />
@@ -995,7 +1001,7 @@ export default function AdminDashboard() {
       </div>
       <div style={{ background:"#fff", borderRadius:16, border:`1px solid ${T.border}`, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.04)" }}>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr 1.5fr 1fr 1fr 1fr 1.5fr", padding:"11px 22px", background:T.bg, borderBottom:`1px solid ${T.border}` }}>
-          {["ID","Category","User","Booth","District","Priority","Status"].map(h=>(
+          {["ID","Category","User","Thokuthi","District","Priority","Status"].map(h=>(
             <span key={h} style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:11, fontWeight:700, color:T.textM, textTransform:"uppercase", letterSpacing:0.8 }}>{h}</span>
           ))}
         </div>
@@ -1012,7 +1018,7 @@ export default function AdminDashboard() {
                   <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, fontWeight:600, color:T.text }}>{c.category}</span>
                 </div>
                 <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.text }}>{c.user}</span>
-                <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>{c.booth}</span>
+                <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>{c.booth}{c.wardNo ? ` / Ward ${c.wardNo}` : ""}</span>
                 <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>{c.district}</span>
                 <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:pc(c.priority), fontWeight:600, textTransform:"capitalize" }}>{c.priority}</span>
                 <span style={{ background:s.bg, color:s.color, padding:"3px 10px", borderRadius:50, fontSize:11, fontWeight:600, fontFamily:"'Source Sans 3',sans-serif", display:"inline-block" }}>{c.status}</span>

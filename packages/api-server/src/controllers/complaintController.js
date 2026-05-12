@@ -17,15 +17,16 @@ const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').
 const workerCanSeeComplaint = (worker, complaint) => {
   if (!worker || !complaint) return false;
   if (String(complaint.assignedWorker || '') === String(worker._id || '')) return true;
-  if (same(complaint.ward || complaint.booth, worker.ward || worker.booth)) return true;
-  if (same(complaint.booth, worker.booth)) return true;
+  const sameThokuthi = same(complaint.ward || complaint.booth, worker.ward || worker.booth);
+  const sameWardNo = !complaint.wardNo || !worker.wardNo || Number(complaint.wardNo) === Number(worker.wardNo);
+  if (sameThokuthi && sameWardNo && complaint.routingLevel === 'ward') return true;
   if (complaint.fallbackUsed && worker.pincode && same(complaint.pincode, worker.pincode)) return true;
   if (complaint.routingLevel === 'nearby' && worker.district && same(complaint.district, worker.district)) return true;
   if (complaint.escalatedToAdmin) return true;
   return false;
 };
 
-const findRoutingAgents = async ({ ward, booth, pincode, district }) => {
+const findRoutingAgents = async ({ ward, wardNo, booth, pincode, district }) => {
   let agents = [];
   let routingLevel = 'ward';
 
@@ -34,10 +35,21 @@ const findRoutingAgents = async ({ ward, booth, pincode, district }) => {
       role: { $in: ['worker', 'agent'] },
       isActive: true,
       $or: [
-        { ward: ward || booth },
-        { booth: ward || booth },
+        { ward: ward || booth, wardNo },
+        { booth: ward || booth, wardNo },
       ],
     });
+
+    if (agents.length === 0 && !wardNo) {
+      agents = await User.find({
+        role: { $in: ['worker', 'agent'] },
+        isActive: true,
+        $or: [
+          { ward: ward || booth },
+          { booth: ward || booth },
+        ],
+      });
+    }
   }
 
   if (agents.length === 0 && pincode) {
@@ -90,18 +102,24 @@ const fmt = (c) => ({
 // public → own | worker → booth + pincode fallback + escalated | admin → all
 // ─────────────────────────────────────────────────────────────────
 const getComplaints = asyncHandler(async (req, res) => {
-  const { status, district, booth, category } = req.query;
+  const { status, district, booth, category, pincode, workerName, workerId } = req.query;
   let filter = {};
 
   if (['public', 'citizen'].includes(req.user.role)) {
     filter.user = req.user._id;
 
   } else if (['worker', 'agent'].includes(req.user.role)) {
-    const orConditions = [
-      { ward: req.user.ward || req.user.booth },
-      { booth: req.user.booth },
-      { escalatedToAdmin: true },
-    ];
+    const orConditions = [{ escalatedToAdmin: true }];
+    if (req.user.ward || req.user.booth) {
+      const area = req.user.ward || req.user.booth;
+      if (req.user.wardNo) {
+        orConditions.push({ ward: area, wardNo: req.user.wardNo, routingLevel: 'ward' });
+        orConditions.push({ booth: area, wardNo: req.user.wardNo, routingLevel: 'ward' });
+      } else {
+        orConditions.push({ ward: area, routingLevel: 'ward' });
+        orConditions.push({ booth: area, routingLevel: 'ward' });
+      }
+    }
     if (req.user.pincode) {
       orConditions.push({ pincode: req.user.pincode, fallbackUsed: true });
     }
@@ -116,12 +134,20 @@ const getComplaints = asyncHandler(async (req, res) => {
   if (district && district !== 'ALL') filter.district = district;
   if (booth    && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.booth = booth;
   if (req.query.ward && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.ward = req.query.ward;
+  if (req.query.wardNo && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.wardNo = Number(req.query.wardNo);
+  if (pincode && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.pincode = pincode;
+  if (workerId && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.assignedWorker = workerId;
   if (category) filter.category = category;
 
-  const complaints = await Complaint.find(filter)
+  let complaints = await Complaint.find(filter)
     .sort({ createdAt: -1 })
     .populate('user',           'name phone')
     .populate('assignedWorker', 'name phone');
+
+  if (workerName && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
+    const q = String(workerName).trim().toLowerCase();
+    complaints = complaints.filter(c => (c.assignedWorker?.name || '').toLowerCase().includes(q));
+  }
 
   res.json(complaints.map(fmt));
 });
@@ -132,7 +158,7 @@ const getComplaints = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────────────────────────
 const createComplaint = asyncHandler(async (req, res) => {
   const {
-    category, description, ward, booth, district,
+    category, description, ward, wardNo, booth, district,
     pincode, address, location, attachments, citizenPhone
   } = req.body;
 
@@ -140,13 +166,14 @@ const createComplaint = asyncHandler(async (req, res) => {
   if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
 
   const userWard     = matchedWard.name;
-  const userWardNo   = matchedWard.id;
+  const userWardNo   = wardNo || req.user.wardNo;
   const userBooth    = userWard;
   const userPincode  = pincode  || req.user.pincode;
   const userDistrict = district || req.user.district;
 
   const { agents, routingLevel, fallbackUsed } = await findRoutingAgents({
     ward: userWard,
+    wardNo: userWardNo,
     booth: userBooth,
     pincode: userPincode,
     district: userDistrict,

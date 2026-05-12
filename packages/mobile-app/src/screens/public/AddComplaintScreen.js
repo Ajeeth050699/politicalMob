@@ -185,6 +185,7 @@ export default function AddComplaintScreen({ navigation }) {
     category: "",
     description: "",
     ward: userInfo?.ward || userInfo?.booth || "",
+    wardNo: userInfo?.wardNo ? String(userInfo.wardNo) : "",
     booth: userInfo?.ward || userInfo?.booth || "",
     district: userInfo?.district || "Chennai",
     pincode: userInfo?.pincode || "",
@@ -444,7 +445,11 @@ export default function AddComplaintScreen({ navigation }) {
       return;
     }
     if (!form.ward) {
-      showToast("Please select your assembly constituency / ward.");
+      showToast("Please select your Thokuthi.");
+      return;
+    }
+    if (!form.wardNo.trim()) {
+      showToast("Please enter your ward number.");
       return;
     }
     if (!form.pincode.trim()) {
@@ -581,7 +586,15 @@ export default function AddComplaintScreen({ navigation }) {
             <Text style={s.iIcon}>🏠</Text>
             <TextInput
               style={[s.input, { color: T.textM }]}
-              value={form.ward || "Ward not assigned"}
+              value={form.ward || "Thokuthi not assigned"}
+              editable={false}
+            />
+          </View>
+          <View style={[s.inputRow, { marginTop: 10, backgroundColor: '#f3f4f6' }]}>
+            <Text style={s.iIcon}>🔢</Text>
+            <TextInput
+              style={[s.input, { color: T.textM }]}
+              value={form.wardNo || "Ward number not assigned"}
               editable={false}
             />
           </View>
@@ -739,7 +752,8 @@ export default function AddComplaintScreen({ navigation }) {
             {[
               ["Category", `${CATEGORY_ICONS[form.category]} ${form.category}`],
               ["District", `📍 ${form.district}`],
-              ...(form.ward ? [["Ward", `🏠 ${form.ward}`]] : []),
+              ...(form.ward ? [["Thokuthi", `🏠 ${form.ward}`]] : []),
+              ...(form.wardNo ? [["Ward No", `🔢 ${form.wardNo}`]] : []),
               ...(form.pincode ? [["Pincode", `📮 ${form.pincode}`]] : []),
               ...(form.location ? [["GPS", `${form.location.lat.toFixed(5)}, ${form.location.lng.toFixed(5)}`]] : []),
               ["Attachments", `📎 ${attachments.length} file(s)`],

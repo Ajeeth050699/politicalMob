@@ -17,19 +17,26 @@ const resetOtpStore        = {};  // for forgot-password flow
 const register = asyncHandler(async (req, res) => {
   const {
     name, email, password, phone, role,
-    ward, wardNo, booth, district, address, pincode,
+    ward, wardNo, booth, district, address, pincode, profilePhoto, tamilNaduAccess,
   } = req.body;
 
   const digits = phone ? String(phone).replace(/\D/g, '') : '';
   if (digits.length < 10) { res.status(400); throw new Error('Valid phone number is required'); }
   const normalizedEmail = email || (digits ? `${digits}@phone.local` : undefined);
   if (!normalizedEmail) { res.status(400); throw new Error('Email or phone number is required'); }
-  if (!district) { res.status(400); throw new Error('District is required'); }
+  const requestedRole = role === 'citizen' ? 'public' : (role || 'public');
+  const isAdminRole = ['admin', 'superadmin'].includes(requestedRole);
+  const hasTamilNaduAccess = !!tamilNaduAccess || requestedRole === 'superadmin';
+
+  if (!district && !hasTamilNaduAccess) { res.status(400); throw new Error('District is required'); }
+
   const wardName = ward || booth;
-  const matchedWard = findWard(wardName);
-  if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
-  if (!address) { res.status(400); throw new Error('Address is required'); }
-  if (!pincode) { res.status(400); throw new Error('Pincode is required'); }
+  const matchedWard = wardName ? findWard(wardName) : null;
+  if (!isAdminRole && !matchedWard) { res.status(400); throw new Error('Valid Thokuthi / assembly constituency is required'); }
+  if (isAdminRole && wardName && !matchedWard) { res.status(400); throw new Error('Valid Thokuthi / assembly constituency is required'); }
+  if (!isAdminRole && !wardNo) { res.status(400); throw new Error('Ward number is required'); }
+  if (!isAdminRole && !address) { res.status(400); throw new Error('Address is required'); }
+  if (!isAdminRole && !pincode) { res.status(400); throw new Error('Pincode is required'); }
 
   const userExists = await User.findOne({ email: normalizedEmail });
   if (userExists) { res.status(400); throw new Error('Email already exists'); }
@@ -39,7 +46,6 @@ const register = asyncHandler(async (req, res) => {
     if (phoneExists) { res.status(400); throw new Error('Phone number already taken'); }
   }
 
-  const requestedRole = role === 'citizen' ? 'public' : (role || 'public');
   const plan = getPlanForRole(requestedRole);
   const now = new Date();
   const periodEnd = new Date(now);
@@ -48,12 +54,14 @@ const register = asyncHandler(async (req, res) => {
   const user = await User.create({
     name, email: normalizedEmail, password, phone,
     role:    requestedRole,
-    ward:    matchedWard.name,
-    wardNo:  wardNo || matchedWard.id,
-    booth:   booth || matchedWard.name,
+    ward:    matchedWard?.name || '',
+    wardNo:  wardNo ? Number(wardNo) : undefined,
+    booth:   matchedWard?.name || '',
     district: district || '',
     address: address || '',
     pincode: pincode || '',
+    profilePhoto: profilePhoto || '',
+    tamilNaduAccess: hasTamilNaduAccess,
     subscription: {
       planRole: plan.role,
       amount: plan.amount,
@@ -95,6 +103,8 @@ const register = asyncHandler(async (req, res) => {
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
+      profilePhoto:    user.profilePhoto,
+      tamilNaduAccess: user.tamilNaduAccess,
       subscription:    user.subscription,
       token:           generateToken(user._id),
       isPhoneVerified: user.isPhoneVerified,
@@ -130,6 +140,8 @@ const login = asyncHandler(async (req, res) => {
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
+      profilePhoto:    user.profilePhoto,
+      tamilNaduAccess: user.tamilNaduAccess,
       subscription:    user.subscription,
       token:           generateToken(user._id),
       isPhoneVerified: user.isPhoneVerified,
@@ -158,6 +170,8 @@ const getProfile = asyncHandler(async (req, res) => {
     district:        user.district,
     address:         user.address,
     pincode:         user.pincode,
+    profilePhoto:    user.profilePhoto,
+    tamilNaduAccess: user.tamilNaduAccess,
     subscription:    user.subscription,
     isPhoneVerified: user.isPhoneVerified,
     isEmailVerified: user.isEmailVerified,
@@ -178,14 +192,17 @@ const updateProfile = asyncHandler(async (req, res) => {
     const matchedWard = findWard(req.body.ward);
     if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
     user.ward = matchedWard.name;
-    user.wardNo = matchedWard.id;
+    user.booth = matchedWard.name;
   }
+  user.wardNo   = req.body.wardNo   !== undefined ? Number(req.body.wardNo) : user.wardNo;
   if (req.body.booth !== undefined) {
     user.booth = req.body.booth;
   }
   user.district = req.body.district !== undefined ? req.body.district : user.district;
   user.address  = req.body.address  !== undefined ? req.body.address  : user.address;
   user.pincode  = req.body.pincode  !== undefined ? req.body.pincode  : user.pincode;
+  user.profilePhoto = req.body.profilePhoto !== undefined ? req.body.profilePhoto : user.profilePhoto;
+  user.tamilNaduAccess = req.body.tamilNaduAccess !== undefined ? !!req.body.tamilNaduAccess : user.tamilNaduAccess;
   if (req.body.password) user.password = req.body.password;
 
   const saved = await user.save();
@@ -201,6 +218,8 @@ const updateProfile = asyncHandler(async (req, res) => {
     district: saved.district,
     address:  saved.address,
     pincode:  saved.pincode,
+    profilePhoto: saved.profilePhoto,
+    tamilNaduAccess: saved.tamilNaduAccess,
     token:    generateToken(saved._id),
   });
 });

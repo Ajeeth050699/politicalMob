@@ -34,7 +34,7 @@ function InlineToast({ msg, type }) {
 function StepIndicator({ current }) {
   return (
     <div style={{ display:"flex", alignItems:"center", marginBottom:28 }}>
-      {["Details","OTP","District"].map((label,i) => {
+      {["Details","OTP","Access"].map((label,i) => {
         const step = i + 1;
         const done = current > step;
         const active = current === step;
@@ -57,7 +57,7 @@ function StepIndicator({ current }) {
 export default function AdminRegister() {
   const navigate = useNavigate();
   const [step,    setStep]    = useState(1);
-  const [form,    setForm]    = useState({ name:"", email:"", phone:"", password:"", confirmPassword:"", district:"Chennai", booth:"" });
+  const [form,    setForm]    = useState({ name:"", email:"", phone:"", password:"", confirmPassword:"", district:"Chennai", ward:"", tamilNaduAccess:true });
   const [otp,     setOtp]     = useState("");
   const [showPw,  setShowPw]  = useState(false);
   const [loading, setLoading] = useState(false);
@@ -110,7 +110,8 @@ export default function AdminRegister() {
     try {
       const { data } = await axios.post(`${API}/api/auth/register`, {
         name:form.name, email:form.email, phone:form.phone,
-        password:form.password, district:form.district, booth:form.booth || "General",
+        password:form.password, role:"superadmin", district:form.district,
+        ward:form.ward || undefined, tamilNaduAccess:form.tamilNaduAccess,
       });
       localStorage.setItem("userInfo", JSON.stringify(data));
       showToast("Account created! Redirecting...", "success");
@@ -143,11 +144,11 @@ export default function AdminRegister() {
         <div style={{ position:"relative", width:"100%", maxWidth:320, textAlign:"center" }}>
           <div style={{ width:80, height:80, borderRadius:22, background:"rgba(255,255,255,0.14)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:40, margin:"0 auto 24px", border:"1.5px solid rgba(255,255,255,0.22)", boxShadow:"0 8px 32px rgba(0,0,0,0.18)" }}>🏛️</div>
           <h1 style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:28, color:"#fff", marginBottom:8 }}>Join the Portal</h1>
-          <p style={{ fontSize:13, color:"rgba(255,255,255,0.6)", marginBottom:40, lineHeight:1.7 }}>Create your Tamil Nadu Government admin account in 3 simple steps.</p>
+          <p style={{ fontSize:13, color:"rgba(255,255,255,0.6)", marginBottom:40, lineHeight:1.7 }}>Create your People Connect admin account in 3 simple steps.</p>
           {[
             { n:"01", t:"Personal Details", d:"Name, email, phone & password" },
             { n:"02", t:"OTP Verification", d:"Verify your phone number securely" },
-            { n:"03", t:"Select District",  d:"Choose your district & booth"   },
+            { n:"03", t:"Access Area",  d:"Choose district, Thokuthi or Tamil Nadu access"   },
           ].map((s,i) => (
             <div key={i} style={{ display:"flex", gap:14, textAlign:"left", padding:"12px 14px", background: step === i+1 ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.07)", borderRadius:12, marginBottom:8, border:`1px solid ${step === i+1 ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.09)"}`, transition:"all 0.3s" }}>
               <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:900, fontSize:20, color: step > i+1 ? C.goldL : step === i+1 ? "#fff" : "rgba(255,255,255,0.3)", minWidth:28 }}>
@@ -169,7 +170,7 @@ export default function AdminRegister() {
 
           <div style={{ background:"#fff", borderRadius:24, padding:"36px 32px", boxShadow:"0 8px 40px rgba(0,0,0,0.08)", border:`1px solid ${C.border}` }}>
             <h2 style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:24, color:C.text, marginBottom:4 }}>Create Account</h2>
-            <p style={{ fontSize:13, color:C.muted, marginBottom:24 }}>Step {step} of 3 — {["Personal Details","OTP Verification","District & Booth"][step-1]}</p>
+            <p style={{ fontSize:13, color:C.muted, marginBottom:24 }}>Step {step} of 3 — {["Personal Details","OTP Verification","Access Area"][step-1]}</p>
 
             <StepIndicator current={step} />
             <InlineToast msg={toast.msg} type={toast.type} />
@@ -238,9 +239,16 @@ export default function AdminRegister() {
                   </div>
                 </div>
                 <div>
-                  <label style={labelStyle}>Booth Number <span style={{ color:C.muted, fontWeight:400, textTransform:"none", letterSpacing:0 }}>(optional)</span></label>
+                  <label style={labelStyle}>Thokuthi <span style={{ color:C.muted, fontWeight:400, textTransform:"none", letterSpacing:0 }}>(optional)</span></label>
                   <div style={{ position:"relative" }}><span style={{ position:"absolute", left:13, top:"50%", transform:"translateY(-50%)", fontSize:15 }}>🏠</span>
-                    <input className="inp" value={form.booth} onChange={set("booth")} placeholder="e.g. Booth 12 or General" style={inputStyle} /></div>
+                    <input className="inp" value={form.ward} onChange={set("ward")} placeholder="e.g. Sivakasi" style={inputStyle} /></div>
+                </div>
+                <label style={{ display:"flex", alignItems:"center", gap:10, fontSize:13, color:C.text, fontWeight:700 }}>
+                  <input type="checkbox" checked={form.tamilNaduAccess} onChange={e => setForm(p => ({ ...p, tamilNaduAccess:e.target.checked }))} />
+                  Tamil Nadu overall access
+                </label>
+                <div style={{ fontSize:12, color:C.muted, lineHeight:1.5 }}>
+                  Admins do not need ward number or pincode. Use Thokuthi for local access, or Tamil Nadu overall access for statewide monitoring.
                 </div>
                 <button onClick={handleStep3} disabled={loading} className="sbtn" style={{ marginTop:6, padding:"13px", borderRadius:50, border:"none", background:`linear-gradient(135deg,${C.maroon},${C.light})`, color:"#fff", fontFamily:"'Source Sans 3',sans-serif", fontWeight:700, fontSize:15, cursor:loading?"not-allowed":"pointer", boxShadow:`0 4px 18px rgba(123,28,28,0.28)`, opacity:loading?0.75:1 }}>
                   {loading ? "Creating account..." : "✅ Create Account"}
