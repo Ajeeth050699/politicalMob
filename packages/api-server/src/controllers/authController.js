@@ -245,22 +245,22 @@ const sendOtp = asyncHandler(async (req, res) => {
   const digits = String(phone).replace(/\D/g, '');
   if (digits.length < 10) { res.status(400); throw new Error('Enter a valid 10-digit phone number'); }
 
-  const otp = String(Math.floor(100000 + Math.random() * 900000));
+  const otp = '123456'; // String(Math.floor(100000 + Math.random() * 900000));
   registrationOtpStore[phone] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
   console.log(`\n📱 OTP for ${phone} → ${otp}  (expires 5 min)\n`);
 
-  // Send the OTP via SMS in production
-  if (process.env.NODE_ENV === 'production') {
-    await sendSms({
-      message: `Your verification code is: ${otp}`,
-      numbers: digits,
-    });
-  }
+  // Bypassing Fast2SMS temporarily
+  // if (process.env.NODE_ENV === 'production') {
+  //   await sendSms({
+  //     message: `Your verification code is: ${otp}`,
+  //     numbers: digits,
+  //   });
+  // }
 
   res.json({
-    message: 'OTP sent successfully',
-    ...(process.env.NODE_ENV !== 'production' && { otp }),
+    message: 'OTP bypassed. Use 123456 to verify.',
+    otp: '123456',
   });
 });
 
@@ -361,23 +361,23 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
   if (!user) { res.status(404); throw new Error('No account found with this email'); }
 
-  const otp = String(Math.floor(100000 + Math.random() * 900000));
+  const otp = '123456'; // String(Math.floor(100000 + Math.random() * 900000));
   resetOtpStore[req.body.email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
 
   console.log(`\n🔐 Reset OTP for ${req.body.email} → ${otp}  (expires 10 min)\n`);
 
-  // Send the OTP via SMS in production
-  if (process.env.NODE_ENV === 'production' && user.phone) {
-    await sendSms({
-      message: `Your password reset code is: ${otp}`,
-      numbers: user.phone,
-    });
-  }
+  // Bypassing Fast2SMS temporarily
+  // if (process.env.NODE_ENV === 'production' && user.phone) {
+  //   await sendSms({
+  //     message: `Your password reset code is: ${otp}`,
+  //     numbers: user.phone,
+  //   });
+  // }
 
   res.json({
-    message: 'Reset OTP sent to registered phone number',
+    message: 'Reset OTP bypassed. Use 123456 to verify.',
     phone:   user.phone ? `*****${String(user.phone).slice(-4)}` : undefined,
-    ...(process.env.NODE_ENV !== 'production' && { otp }),
+    otp: '123456',
   });
 });
 
