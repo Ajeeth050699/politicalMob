@@ -23,8 +23,8 @@ export default function ProfileScreen({ navigation }) {
   const [email,  setEmail]  = useState(userInfo?.email || '');
   const [phone,  setPhone]  = useState(userInfo?.phone || '');
   const [district,setDistrict]= useState(userInfo?.district || '');
-  const [ward,   setWard]   = useState(userInfo?.ward || '');
-  const [booth,  setBooth]  = useState(userInfo?.booth || '');
+  const [thokuthi, setThokuthi] = useState(userInfo?.ward || userInfo?.booth || '');
+  const [wardNo, setWardNo] = useState(userInfo?.wardNo ? String(userInfo.wardNo) : '');
   const [pincode,setPincode]= useState(userInfo?.pincode || '');
   const [address,setAddress]= useState(userInfo?.address || '');
   const [saving, setSaving] = useState(false);
@@ -37,7 +37,7 @@ export default function ProfileScreen({ navigation }) {
     if (!email.trim()) { Alert.alert('Required', 'Email cannot be empty.'); return; }
     setSaving(true);
     try {
-      await updateProfile({ name, email, phone, booth, pincode, address, district, ward });
+      await updateProfile({ name, email, phone, ward: thokuthi, wardNo, pincode, address, district });
       Alert.alert('✅ Updated!', 'Your profile has been saved successfully.');
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.message || 'Failed to update profile');
@@ -111,8 +111,8 @@ export default function ProfileScreen({ navigation }) {
               { label: 'Email Address', icon: '✉️', value: email, setter: setEmail, placeholder: 'Enter your email',   kb: 'email-address' },
               { label: 'Phone Number',  icon: '📱', value: phone, setter: null, placeholder: 'Enter phone number', kb: 'phone-pad', readonly: true },
               { label: 'District',      icon: '📍', value: district, setter: setDistrict, placeholder: 'District', kb: 'default', readonly: !!userInfo?.district },
-              { label: 'Ward',          icon: '🏛️', value: ward, setter: setWard, placeholder: 'Ward', kb: 'default', readonly: !!userInfo?.ward },
-              { label: 'Booth Number',  icon: '🏠', value: booth, setter: setBooth, placeholder: 'Enter booth number', kb: 'default', readonly: !!userInfo?.booth },
+              { label: 'Thokuthi / Constituency', icon: '🏛️', value: thokuthi, setter: setThokuthi, placeholder: 'Enter Thokuthi', kb: 'default', readonly: !!userInfo?.ward },
+              { label: 'Ward No',       icon: '🔢', value: wardNo, setter: setWardNo, placeholder: 'Enter ward no.', kb: 'numeric', readonly: !!userInfo?.wardNo },
               { label: 'Pincode',       icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
               { label: 'Address / Area',icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
             ].map(({ label, icon, value, setter, placeholder, kb, readonly }) => (

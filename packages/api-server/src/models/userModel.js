@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
     fcmToken: { type: String },
 
     subscription: {
-      planRole:           { type: String, enum: ['public', 'citizen', 'worker', 'agent'] },
+      planRole:           { type: String, enum: ['public', 'citizen', 'worker', 'agent', 'admin', 'superadmin'] },
       amount:             { type: Number },
       currency:           { type: String, default: 'INR' },
       interval:           { type: String, default: 'month' },

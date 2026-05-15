@@ -183,6 +183,7 @@ export default function AddComplaintScreen({ navigation }) {
   const { userInfo } = useAuth();
   const [form, setForm] = useState({
     category: "",
+    customCategory: "",
     description: "",
     ward: userInfo?.ward || userInfo?.booth || "",
     wardNo: userInfo?.wardNo ? String(userInfo.wardNo) : "",
@@ -292,8 +293,8 @@ export default function AddComplaintScreen({ navigation }) {
           ].filter(Boolean).join(", ");
           updates = {
             ...updates,
-            address: form.address || detectedAddress,
-            pincode: form.pincode || place.postalCode || "",
+            address: detectedAddress || form.address,
+            pincode: place.postalCode || form.pincode || "",
           };
         }
       } catch {}
@@ -440,6 +441,10 @@ export default function AddComplaintScreen({ navigation }) {
       showToast("Please select an issue category.");
       return;
     }
+    if (form.category === "Others" && !form.customCategory?.trim()) {
+      showToast("Please specify the issue category.");
+      return;
+    }
     if (form.description.trim().length < 10) {
       showToast("Please describe the issue (min 10 chars).");
       return;
@@ -460,6 +465,7 @@ export default function AddComplaintScreen({ navigation }) {
     try {
       await complaintAPI.create({
         ...form,
+        category: form.category === "Others" ? form.customCategory.trim() : form.category,
         attachments: attachments.map((a) => ({
           url: a.uri,
           type: a.type,
@@ -545,6 +551,18 @@ export default function AddComplaintScreen({ navigation }) {
               );
             })}
           </View>
+          {form.category === "Others" && (
+            <View style={[s.inputRow, { marginTop: 14 }]}>
+              <Text style={s.iIcon}>📝</Text>
+              <TextInput
+                style={s.input}
+                placeholder="Specify other category..."
+                placeholderTextColor={T.textM}
+                value={form.customCategory}
+                onChangeText={(v) => setForm((f) => ({ ...f, customCategory: v }))}
+              />
+            </View>
+          )}
         </View>
 
         {/* Description */}
@@ -750,7 +768,7 @@ export default function AddComplaintScreen({ navigation }) {
           <View style={s.summary}>
             <Text style={s.summaryTitle}>📋 Summary</Text>
             {[
-              ["Category", `${CATEGORY_ICONS[form.category]} ${form.category}`],
+              ["Category", `${CATEGORY_ICONS[form.category] || "📝"} ${form.category === "Others" ? form.customCategory || "Others" : form.category}`],
               ["District", `📍 ${form.district}`],
               ...(form.ward ? [["Thokuthi", `🏠 ${form.ward}`]] : []),
               ...(form.wardNo ? [["Ward No", `🔢 ${form.wardNo}`]] : []),

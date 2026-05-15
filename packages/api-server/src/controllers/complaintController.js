@@ -32,7 +32,7 @@ const findRoutingAgents = async ({ ward, wardNo, booth, pincode, district }) => 
 
   if (ward || booth) {
     agents = await User.find({
-      role: { $in: ['worker', 'agent'] },
+      role: 'worker',
       isActive: true,
       $or: [
         { ward: ward || booth, wardNo },
@@ -42,7 +42,7 @@ const findRoutingAgents = async ({ ward, wardNo, booth, pincode, district }) => 
 
     if (agents.length === 0 && !wardNo) {
       agents = await User.find({
-        role: { $in: ['worker', 'agent'] },
+        role: 'worker',
         isActive: true,
         $or: [
           { ward: ward || booth },
@@ -53,12 +53,12 @@ const findRoutingAgents = async ({ ward, wardNo, booth, pincode, district }) => 
   }
 
   if (agents.length === 0 && pincode) {
-    agents = await User.find({ role: { $in: ['worker', 'agent'] }, pincode, isActive: true });
+    agents = await User.find({ role: 'worker', pincode, isActive: true });
     if (agents.length > 0) routingLevel = 'pincode';
   }
 
   if (agents.length === 0 && district) {
-    agents = await User.find({ role: { $in: ['worker', 'agent'] }, district, isActive: true });
+    agents = await User.find({ role: 'worker', district, isActive: true });
     if (agents.length > 0) routingLevel = 'nearby';
   }
 
@@ -99,7 +99,7 @@ const fmt = (c) => ({
 
 // ─────────────────────────────────────────────────────────────────
 // GET /api/complaints
-// public → own | worker → booth + pincode fallback + escalated | admin → all
+// public → own | worker → booth + pincode fallback + escalated | admin/agent → all
 // ─────────────────────────────────────────────────────────────────
 const getComplaints = asyncHandler(async (req, res) => {
   const { status, district, booth, category, pincode, workerName, workerId } = req.query;
@@ -108,7 +108,7 @@ const getComplaints = asyncHandler(async (req, res) => {
   if (['public', 'citizen'].includes(req.user.role)) {
     filter.user = req.user._id;
 
-  } else if (['worker', 'agent'].includes(req.user.role)) {
+  } else if (req.user.role === 'worker') {
     const orConditions = [{ escalatedToAdmin: true }];
     if (req.user.ward || req.user.booth) {
       const area = req.user.ward || req.user.booth;
@@ -128,15 +128,17 @@ const getComplaints = asyncHandler(async (req, res) => {
     }
     filter.$or = orConditions;
   }
-  // admin: no filter
+  // admin, superadmin, agent: no filter
+
+  const isAdminOrAgent = ['admin', 'superadmin', 'agent'].includes(req.user.role);
 
   if (status   && status   !== 'ALL') filter.status   = status;
   if (district && district !== 'ALL') filter.district = district;
-  if (booth    && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.booth = booth;
-  if (req.query.ward && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.ward = req.query.ward;
-  if (req.query.wardNo && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.wardNo = Number(req.query.wardNo);
-  if (pincode && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.pincode = pincode;
-  if (workerId && (req.user.role === 'admin' || req.user.role === 'superadmin')) filter.assignedWorker = workerId;
+  if (booth    && isAdminOrAgent) filter.booth = booth;
+  if (req.query.ward && isAdminOrAgent) filter.ward = req.query.ward;
+  if (req.query.wardNo && isAdminOrAgent) filter.wardNo = Number(req.query.wardNo);
+  if (pincode && isAdminOrAgent) filter.pincode = pincode;
+  if (workerId && isAdminOrAgent) filter.assignedWorker = workerId;
   if (category) filter.category = category;
 
   let complaints = await Complaint.find(filter)
@@ -144,7 +146,7 @@ const getComplaints = asyncHandler(async (req, res) => {
     .populate('user',           'name phone')
     .populate('assignedWorker', 'name phone');
 
-  if (workerName && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
+  if (workerName && isAdminOrAgent) {
     const q = String(workerName).trim().toLowerCase();
     complaints = complaints.filter(c => (c.assignedWorker?.name || '').toLowerCase().includes(q));
   }
@@ -237,7 +239,7 @@ const getComplaintById = asyncHandler(async (req, res) => {
   if (['public', 'citizen'].includes(req.user.role) && String(complaint.user?._id || complaint.user) !== String(req.user._id)) {
     res.status(403); throw new Error('Access denied. You can only view your own complaints.');
   }
-  if (['worker', 'agent'].includes(req.user.role) && !workerCanSeeComplaint(req.user, complaint)) {
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
     res.status(403); throw new Error('Access denied. This complaint is outside your assigned area.');
   }
   res.json(fmt(complaint));
@@ -245,17 +247,20 @@ const getComplaintById = asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────
 // PUT /api/complaints/:id/accept   ← NEW
-// Atomic accept — first agent wins, complaint locked to them
+// Atomic accept — first worker wins, complaint locked to them
 // ─────────────────────────────────────────────────────────────────
 const acceptComplaint = asyncHandler(async (req, res) => {
+  if (req.user.role === 'agent') {
+    res.status(403); throw new Error('Agents cannot accept complaints.');
+  }
   const complaint = await Complaint.findById(req.params.id);
   if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
-  if (['worker', 'agent'].includes(req.user.role) && !workerCanSeeComplaint(req.user, complaint)) {
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
     res.status(403);
     throw new Error('Access denied. This complaint is outside your assigned area.');
   }
 
-  // Atomic update — prevents race condition if two agents tap simultaneously
+  // Atomic update — prevents race condition if two workers tap simultaneously
   const updated = await Complaint.findOneAndUpdate(
     { _id: req.params.id, status: 'NEW' },  // only matches if still NEW
     {
@@ -269,13 +274,13 @@ const acceptComplaint = asyncHandler(async (req, res) => {
 
   if (!updated) {
     res.status(400);
-    throw new Error('This complaint was already accepted by another agent. Please refresh.');
+    throw new Error('This complaint was already accepted by another worker. Please refresh.');
   }
 
   // Notify citizen
   await notify(
     updated.user._id,
-    `✅ Your complaint "${updated.category}" has been accepted by Agent ${req.user.name}.`,
+    `✅ Your complaint "${updated.category}" has been accepted by Worker ${req.user.name}.`,
     'complaint'
   );
 
@@ -286,30 +291,30 @@ const acceptComplaint = asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────
 // PUT /api/complaints/:id/status
-// Only locked agent or admin can update
+// Only locked worker or admin can update
 // ─────────────────────────────────────────────────────────────────
 const updateComplaintStatus = asyncHandler(async (req, res) => {
   const complaint = await Complaint.findById(req.params.id);
   if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
-  if (['worker', 'agent'].includes(req.user.role) && !workerCanSeeComplaint(req.user, complaint)) {
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
     res.status(403);
     throw new Error('Access denied. This complaint is outside your assigned area.');
   }
 
-  // Enforce agent lock
+  // Enforce worker lock
   if (
-    ['worker', 'agent'].includes(req.user.role) &&
+    req.user.role === 'worker' &&
     complaint.lockedToAgent &&
     String(complaint.assignedWorker) !== String(req.user._id)
   ) {
     res.status(403);
-    throw new Error('Access denied. This complaint belongs to another agent.');
+    throw new Error('Access denied. This complaint belongs to another worker.');
   }
 
   const oldStatus    = complaint.status;
   complaint.status   = req.body.status   || complaint.status;
   complaint.priority = req.body.priority || complaint.priority;
-  if (req.body.assignedWorker && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
+  if (req.body.assignedWorker && (['admin', 'superadmin', 'agent'].includes(req.user.role))) {
     complaint.assignedWorker = req.body.assignedWorker;
   }
   await complaint.save();
@@ -317,8 +322,8 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
   // Notify citizen on status change
   if (oldStatus !== complaint.status) {
     const msgs = {
-      'ACCEPTED':    `✅ Your complaint "${complaint.category}" was accepted by an agent.`,
-      'IN PROGRESS': `🔧 An agent is working on your complaint "${complaint.category}".`,
+      'ACCEPTED':    `✅ Your complaint "${complaint.category}" was accepted by a worker.`,
+      'IN PROGRESS': `🔧 A worker is working on your complaint "${complaint.category}".`,
       'COMPLETED':   `🎉 Your complaint "${complaint.category}" has been resolved!`,
     };
     const citizenId = typeof complaint.user === 'object' ? complaint.user._id : complaint.user;
@@ -341,20 +346,23 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
 // Upload proof — auto-completes complaint
 // ─────────────────────────────────────────────────────────────────
 const uploadProof = asyncHandler(async (req, res) => {
+  if (req.user.role === 'agent') {
+    res.status(403); throw new Error('Agents cannot upload proof.');
+  }
   const complaint = await Complaint.findById(req.params.id);
   if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
-  if (['worker', 'agent'].includes(req.user.role) && !workerCanSeeComplaint(req.user, complaint)) {
+  if (req.user.role === 'worker' && !workerCanSeeComplaint(req.user, complaint)) {
     res.status(403);
     throw new Error('Access denied. This complaint is outside your assigned area.');
   }
 
   if (
-    ['worker', 'agent'].includes(req.user.role) &&
+    req.user.role === 'worker' &&
     complaint.lockedToAgent &&
     String(complaint.assignedWorker) !== String(req.user._id)
   ) {
     res.status(403);
-    throw new Error('Only the assigned agent can upload proof.');
+    throw new Error('Only the assigned worker can upload proof.');
   }
 
   complaint.proofPhoto = req.body.photoUrl || (req.file ? `/uploads/${req.file.filename}` : complaint.proofPhoto);
@@ -363,7 +371,7 @@ const uploadProof = asyncHandler(async (req, res) => {
   await complaint.save();
 
   const citizenId = typeof complaint.user === 'object' ? complaint.user._id : complaint.user;
-  await notify(citizenId, `🎉 "${complaint.category}" is resolved! Proof uploaded by agent.`, 'complaint');
+  await notify(citizenId, `🎉 "${complaint.category}" is resolved! Proof uploaded by worker.`, 'complaint');
 
   const populated = await Complaint.findById(complaint._id)
     .populate('user', 'name phone')
