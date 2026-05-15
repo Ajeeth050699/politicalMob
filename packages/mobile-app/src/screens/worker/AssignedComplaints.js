@@ -5,7 +5,8 @@ import {
   RefreshControl, ActivityIndicator, Platform, StatusBar, Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { complaintAPI } from '../../services/api';
+import { Picker } from '@react-native-picker/picker';
+import { complaintAPI, systemAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import PopupToast from '../../components/PopupToast';
@@ -65,25 +66,33 @@ export default function AssignedComplaints({ navigation }) {
   const { t }                 = useTranslation();
   const { userInfo }          = useAuth();
   const [complaints,  setComplaints]  = useState([]);
+  const [wards,       setWards]       = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [refreshing,  setRefreshing]  = useState(false);
   const [updating,    setUpdating]    = useState(null);
   const [filter,      setFilter]      = useState('ALL');
+  const [selectedWard, setSelectedWard]= useState('');
   const [acceptModal, setAcceptModal] = useState(null); // complaint object
   const [accepting,   setAccepting]   = useState(false);
   const [toast,       setToast]       = useState({ visible:false, message:'', type:'error' });
+
+  const isAdminOrAgent = userInfo?.role === 'admin' || userInfo?.role === 'superadmin' || userInfo?.role === 'agent';
 
   const showToast = (msg, type='error') => setToast({ visible:true, message:msg, type });
 
   const load = async () => {
     try {
-      const { data } = await complaintAPI.getAll();
+      const [{ data }, wardsRes] = await Promise.all([
+        complaintAPI.getAll({ ...(selectedWard && isAdminOrAgent ? { ward: selectedWard } : {}) }),
+        systemAPI.getWards().catch(() => ({ data: { wards: [] } }))
+      ]);
       setComplaints(data);
+      if (wards.length === 0) setWards(wardsRes.data?.wards || []);
     } catch { /* silent */ }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [selectedWard]);
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
   // ── Accept complaint ─────────────────────────────────────────────
@@ -335,6 +344,9 @@ const s = StyleSheet.create({
   statLabel:   { fontSize:10, color:'rgba(255,255,255,0.7)', marginTop:2, fontWeight:'600' },
 
   filterRow:  { flexDirection:'row', paddingHorizontal:12, paddingVertical:10, gap:6, backgroundColor:'#fff', borderBottomWidth:1, borderBottomColor:T.border },
+  pickerContainer: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 5 },
+  pickerLabel: { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 4 },
+  pickerWrap: { borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, overflow: 'hidden', height: 50, justifyContent: 'center' },
   chip:       { paddingHorizontal:12, paddingVertical:6, borderRadius:50, borderWidth:1.5, borderColor:T.border, backgroundColor:T.bg },
   chipActive: { backgroundColor:T.maroon, borderColor:T.maroon },
   chipTxt:    { fontSize:11, fontWeight:'700', color:T.textL },

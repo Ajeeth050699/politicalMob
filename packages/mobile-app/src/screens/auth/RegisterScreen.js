@@ -185,7 +185,13 @@ export default function RegisterScreen({ navigation }) {
         address:form.address, pincode:form.pincode,
       });
     } catch(err) {
-      showToast(err?.response?.data?.message||'Registration failed. Please try again.');
+      const msg = err?.response?.data?.message || 'Registration failed. Please try again.';
+      showToast(msg);
+      if (msg.toLowerCase().includes('email')) {
+        setStep(1);
+      } else if (msg.toLowerCase().includes('phone')) {
+        setStep(2);
+      }
     } finally { setLoading(false); }
   };
 

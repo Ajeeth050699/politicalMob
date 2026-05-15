@@ -23,9 +23,8 @@ export default function LoginScreen({ navigation }) {
   const hideToast = () => setToast(t => ({ ...t, visible:false }));
 
   const handleLogin = async () => {
-    if (!email.trim()) { showToast('Please enter your email address.'); return; }
+    if (!email.trim()) { showToast('Please enter your email or phone number.'); return; }
     if (!password.trim()) { showToast('Please enter your password.'); return; }
-    if (!/\S+@\S+\.\S+/.test(email.trim())) { showToast('Please enter a valid email address.'); return; }
 
     setLoading(true);
 
@@ -82,12 +81,12 @@ export default function LoginScreen({ navigation }) {
             <Text style={s.cardTitle}>Welcome Back 👋</Text>
             <Text style={s.cardSub}>Sign in to your account</Text>
 
-            <Text style={s.label}>Email Address</Text>
+            <Text style={s.label}>Email or Phone Number</Text>
             <View style={s.inputRow}>
               <Text style={s.icon}>✉️</Text>
               <TextInput
                 style={s.input}
-                placeholder="Enter your email"
+                placeholder="Enter email or phone"
                 placeholderTextColor={T.textM}
                 value={email}
                 onChangeText={setEmail}

@@ -164,7 +164,8 @@ export default function ProfileScreen({ navigation }) {
             {[
               { label: 'Role',     value: userInfo?.role?.toUpperCase(), icon: role.icon },
               { label: 'District', value: userInfo?.district || '—',     icon: '📍'      },
-              { label: 'Ward',     value: userInfo?.ward || userInfo?.booth || '—',     icon: '🏠'      },
+              { label: 'Thokuthi',     value: userInfo?.ward || userInfo?.booth || '—',     icon: '🏠'      },
+              { label: 'Ward No',      value: userInfo?.wardNo  || '—',     icon: '🔢'      },
               { label: 'Pincode',  value: userInfo?.pincode  || '—',     icon: '📮'      },
               { label: 'Address',  value: userInfo?.address  || '—',     icon: '📌'      },
             ].map(({ label, value, icon }) => (
