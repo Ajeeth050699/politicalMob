@@ -131,7 +131,7 @@ const generateWorkersReport = (workers) => {
       <span class="badge">📅 ${new Date().toLocaleDateString("en-IN")} · ${workers.length} Workers</span>
     </div>`;
   const table = `<table>
-    <thead><tr>${["#","Name","Email","Phone","Booth","District","Resolved","Pending","Rate","Status"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+    <thead><tr>${["#","Name","Email","Phone","Category","Booth","District","Resolved","Pending","Rate","Status"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
     <tbody>${workers.map((w,i)=>{
       const total = (w.resolved||0)+(w.pending||0);
       const pct = total>0?Math.round((w.resolved/total)*100):0;
@@ -141,6 +141,7 @@ const generateWorkersReport = (workers) => {
         <td><strong>${w.name||""}</strong></td>
         <td>${w.email||""}</td>
         <td>${w.phone||""}</td>
+        <td>${w.workCategory||"N/A"}</td>
         <td>${w.booth||""}</td>
         <td>${w.district||""}</td>
         <td style="color:#22c55e;font-weight:600">${w.resolved||0}</td>
@@ -354,6 +355,12 @@ export default function AdminDashboard() {
   // Filters
   const [filterStatus,   setFilterStatus]   = useState("ALL");
   const [filterDistrict, setFilterDistrict] = useState("ALL");
+  const [filterThokuthi, setFilterThokuthi] = useState(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      return u.booth || u.ward || "ALL";
+    } catch { return "ALL"; }
+  });
   const [complaintSearch,setComplaintSearch]= useState("");
   const [searchWorker,   setSearchWorker]   = useState("");
   const [activeRow,      setActiveRow]      = useState(null);
@@ -436,6 +443,7 @@ export default function AdminDashboard() {
   const filteredComplaints = complaints.filter(c =>
     (filterStatus==="ALL" || c.status===filterStatus) &&
     (filterDistrict==="ALL" || c.district===filterDistrict) &&
+    (filterThokuthi==="ALL" || c.booth===filterThokuthi || c.ward===filterThokuthi || c.wardNo===filterThokuthi) &&
     [c.ward,c.booth,c.wardNo,c.pincode,c.assignedWorker,c.assignedWorkerId,c.user,c.category,c.status]
       .some(v => String(v || "").toLowerCase().includes(complaintSearch.toLowerCase()))
   );
@@ -447,7 +455,7 @@ export default function AdminDashboard() {
   // MODALS
   // ════════════════════════════════════════════════════════════════════
   const AddWorkerModal = () => {
-    const [f, setF] = useState({ name:"", email:"", phone:"", password:"", ward:"", wardNo:"", pincode:"", district:"Chennai" });
+    const [f, setF] = useState({ name:"", email:"", phone:"", password:"", ward:"", wardNo:"", pincode:"", district:"Chennai", workCategory:"" });
     const [loading, setLoading] = useState(false);
     const set = k => e => setF(p => ({...p,[k]:e.target.value}));
     const submit = async e => {
@@ -466,6 +474,7 @@ export default function AdminDashboard() {
             <Field label="Email"       icon="✉️"><input style={iSx} required type="email" value={f.email}    onChange={set("email")}    placeholder="Email address" /></Field>
             <Field label="Phone"       icon="📱"><input style={iSx} required value={f.phone}    onChange={set("phone")}    placeholder="10-digit number" /></Field>
             <Field label="Password"    icon="🔒"><input style={iSx} required type="password" value={f.password} onChange={set("password")} placeholder="Min 6 chars" /></Field>
+            <Field label="Work Category" icon="🏷️"><input style={iSx} required value={f.workCategory} onChange={set("workCategory")} placeholder="e.g. Electrician, Plumber" /></Field>
             <Field label="Thokuthi"   icon="🏠"><input style={iSx} required value={f.ward}    onChange={set("ward")}    placeholder="e.g. Sivakasi" /></Field>
             <Field label="Ward Number" icon="🔢"><input style={iSx} required value={f.wardNo} onChange={set("wardNo")} placeholder="e.g. 52" /></Field>
             <Field label="Pincode" icon="📮"><input style={iSx} required value={f.pincode} onChange={set("pincode")} placeholder="6-digit pincode" /></Field>
@@ -988,6 +997,7 @@ export default function AdminDashboard() {
           ))}
         </div>
         <DistrictFilterSelect value={filterDistrict} onChange={e => setFilterDistrict(e.target.value)} />
+        <input placeholder="Filter Thokuthi..." value={filterThokuthi==="ALL"?"":filterThokuthi} onChange={e=>setFilterThokuthi(e.target.value||"ALL")} style={{ ...iSx, width:140 }} />
         <input placeholder="Search Thokuthi, ward no, pincode, worker..." value={complaintSearch} onChange={e=>setComplaintSearch(e.target.value)} style={{ ...iSx, flex:"1 1 260px", width:"auto" }} />
         <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.textM }}>{filteredComplaints.length} results</span>
         <div style={{ marginLeft:"auto" }}>
@@ -1025,20 +1035,48 @@ export default function AdminDashboard() {
               </div>
               {isOpen && (
                 <div style={{ background:T.goldP, borderBottom:`1px solid ${T.border}` }}>
-                  {/* Status update row */}
-                  <div style={{ padding:"12px 22px", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap", borderBottom:`1px dashed ${T.border}` }}>
-                    <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.textL }}>{al('updateStatus')}</span>
-                    {["NEW","ACCEPTED","IN PROGRESS","COMPLETED"].map(st=>(
-                      <button key={st} onClick={() => updateComplaintStatus(c.id, st)} style={{ padding:"7px 16px", borderRadius:50, border:`1.5px solid ${c.status===st?T.maroon:T.border}`, background:c.status===st?T.maroon:"#fff", color:c.status===st?"#fff":T.textL, fontFamily:"'Source Sans 3',sans-serif", fontSize:12, fontWeight:600, cursor:"pointer" }}>{st}</button>
-                    ))}
-                    <span style={{ marginLeft:"auto", fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>{al('reportedOn')} {c.time}</span>
+                  {/* Complaint Details View */}
+                  <div style={{ padding:"16px 22px", display:"flex", flexDirection:"column", gap:12, borderBottom:`1px dashed ${T.border}` }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                      <div>
+                        <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL, marginBottom:4 }}>Description</div>
+                        <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:14, color:T.text, fontWeight:500 }}>{c.description || "No description provided."}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL, marginBottom:4 }}>Assigned Worker</div>
+                        <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:14, color:T.text, fontWeight:500 }}>
+                          {c.assignedWorker ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span>{c.assignedWorker}</span>
+                              <span style={{ padding:"2px 8px", background:c.status==="COMPLETED"?"#dcfce7":"#fef3c7", color:c.status==="COMPLETED"?"#166534":"#92400e", borderRadius:50, fontSize:10, fontWeight:600 }}>{c.status}</span>
+                            </div>
+                          ) : (
+                            <span style={{ color:T.red, fontWeight:600 }}>Didn't accept yet</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
+                      <div>
+                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>Ward: </span>
+                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.text, fontWeight:600 }}>{c.wardNo || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>Booth: </span>
+                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.text, fontWeight:600 }}>{c.booth || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>Reported On: </span>
+                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.text, fontWeight:600 }}>{c.time ? new Date(c.time).toLocaleString('en-IN') : "Unknown"}</span>
+                      </div>
+                    </div>
                   </div>
                   {/* Attachments row */}
                   <div style={{ padding:"12px 22px" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom: (c.attachments||[]).length > 0 ? 12 : 0 }}>
-                      <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, fontWeight:600, color:T.text }}>📎 {al('attachments')}: {(c.attachments||[]).length}</span>
+                      <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, fontWeight:600, color:T.text }}>📎 Attachments: {(c.attachments||[]).length}</span>
                       {(c.attachments||[]).length === 0 && (
-                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>{al('noAttachments')}</span>
+                        <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>No attachments</span>
                       )}
                     </div>
                     {(c.attachments||[]).length > 0 && (
@@ -1056,16 +1094,16 @@ export default function AdminDashboard() {
                             ) : (
                               <div style={{ width:90, height:90, borderRadius:12, background:"#1e293b", border:`2px solid ${T.border}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
                                 <span style={{ fontSize:28 }}>🎥</span>
-                                <span style={{ color:"#fff", fontSize:10, marginTop:4, fontFamily:"'Source Sans 3',sans-serif" }}>{al('video')}</span>
+                                <span style={{ color:"#fff", fontSize:10, marginTop:4, fontFamily:"'Source Sans 3',sans-serif" }}>Video</span>
                               </div>
                             )}
                             <div style={{ position:"absolute", bottom:4, left:4, background:att.type==='video'?"#3b82f6":"#22c55e", color:"#fff", fontSize:8, fontWeight:700, padding:"2px 6px", borderRadius:4, fontFamily:"'Source Sans 3',sans-serif" }}>
-                              {att.type === 'video' ? al('video').toUpperCase() : al('photo').toUpperCase()}
+                              {att.type === 'video' ? 'VIDEO' : 'PHOTO'}
                             </div>
                           </div>
                         ))}
                         <button onClick={() => setAttachViewer({ items: c.attachments, index: 0 })} style={{ padding:"8px 16px", borderRadius:10, border:`1.5px solid ${T.maroon}`, background:"transparent", color:T.maroon, fontFamily:"'Source Sans 3',sans-serif", fontSize:12, fontWeight:600, cursor:"pointer", alignSelf:"flex-end" }}>
-                          🔍 {al('viewAttachments')}
+                          🔍 View Attachments
                         </button>
                       </div>
                     )}
@@ -1083,65 +1121,103 @@ export default function AdminDashboard() {
   // ════════════════════════════════════════════════════════════════════
   // PAGE: WORKERS
   // ════════════════════════════════════════════════════════════════════
-  const PageWorkers = () => (
-    <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
-      <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
-        <input placeholder="🔍  Search workers, booth, district..." value={searchWorker} onChange={e=>setSearchWorker(e.target.value)} style={{ ...iSx, flex:1, minWidth:220, width:"auto" }} />
-        <ActionBtn label="+ Add Worker" onClick={() => setModal("addWorker")} />
-        <ExportMenu
-          onCSV={() => exportToCSV(filteredWorkers, "workers.csv", ["Name","Email","Phone","Booth","District","Resolved","Pending","Status"])}
-          onHTML={() => exportToHTML(generateWorkersReport(filteredWorkers), "workers_report")}
-          onWord={() => exportToHTML(generateWorkersReport(filteredWorkers), "workers_report")}
-        />
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))", gap:16 }}>
-        {filteredWorkers.map(w => {
-          const total=(w.resolved||0)+(w.pending||0);
-          const pct=total>0?Math.round((w.resolved/total)*100):0;
-          return (
-            <div key={w.id} style={{ background:"#fff", borderRadius:18, padding:"22px", border:`1px solid ${T.border}`, boxShadow:"0 2px 12px rgba(0,0,0,0.05)", transition:"all 0.25s" }}
-              onMouseEnter={e=>e.currentTarget.style.transform="translateY(-3px)"}
-              onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <div style={{ width:44, height:44, borderRadius:"50%", background:`linear-gradient(135deg,${T.maroon},${T.gold})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, color:"#fff", fontFamily:"'Playfair Display',serif", fontWeight:700 }}>{(w.name||"?")[0].toUpperCase()}</div>
-                  <div>
-                    <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:15, fontWeight:600, color:T.text }}>{w.name}</div>
-                    <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>{w.booth} · {w.district}</div>
+  const PageWorkers = () => {
+    const [selectedWorker, setSelectedWorker] = useState(null);
+    return (
+      <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
+        <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+          <input placeholder="🔍  Search workers, booth, district..." value={searchWorker} onChange={e=>setSearchWorker(e.target.value)} style={{ ...iSx, flex:1, minWidth:220, width:"auto" }} />
+          <ActionBtn label="+ Add Worker" onClick={() => setModal("addWorker")} />
+          <ExportMenu
+            onCSV={() => exportToCSV(filteredWorkers, "workers.csv", ["Name","Email","Phone","WorkCategory","Booth","District","Resolved","Pending","Status"])}
+            onHTML={() => exportToHTML(generateWorkersReport(filteredWorkers), "workers_report")}
+            onWord={() => exportToHTML(generateWorkersReport(filteredWorkers), "workers_report")}
+          />
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))", gap:16 }}>
+          {filteredWorkers.map(w => {
+            const total=(w.resolved||0)+(w.pending||0);
+            const pct=total>0?Math.round((w.resolved/total)*100):0;
+            return (
+              <div key={w.id} onClick={() => setSelectedWorker(w)} style={{ background:"#fff", borderRadius:18, padding:"22px", border:`1px solid ${T.border}`, boxShadow:"0 2px 12px rgba(0,0,0,0.05)", cursor:"pointer", transition:"all 0.25s" }}
+                onMouseEnter={e=>e.currentTarget.style.transform="translateY(-3px)"}
+                onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width:44, height:44, borderRadius:"50%", background:`linear-gradient(135deg,${T.maroon},${T.gold})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, color:"#fff", fontFamily:"'Playfair Display',serif", fontWeight:700 }}>{(w.name||"?")[0].toUpperCase()}</div>
+                    <div>
+                      <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:15, fontWeight:600, color:T.text }}>{w.name}</div>
+                      <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>{w.workCategory ? w.workCategory + " · " : ""}{w.booth} · {w.district}</div>
+                    </div>
+                  </div>
+                  <span style={{ background:w.status==="active"?"#dcfce7":"#f3f4f6", color:w.status==="active"?"#166534":"#6b7280", padding:"3px 10px", borderRadius:50, fontSize:11, fontWeight:600, fontFamily:"'Source Sans 3',sans-serif", textTransform:"capitalize" }}>{w.status}</span>
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:14 }}>
+                  {[["Resolved",w.resolved||0,T.green],["Pending",w.pending||0,T.amber],["Rating",`${w.rating||4.5}★`,T.gold]].map(([l,v,c])=>(
+                    <div key={l} style={{ textAlign:"center", padding:"10px 6px", background:T.bg, borderRadius:10 }}>
+                      <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:18, color:c }}>{v}</div>
+                      <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:11, color:T.textM, marginTop:2 }}>{l}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginBottom:14 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                    <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>Resolution rate</span>
+                    <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, fontWeight:600, color:T.maroon }}>{pct}%</span>
+                  </div>
+                  <div style={{ height:6, background:T.bg, borderRadius:3, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${T.maroon},${T.gold})`, borderRadius:3 }} />
                   </div>
                 </div>
-                <span style={{ background:w.status==="active"?"#dcfce7":"#f3f4f6", color:w.status==="active"?"#166534":"#6b7280", padding:"3px 10px", borderRadius:50, fontSize:11, fontWeight:600, fontFamily:"'Source Sans 3',sans-serif", textTransform:"capitalize" }}>{w.status}</span>
+                <button onClick={(e) => { e.stopPropagation(); deleteWorker(w.id); }} style={{ width:"100%", padding:"8px", borderRadius:8, border:`1px solid ${T.red}30`, background:`${T.red}08`, color:T.red, fontFamily:"'Source Sans 3',sans-serif", fontSize:12, cursor:"pointer" }}>🗑️ Remove Worker</button>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:14 }}>
-                {[["Resolved",w.resolved||0,T.green],["Pending",w.pending||0,T.amber],["Rating",`${w.rating||4.5}★`,T.gold]].map(([l,v,c])=>(
-                  <div key={l} style={{ textAlign:"center", padding:"10px 6px", background:T.bg, borderRadius:10 }}>
-                    <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:18, color:c }}>{v}</div>
-                    <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:11, color:T.textM, marginTop:2 }}>{l}</div>
+            );
+          })}
+          <div onClick={() => setModal("addWorker")} style={{ background:"#fff", borderRadius:18, padding:"22px", border:`2px dashed ${T.border}`, cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:220, transition:"all 0.2s" }}
+            onMouseEnter={e=>{ e.currentTarget.style.borderColor=T.maroon; e.currentTarget.style.background=T.goldP; }}
+            onMouseLeave={e=>{ e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background="#fff"; }}>
+            <span style={{ fontSize:36, marginBottom:10 }}>➕</span>
+            <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:14, color:T.textL, fontWeight:600 }}>Add New Worker</span>
+          </div>
+        </div>
+        {selectedWorker && (
+          <Modal title="👷 Worker Details" onClose={() => setSelectedWorker(null)}>
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:16, borderBottom:`1px solid ${T.border}`, paddingBottom:16 }}>
+                <div style={{ width:60, height:60, borderRadius:"50%", background:`linear-gradient(135deg,${T.maroon},${T.gold})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, color:"#fff", fontFamily:"'Playfair Display',serif", fontWeight:700 }}>{(selectedWorker.name||"?")[0].toUpperCase()}</div>
+                <div>
+                  <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:22, color:T.text }}>{selectedWorker.name}</div>
+                  <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:14, color:T.textM, marginTop:4 }}>{selectedWorker.workCategory ? selectedWorker.workCategory : "Worker"} · {selectedWorker.booth} · {selectedWorker.district}</div>
+                </div>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                <Field label="Email" icon="✉️">
+                  <div style={{ ...iSx, background:"transparent", border:"none", padding:0 }}>{selectedWorker.email}</div>
+                </Field>
+                <Field label="Phone" icon="📱">
+                  <div style={{ ...iSx, background:"transparent", border:"none", padding:0 }}>{selectedWorker.phone}</div>
+                </Field>
+                <Field label="Work Category" icon="🏷️">
+                  <div style={{ ...iSx, background:"transparent", border:"none", padding:0 }}>{selectedWorker.workCategory || "N/A"}</div>
+                </Field>
+                <Field label="Status" icon="📊">
+                  <span style={{ background:selectedWorker.status==="active"?"#dcfce7":"#f3f4f6", color:selectedWorker.status==="active"?"#166534":"#6b7280", padding:"4px 12px", borderRadius:50, fontSize:12, fontWeight:600, fontFamily:"'Source Sans 3',sans-serif", textTransform:"capitalize" }}>{selectedWorker.status}</span>
+                </Field>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginTop:8, background:T.bg, borderRadius:12, padding:16 }}>
+                {[["Resolved",selectedWorker.resolved||0,T.green],["Pending",selectedWorker.pending||0,T.amber],["Rating",`${selectedWorker.rating||4.5}★`,T.gold]].map(([l,v,c])=>(
+                  <div key={l} style={{ textAlign:"center" }}>
+                    <div style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:24, color:c }}>{v}</div>
+                    <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM, marginTop:2 }}>{l}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ marginBottom:14 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-                  <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>Resolution rate</span>
-                  <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, fontWeight:600, color:T.maroon }}>{pct}%</span>
-                </div>
-                <div style={{ height:6, background:T.bg, borderRadius:3, overflow:"hidden" }}>
-                  <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${T.maroon},${T.gold})`, borderRadius:3 }} />
-                </div>
-              </div>
-              <button onClick={() => deleteWorker(w.id)} style={{ width:"100%", padding:"8px", borderRadius:8, border:`1px solid ${T.red}30`, background:`${T.red}08`, color:T.red, fontFamily:"'Source Sans 3',sans-serif", fontSize:12, cursor:"pointer" }}>🗑️ Remove Worker</button>
             </div>
-          );
-        })}
-        <div onClick={() => setModal("addWorker")} style={{ background:"#fff", borderRadius:18, padding:"22px", border:`2px dashed ${T.border}`, cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:220, transition:"all 0.2s" }}
-          onMouseEnter={e=>{ e.currentTarget.style.borderColor=T.maroon; e.currentTarget.style.background=T.goldP; }}
-          onMouseLeave={e=>{ e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background="#fff"; }}>
-          <span style={{ fontSize:36, marginBottom:10 }}>➕</span>
-          <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:14, color:T.textL, fontWeight:600 }}>Add New Worker</span>
-        </div>
+          </Modal>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   // ════════════════════════════════════════════════════════════════════
   // PAGE: NEWS & CAMPS

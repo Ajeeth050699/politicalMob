@@ -91,7 +91,7 @@ export default function RegisterScreen({ navigation }) {
   const [toast,         setToast]         = useState({visible:false,message:'',type:'error'});
   const [form, setForm] = useState({
     name:'', email:'', password:'', confirmPassword:'',
-    district:'', ward:'', wardNo:'', pincode:'', address:'', role:'public',
+    district:'', ward:'', wardNo:'', pincode:'', address:'', role:'public', workCategory:'',
   });
 
   const set = k => v => setForm(f=>({...f,[k]:v}));
@@ -163,6 +163,10 @@ export default function RegisterScreen({ navigation }) {
     if (!form.wardNo.trim()) { showToast('Please enter your ward number.'); return; }
     if (!form.pincode.trim()) { showToast('Please enter your pincode.'); return; }
     if (!form.address.trim()) { showToast('Please enter your address or area.'); return; }
+    if ((form.role==='worker' || form.role==='agent') && !form.workCategory.trim()) {
+      showToast('Please enter your work category.');
+      return;
+    }
     if ((form.role==='worker' || form.role==='agent') && form.ward) {
       setLoading(true);
       try {
@@ -183,6 +187,7 @@ export default function RegisterScreen({ navigation }) {
         password:form.password, phone:verifiedPhone,
         role:form.role, ward:form.ward, wardNo:Number(form.wardNo), district:form.district,
         address:form.address, pincode:form.pincode,
+        workCategory:(form.role==='worker' || form.role==='agent') ? form.workCategory.trim() : '',
       });
     } catch(err) {
       const msg = err?.response?.data?.message || 'Registration failed. Please try again.';
@@ -308,6 +313,16 @@ export default function RegisterScreen({ navigation }) {
                 <Field label="Ward Number *" icon="🏠" value={form.wardNo} onChange={set('wardNo')} placeholder="Enter ward number" keyboard="numeric" />
                 <Field label="Pincode *"      icon="📮" value={form.pincode} onChange={set('pincode')} placeholder="6-digit pincode" keyboard="numeric" hint="Used for fallback complaint routing" />
                 <Field label="Address *"      icon="🏘️" value={form.address} onChange={set('address')} placeholder="Door no, street, area" />
+                {(form.role==='worker' || form.role==='agent') && (
+                  <Field
+                    label="Work Category *"
+                    icon="#"
+                    value={form.workCategory}
+                    onChange={set('workCategory')}
+                    placeholder="e.g. Electrician, Plumber"
+                    hint="Used to show your service type in worker profile and admin lists."
+                  />
+                )}
                 {boothInfo && (
                   <View style={[s.infoCard,{backgroundColor:boothInfo.workerCount>0?'#FEF3C7':'#DCFCE7'}]}>
                     <Text style={{fontSize:20}}>{boothInfo.workerCount>0?'👥':'🎉'}</Text>
@@ -330,6 +345,7 @@ export default function RegisterScreen({ navigation }) {
                     ['Phone',    verifiedPhone,        '📱'],
                     ['Email',    form.email||'—',      '✉️'],
                     ['Role',     form.role==='agent'?'Agent':form.role==='worker'?'Worker':'Citizen','🎭'],
+                    ...(form.role==='worker' || form.role==='agent' ? [['Work Category', form.workCategory || '—', '#']] : []),
                     ['Plan',     `Rs. ${(pricing[form.role] || pricing.public)?.amount || (form.role==='agent'?100:form.role==='worker'?10:1)}/month`, '₹'],
                     ['District', form.district,        '📍'],
                     ['Thokuthi', form.ward    ||'—',   '🏠'],

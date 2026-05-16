@@ -12,6 +12,7 @@ import { useLang } from '../../context/LanguageContext';
 const ROLE_META = {
   public: { label: 'CITIZEN',  icon: '👤', color: T.gold    },
   worker: { label: 'WORKER',   icon: '👷', color: '#3b82f6' },
+  agent:  { label: 'AGENT',    icon: '👷', color: '#0ea5e9' },
   admin:  { label: 'ADMIN',    icon: '🛡️', color: '#8b5cf6' },
 };
 
@@ -27,6 +28,7 @@ export default function ProfileScreen({ navigation }) {
   const [wardNo, setWardNo] = useState(userInfo?.wardNo ? String(userInfo.wardNo) : '');
   const [pincode,setPincode]= useState(userInfo?.pincode || '');
   const [address,setAddress]= useState(userInfo?.address || '');
+  const [workCategory,setWorkCategory]= useState(userInfo?.workCategory || '');
   const [saving, setSaving] = useState(false);
 
   const { lang, changeLang } = useLang();
@@ -35,9 +37,17 @@ export default function ProfileScreen({ navigation }) {
   const handleSave = async () => {
     if (!name.trim())  { Alert.alert('Required', 'Name cannot be empty.');  return; }
     if (!email.trim()) { Alert.alert('Required', 'Email cannot be empty.'); return; }
+    if ((userInfo?.role === 'worker' || userInfo?.role === 'agent') && !workCategory.trim()) {
+      Alert.alert('Required', 'Work category cannot be empty.');
+      return;
+    }
     setSaving(true);
     try {
-      await updateProfile({ name, email, phone, ward: thokuthi, wardNo, pincode, address, district });
+      const payload = { name, email, phone, ward: thokuthi, wardNo, pincode, address, district };
+      if (userInfo?.role === 'worker' || userInfo?.role === 'agent') {
+        payload.workCategory = workCategory.trim();
+      }
+      await updateProfile(payload);
       Alert.alert('✅ Updated!', 'Your profile has been saved successfully.');
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.message || 'Failed to update profile');
@@ -115,6 +125,9 @@ export default function ProfileScreen({ navigation }) {
               { label: 'Ward No',       icon: '🔢', value: wardNo, setter: setWardNo, placeholder: 'Enter ward no.', kb: 'numeric', readonly: !!userInfo?.wardNo },
               { label: 'Pincode',       icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
               { label: 'Address / Area',icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
+              ...(userInfo?.role === 'worker' || userInfo?.role === 'agent'
+                ? [{ label: 'Work Category', icon: '#', value: workCategory, setter: setWorkCategory, placeholder: 'e.g. Electrician, Plumber', kb: 'default' }]
+                : []),
             ].map(({ label, icon, value, setter, placeholder, kb, readonly }) => (
               <View key={label} style={{ marginBottom: 14 }}>
                 <Text style={s.label}>{label}</Text>
@@ -163,6 +176,9 @@ export default function ProfileScreen({ navigation }) {
             <Text style={s.sectionTitle}>📋 Account Info</Text>
             {[
               { label: 'Role',     value: userInfo?.role?.toUpperCase(), icon: role.icon },
+              ...(userInfo?.role === 'worker' || userInfo?.role === 'agent'
+                ? [{ label: 'Work Category', value: userInfo?.workCategory || '—', icon: '#' }]
+                : []),
               { label: 'District', value: userInfo?.district || '—',     icon: '📍'      },
               { label: 'Thokuthi',     value: userInfo?.ward || userInfo?.booth || '—',     icon: '🏠'      },
               { label: 'Ward No',      value: userInfo?.wardNo  || '—',     icon: '🔢'      },

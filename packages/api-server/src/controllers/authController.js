@@ -17,7 +17,7 @@ const resetOtpStore        = {};  // for forgot-password flow
 const register = asyncHandler(async (req, res) => {
   const {
     name, email, password, phone, role,
-    ward, wardNo, booth, district, address, pincode, profilePhoto, tamilNaduAccess,
+    ward, wardNo, booth, district, address, pincode, profilePhoto, tamilNaduAccess, workCategory,
   } = req.body;
 
   const digits = phone ? String(phone).replace(/\D/g, '') : '';
@@ -60,6 +60,7 @@ const register = asyncHandler(async (req, res) => {
     district: district || '',
     address: address || '',
     pincode: pincode || '',
+    workCategory: workCategory || '',
     profilePhoto: profilePhoto || '',
     tamilNaduAccess: hasTamilNaduAccess,
     subscription: {
@@ -103,6 +104,7 @@ const register = asyncHandler(async (req, res) => {
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
+      workCategory:    user.workCategory,
       profilePhoto:    user.profilePhoto,
       tamilNaduAccess: user.tamilNaduAccess,
       subscription:    user.subscription,
@@ -140,6 +142,7 @@ const login = asyncHandler(async (req, res) => {
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
+      workCategory:    user.workCategory,
       profilePhoto:    user.profilePhoto,
       tamilNaduAccess: user.tamilNaduAccess,
       subscription:    user.subscription,
@@ -170,6 +173,7 @@ const getProfile = asyncHandler(async (req, res) => {
     district:        user.district,
     address:         user.address,
     pincode:         user.pincode,
+    workCategory:    user.workCategory,
     profilePhoto:    user.profilePhoto,
     tamilNaduAccess: user.tamilNaduAccess,
     subscription:    user.subscription,
@@ -201,6 +205,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   user.district = req.body.district !== undefined ? req.body.district : user.district;
   user.address  = req.body.address  !== undefined ? req.body.address  : user.address;
   user.pincode  = req.body.pincode  !== undefined ? req.body.pincode  : user.pincode;
+  user.workCategory = req.body.workCategory !== undefined ? req.body.workCategory : user.workCategory;
   user.profilePhoto = req.body.profilePhoto !== undefined ? req.body.profilePhoto : user.profilePhoto;
   user.tamilNaduAccess = req.body.tamilNaduAccess !== undefined ? !!req.body.tamilNaduAccess : user.tamilNaduAccess;
   if (req.body.password) user.password = req.body.password;
@@ -218,6 +223,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     district: saved.district,
     address:  saved.address,
     pincode:  saved.pincode,
+    workCategory: saved.workCategory,
     profilePhoto: saved.profilePhoto,
     tamilNaduAccess: saved.tamilNaduAccess,
     token:    generateToken(saved._id),

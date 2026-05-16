@@ -31,6 +31,7 @@ const getWorkers = asyncHandler(async (req, res) => {
       phone:    w.phone,
       booth:    w.booth,
       district: w.district,
+      workCategory: w.workCategory,
       status:   w.isActive ? 'active' : 'inactive',
       resolved,
       pending,
@@ -45,14 +46,14 @@ const getWorkers = asyncHandler(async (req, res) => {
 // @route  POST /api/workers
 // @access Private (admin)
 const createWorker = asyncHandler(async (req, res) => {
-  const { name, email, phone, password, booth, district } = req.body;
+  const { name, email, phone, password, booth, district, workCategory } = req.body;
 
   const exists = await User.findOne({ email });
   if (exists) { res.status(400); throw new Error('Email already registered'); }
 
   const worker = await User.create({
     name, email, phone, password,
-    role: 'worker', booth, district,
+    role: 'worker', booth, district, workCategory
   });
 
   res.status(201).json({
@@ -61,6 +62,7 @@ const createWorker = asyncHandler(async (req, res) => {
     email:    worker.email,
     booth:    worker.booth,
     district: worker.district,
+    workCategory: worker.workCategory
   });
 });
 
@@ -77,6 +79,7 @@ const updateWorker = asyncHandler(async (req, res) => {
   worker.phone    = req.body.phone    || worker.phone;
   worker.booth    = req.body.booth    || worker.booth;
   worker.district = req.body.district || worker.district;
+  worker.workCategory = req.body.workCategory || worker.workCategory;
   if (req.body.isActive !== undefined) worker.isActive = req.body.isActive;
 
   const updated = await worker.save();
@@ -85,6 +88,7 @@ const updateWorker = asyncHandler(async (req, res) => {
     name:     updated.name,
     booth:    updated.booth,
     district: updated.district,
+    workCategory: updated.workCategory,
     isActive: updated.isActive,
   });
 });
