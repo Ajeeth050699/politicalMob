@@ -300,11 +300,3 @@ const s = StyleSheet.create({
   noAttachments:  { marginTop: 16, paddingHorizontal: 12, paddingVertical: 20, backgroundColor: T.bg, borderRadius: 12, alignItems: 'center' },
   noAttachmentsText:{ fontSize: 13, color: T.textM, fontWeight: '600' },
 });
-backgroundColor: 'rgba(0,0,0,0.15)', alignItems: 'center', justifyContent: 'center' },
-  videoPlaceholder:{ alignItems: 'center', justifyContent: 'center' },
-  attachTypeBadge:{ position: 'absolute', bottom: 8, left: 8, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 6 },
-  attachTypeTxt:  { fontSize: 8, fontWeight: '700', color: '#fff' },
-
-  noAttachments:  { marginTop: 16, paddingHorizontal: 12, paddingVertical: 20, backgroundColor: T.bg, borderRadius: 12, alignItems: 'center' },
-  noAttachmentsText:{ fontSize: 13, color: T.textM, fontWeight: '600' },
-});
