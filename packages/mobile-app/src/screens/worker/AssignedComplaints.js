@@ -148,7 +148,7 @@ export default function AssignedComplaints({ navigation }) {
     return (
       <TouchableOpacity
         style={[s.card, isLocked && s.cardLocked]}
-        onPress={() => navigation.navigate('ComplaintDetail', { id: c.id })}
+        onPress={() => navigation.navigate('ComplaintDetail', { id: c._id || c.id })}
         activeOpacity={0.92}
       >
         {/* Header */}
@@ -218,7 +218,7 @@ export default function AssignedComplaints({ navigation }) {
                 {c.status === 'IN PROGRESS' && (
                   <TouchableOpacity
                     style={[s.progBtn, { borderColor:T.green }]}
-                    onPress={() => navigation.navigate('ComplaintDetail', { id: c.id })}
+                    onPress={() => navigation.navigate('ComplaintDetail', { id: c._id || c.id })}
                     activeOpacity={0.85}
                   >
                     <Text style={[s.progBtnTxt, { color:T.green }]}>📸 Upload Proof & Complete</Text>

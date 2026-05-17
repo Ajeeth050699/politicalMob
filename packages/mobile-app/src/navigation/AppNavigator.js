@@ -33,6 +33,12 @@ import NewsDetailScreen from "../screens/shared/NewsDetailScreen";
 import WorkerDashboard from "../screens/worker/WorkerDashboard";
 import AssignedComplaints from "../screens/worker/AssignedComplaints";
 
+// ── Admin Screens ─────────────────────────────────────────────────
+import AdminDashboard from "../screens/admin/AdminDashboard";
+import AdminComplaints from "../screens/admin/AdminComplaints";
+import AdminWorkers from "../screens/admin/AdminWorkers";
+import ComplaintDetailAdmin from "../screens/admin/ComplaintDetailAdmin";
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -95,6 +101,7 @@ const WorkerTabs = () => (
           Dashboard: "view-dashboard",
           Complaints: "clipboard-check",
           News: "newspaper",
+          Videos: "play-circle",
           Profile: "account",
         };
         return (
@@ -110,6 +117,45 @@ const WorkerTabs = () => (
     <Tab.Screen name="Dashboard" component={WorkerDashboard} />
     <Tab.Screen name="Complaints" component={AssignedComplaints} />
     <Tab.Screen name="News" component={NewsScreen} />
+    <Tab.Screen name="Videos" component={EducationScreen} />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
+  </Tab.Navigator>
+);
+
+// ── Admin Bottom Tabs ─────────────────────────────────────────────
+const AdminTabs = () => (
+  <Tab.Navigator
+    screenOptions={({ route }) => ({
+      headerShown: false,
+      tabBarActiveTintColor: T.maroon,
+      tabBarInactiveTintColor: T.textM,
+      tabBarStyle: {
+        backgroundColor: T.bgCard,
+        borderTopColor: T.border,
+        paddingBottom: 4,
+        height: 60,
+      },
+      tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+      tabBarIcon: ({ color, size }) => {
+        const icons = {
+          Dashboard: "view-dashboard",
+          Complaints: "clipboard-list",
+          Workers: "account-multiple",
+          Profile: "account",
+        };
+        return (
+          <Icon
+            name={icons[route.name] || "circle"}
+            size={size}
+            color={color}
+          />
+        );
+      },
+    })}
+  >
+    <Tab.Screen name="Dashboard" component={AdminDashboard} />
+    <Tab.Screen name="Complaints" component={AdminComplaints} />
+    <Tab.Screen name="Workers" component={AdminWorkers} />
     <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
@@ -150,27 +196,39 @@ export default function AppNavigator() {
         </>
       ) : userInfo.role === "public" || userInfo.role === "citizen" ? (
         // ── Public stack ──
-       <>
-  <Stack.Screen name="PublicTabs" component={PublicTabs} />
-  <Stack.Screen name="AddComplaint" component={AddComplaintScreen} />
-  <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
-  <Stack.Screen name="NewsDetail" component={NewsDetailScreen} /> 
-  <Stack.Screen name="Exam" component={ExamScreen} />
-  <Stack.Screen name="Camps" component={CampsScreen} />
-  <Stack.Screen name="Profile" component={ProfileScreen} />
-  <Stack.Screen name="Billing" component={BillingScreen} />
-  <Stack.Screen name="Verify" component={VerifyScreen} />
-</>
+        <>
+          <Stack.Screen name="PublicTabs" component={PublicTabs} />
+          <Stack.Screen name="AddComplaint" component={AddComplaintScreen} />
+          <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
+          <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
+          <Stack.Screen name="Exam" component={ExamScreen} />
+          <Stack.Screen name="Camps" component={CampsScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Billing" component={BillingScreen} />
+          <Stack.Screen name="Verify" component={VerifyScreen} />
+        </>
+      ) : userInfo.role === "admin" || userInfo.role === "superadmin" ? (
+        // ── Admin stack ──
+        <>
+          <Stack.Screen name="AdminTabs" component={AdminTabs} />
+          <Stack.Screen name="AdminComplaints" component={AdminComplaints} />
+          <Stack.Screen name="AdminWorkers" component={AdminWorkers} />
+          <Stack.Screen name="ComplaintDetailAdmin" component={ComplaintDetailAdmin} />
+          <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Billing" component={BillingScreen} />
+          <Stack.Screen name="Verify" component={VerifyScreen} />
+        </>
       ) : (
-       // ── Worker stack ──
-<>
-  <Stack.Screen name="WorkerTabs" component={WorkerTabs} />
-  <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
-  <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />  
-  <Stack.Screen name="Profile" component={ProfileScreen} />
-  <Stack.Screen name="Billing" component={BillingScreen} />
-  <Stack.Screen name="Verify" component={VerifyScreen} />
-</>
+        // ── Worker stack ──
+        <>
+          <Stack.Screen name="WorkerTabs" component={WorkerTabs} />
+          <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
+          <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Billing" component={BillingScreen} />
+          <Stack.Screen name="Verify" component={VerifyScreen} />
+        </>
       )}
     </Stack.Navigator>
   );

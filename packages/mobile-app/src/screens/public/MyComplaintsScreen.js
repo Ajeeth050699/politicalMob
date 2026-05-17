@@ -73,7 +73,7 @@ export default function MyComplaintsScreen({ navigation }) {
     return (
       <TouchableOpacity
         style={s.card}
-        onPress={() => navigation.navigate('ComplaintDetail', { id: c.id })}
+        onPress={() => navigation.navigate('ComplaintDetail', { id: c._id || c.id })}
         activeOpacity={0.85}
       >
         {/* Priority strip on left */}

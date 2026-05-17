@@ -6,6 +6,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { educationAPI } from '../../services/api';
 import { T } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 const VIDEO_CAT_COLORS = {
   'Educational':      { color: '#3b82f6', bg: '#dbeafe', icon: '📖' },
@@ -16,17 +17,28 @@ const VIDEO_CAT_COLORS = {
 };
 
 export default function EducationScreen({ navigation }) {
+  const { userInfo } = useAuth();
+  const isWorker = userInfo?.role === 'worker';
+
   const [tab,     setTab]     = useState('videos');
   const [videos,  setVideos]  = useState([]);
   const [exams,   setExams]   = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([educationAPI.getVideos(), educationAPI.getExams()])
-      .then(([vRes, eRes]) => { setVideos(vRes.data); setExams(eRes.data); })
+    const promises = [educationAPI.getVideos()];
+    if (!isWorker) {
+      promises.push(educationAPI.getExams());
+    }
+
+    Promise.all(promises)
+      .then(([vRes, eRes]) => { 
+        setVideos(vRes.data); 
+        if (eRes) setExams(eRes.data); 
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [isWorker]);
 
   const renderVideo = ({ item: v }) => {
     const meta = VIDEO_CAT_COLORS[v.category] || { color: T.maroon, bg: '#fee2e2', icon: '🎬' };
@@ -101,16 +113,20 @@ export default function EducationScreen({ navigation }) {
             <Text style={s.statNum}>{videos.length}</Text>
             <Text style={s.statLabel}>Videos</Text>
           </View>
-          <View style={s.statDivider} />
-          <View style={s.statCard}>
-            <Text style={s.statNum}>{exams.length}</Text>
-            <Text style={s.statLabel}>Exams</Text>
-          </View>
-          <View style={s.statDivider} />
-          <View style={s.statCard}>
-            <Text style={s.statNum}>{exams.reduce((a, e) => a + (e.taken || 0), 0)}</Text>
-            <Text style={s.statLabel}>Attempts</Text>
-          </View>
+          {!isWorker && (
+            <>
+              <View style={s.statDivider} />
+              <View style={s.statCard}>
+                <Text style={s.statNum}>{exams.length}</Text>
+                <Text style={s.statLabel}>Exams</Text>
+              </View>
+              <View style={s.statDivider} />
+              <View style={s.statCard}>
+                <Text style={s.statNum}>{exams.reduce((a, e) => a + (e.taken || 0), 0)}</Text>
+                <Text style={s.statLabel}>Attempts</Text>
+              </View>
+            </>
+          )}
         </View>
       </LinearGradient>
 
@@ -118,7 +134,7 @@ export default function EducationScreen({ navigation }) {
       <View style={s.tabRow}>
         {[
           { key: 'videos', label: '🎥 Videos',    count: videos.length },
-          { key: 'exams',  label: '📝 Exams',     count: exams.length  },
+          ...(!isWorker ? [{ key: 'exams',  label: '📝 Exams',     count: exams.length  }] : []),
         ].map(({ key, label, count }) => (
           <TouchableOpacity
             key={key}

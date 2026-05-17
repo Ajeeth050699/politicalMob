@@ -157,7 +157,7 @@ export default function WorkerDashboard({ navigation }) {
               <TouchableOpacity
                 key={c.id}
                 style={s.complaintCard}
-                onPress={() => navigation.navigate('ComplaintDetail', { id: c.id })}
+                onPress={() => navigation.navigate('ComplaintDetail', { id: c._id || c.id })}
                 activeOpacity={0.85}
               >
                 <View style={[s.complaintIcon, { backgroundColor: T.maroon + '12' }]}>

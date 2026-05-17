@@ -17,12 +17,11 @@ const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').
 const workerCanSeeComplaint = (worker, complaint) => {
   if (!worker || !complaint) return false;
   if (String(complaint.assignedWorker || '') === String(worker._id || '')) return true;
+  
   const sameThokuthi = same(complaint.ward || complaint.booth, worker.ward || worker.booth);
   const sameWardNo = !complaint.wardNo || !worker.wardNo || Number(complaint.wardNo) === Number(worker.wardNo);
-  if (sameThokuthi && sameWardNo && complaint.routingLevel === 'ward') return true;
-  if (complaint.fallbackUsed && worker.pincode && same(complaint.pincode, worker.pincode)) return true;
-  if (complaint.routingLevel === 'nearby' && worker.district && same(complaint.district, worker.district)) return true;
-  if (complaint.escalatedToAdmin) return true;
+  
+  if (sameThokuthi && sameWardNo) return true;
   return false;
 };
 
@@ -109,23 +108,21 @@ const getComplaints = asyncHandler(async (req, res) => {
     filter.user = req.user._id;
 
   } else if (req.user.role === 'worker') {
-    const orConditions = [{ escalatedToAdmin: true }];
+    const orConditions = [];
     if (req.user.ward || req.user.booth) {
       const area = req.user.ward || req.user.booth;
       if (req.user.wardNo) {
-        orConditions.push({ ward: area, wardNo: req.user.wardNo, routingLevel: 'ward' });
-        orConditions.push({ booth: area, wardNo: req.user.wardNo, routingLevel: 'ward' });
+        orConditions.push({ ward: area, wardNo: req.user.wardNo });
+        orConditions.push({ booth: area, wardNo: req.user.wardNo });
       } else {
-        orConditions.push({ ward: area, routingLevel: 'ward' });
-        orConditions.push({ booth: area, routingLevel: 'ward' });
+        orConditions.push({ ward: area });
+        orConditions.push({ booth: area });
       }
     }
-    if (req.user.pincode) {
-      orConditions.push({ pincode: req.user.pincode, fallbackUsed: true });
-    }
-    if (req.user.district) {
-      orConditions.push({ district: req.user.district, routingLevel: 'nearby' });
-    }
+    
+    // Always show complaints explicitly assigned to this worker
+    orConditions.push({ assignedWorker: req.user._id });
+    
     filter.$or = orConditions;
   }
   // admin, superadmin, agent: no filter

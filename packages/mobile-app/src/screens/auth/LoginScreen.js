@@ -85,7 +85,7 @@ export default function LoginScreen({ navigation }) {
             <View style={s.inputRow}>
               <Text style={s.icon}>✉️</Text>
               <TextInput
-                style={s.input}
+                style={[s.input, { flex:1 }]}
                 placeholder="Enter email or phone"
                 placeholderTextColor={T.textM}
                 value={email}

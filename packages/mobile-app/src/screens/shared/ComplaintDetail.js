@@ -21,6 +21,7 @@ const STATUS_ICONS = { 'NEW':'🆕', 'IN PROGRESS':'⚙️', 'COMPLETED':'✅' }
 
 // ── Full screen image viewer ────────────────────────────────────────
 function ImageViewer({ visible, uri, onClose }) {
+  if (!visible) return null;
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.95)', alignItems:'center', justifyContent:'center' }}>
@@ -65,6 +66,18 @@ export default function ComplaintDetail({ route, navigation }) {
     userInfo?.role === 'worker' &&
     (complaint.assignedWorkerId === userInfo?._id || complaint.assignedWorker === userInfo?.name);
 
+  const openMap = () => {
+    if (complaint.location && complaint.location.lat && complaint.location.lng) {
+      const { lat, lng } = complaint.location;
+      const url = Platform.OS === 'ios' 
+        ? `maps:${lat},${lng}?q=${lat},${lng}` 
+        : `geo:${lat},${lng}?q=${lat},${lng}`;
+      Linking.openURL(url).catch(() => {
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
+      });
+    }
+  };
+
   const uploadCompletionProof = async () => {
     try {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -98,7 +111,7 @@ export default function ComplaintDetail({ route, navigation }) {
     { label:'Assigned Worker', value:complaint.assignedWorker || complaint.assignedWorker?.name || 'Pending assignment', icon:'👷' },
     { label:'Pincode',         value:complaint.pincode || 'Not provided',             icon:'📮' },
     { label:'Address',         value:complaint.address || 'Not provided',             icon:'📌' },
-    { label:'GPS Location',    value:complaint.location ? `${complaint.location.lat.toFixed(5)}, ${complaint.location.lng.toFixed(5)}` : 'Not provided', icon:'🧭' },
+    { label:'GPS Location',    value:(complaint.location && complaint.location.lat && complaint.location.lng) ? `${Number(complaint.location.lat).toFixed(5)}, ${Number(complaint.location.lng).toFixed(5)}\n(Tap to view on map)` : 'Not provided', icon:'🧭', onPress: (complaint.location && complaint.location.lat && complaint.location.lng) ? openMap : null },
     { label:'Date Submitted',  value:new Date(complaint.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}), icon:'📅' },
   ];
 
@@ -150,15 +163,18 @@ export default function ComplaintDetail({ route, navigation }) {
 
         {/* ── Details ── */}
         <View style={s.body}>
-          {rows.map(({ label, value, icon }) => (
-            <View key={label} style={s.row}>
-              <View style={s.rowIcon}><Text style={{ fontSize:18 }}>{icon}</Text></View>
-              <View style={{ flex:1 }}>
-                <Text style={s.rowLabel}>{label}</Text>
-                <Text style={s.rowValue}>{value}</Text>
-              </View>
-            </View>
-          ))}
+          {rows.map(({ label, value, icon, onPress }) => {
+            const RowView = onPress ? TouchableOpacity : View;
+            return (
+              <RowView key={label} style={s.row} onPress={onPress} activeOpacity={onPress ? 0.7 : 1}>
+                <View style={s.rowIcon}><Text style={{ fontSize:18 }}>{icon}</Text></View>
+                <View style={{ flex:1 }}>
+                  <Text style={s.rowLabel}>{label}</Text>
+                  <Text style={[s.rowValue, onPress && { color: T.maroon, fontWeight: '700' }]}>{value}</Text>
+                </View>
+              </RowView>
+            );
+          })}
 
           {/* ── ATTACHMENTS SECTION ── */}
           {attachments.length > 0 && (
