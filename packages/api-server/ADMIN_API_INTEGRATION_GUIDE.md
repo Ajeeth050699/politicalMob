@@ -12,7 +12,7 @@ All endpoints are fully functional and tested with admin role. No additional bac
 ```
 - status: 'NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED', 'ALL'
 - district: 'ALL' or specific district name
-- booth: booth name (admin-specific)
+- thokuthi: thokuthi name (admin-specific)
 - ward: ward/constituency name (admin-specific)
 - wardNo: ward number (admin-specific)
 - pincode: postal code (admin-specific)
@@ -24,7 +24,7 @@ All endpoints are fully functional and tested with admin role. No additional bac
 #### Admin-Specific Behavior
 - Admins with a district restriction see all complaints from their district
 - Superadmins see all complaints
-- Returns fields: id, category, status, user, booth, ward, wardNo, district, pincode, assignedWorker, createdAt
+- Returns fields: id, category, status, user, thokuthi, ward, wardNo, district, pincode, assignedWorker, createdAt
 
 #### Example Request
 ```javascript
@@ -40,7 +40,7 @@ Header: Authorization: Bearer {jwt_token}
     "category": "Street Light",
     "status": "NEW",
     "user": { "name": "User", "phone": "999..." },
-    "booth": "Booth A",
+    "thokuthi": "Thokuthi A",
     "ward": "Mylapore", 
     "wardNo": 1,
     "district": "Chennai",
@@ -68,7 +68,7 @@ Header: Authorization: Bearer {jwt_token}
   "description": "Light is not working",
   "status": "ACCEPTED",
   "user": { "name": "Citizen", "phone": "999..." },
-  "booth": "Booth A",
+  "thokuthi": "Thokuthi A",
   "ward": "Mylapore",
   "wardNo": 1,
   "district": "Chennai", 
@@ -97,7 +97,7 @@ Header: Authorization: Bearer {jwt_token}
 #### Supported Query Parameters
 ```
 - district: 'ALL' or specific district name  
-- search: search by name, booth, or district
+- search: search by name, thokuthi, or district
 ```
 
 #### Admin-Specific Behavior
@@ -116,7 +116,7 @@ Header: Authorization: Bearer {jwt_token}
     "role": "worker",
     "ward": "Mylapore",
     "wardNo": 1,
-    "booth": "Booth A",
+    "thokuthi": "Thokuthi A",
     "district": "Chennai",
     "pincode": "60041",
     "status": "active",
@@ -157,7 +157,7 @@ Header: Authorization: Bearer {jwt_token}
 
 ### Admin Role Access
 - Can view all complaints within their district
-- Can filter complaints by status, category, booth, ward
+- Can filter complaints by status, category, thokuthi, ward
 - Can view all workers in their district
 - Can view worker performance metrics
 - Can download worker lists as CSV
@@ -217,7 +217,7 @@ POST /api/auth/register
   "password": "password",
   "role": "admin",
   "district": "Chennai",
-  "booth": "Booth A"
+  "thokuthi": "Thokuthi A"
 }
 ```
 
@@ -284,7 +284,7 @@ console.log('Response:', response.data);  // Add after API call
 - role: 'worker', 'admin', 'superadmin'
 - ward: String (constituency)
 - wardNo: Number
-- booth: String
+- thokuthi: String
 - district: String
 - pincode: String
 - isActive: Boolean
@@ -297,7 +297,7 @@ console.log('Response:', response.data);  // Add after API call
 - status: 'NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED'
 - user: ObjectId (ref: User)
 - assignedWorker: ObjectId (ref: User)
-- booth: String
+- thokuthi: String
 - ward: String
 - wardNo: Number
 - district: String

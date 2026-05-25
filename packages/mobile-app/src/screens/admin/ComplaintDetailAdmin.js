@@ -76,7 +76,7 @@ export default function ComplaintDetailAdmin({ route, navigation }) {
   const detailRows = [
     { label:'Category',       value:complaint.category,                                    icon:'🏷️' },
     { label:'Description',    value:complaint.description || 'No description provided',     icon:'📝' },
-    { label:'Booth',          value:complaint.booth,                                        icon:'🏠' },
+    { label:'Thokuthi',          value:complaint.thokuthi,                                        icon:'🏠' },
     { label:'Ward',           value:complaint.ward,                                         icon:'🗳️' },
     { label:'Ward Number',    value:complaint.wardNo || 'N/A',                             icon:'🔢' },
     { label:'District',       value:complaint.district,                                     icon:'📍' },

@@ -12,10 +12,10 @@ const userSchema = new mongoose.Schema(
     workCategory: { type: String },
     ward:     { type: String },
     wardNo:   { type: Number },
-    booth:    { type: String },
+    thokuthi:    { type: String },
     district: { type: String },
     address:  { type: String },
-    pincode:  { type: String },          // booth fallback matching
+    pincode:  { type: String },          // thokuthi fallback matching
     profilePhoto: { type: String },
     tamilNaduAccess: { type: Boolean, default: false },
 

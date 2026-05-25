@@ -84,7 +84,7 @@ export default function RegisterScreen({ navigation }) {
   const [otpCode,       setOtpCode]       = useState('');
   const [countdown,     setCountdown]     = useState(0);
   const [verifiedPhone, setVerifiedPhone] = useState('');
-  const [boothInfo,     setBoothInfo]     = useState(null);
+  const [thokuthiInfo,     setThokuthiInfo]     = useState(null);
   const [wards,         setWards]         = useState([]);
   const [pricing,       setPricing]       = useState({});
   const [phoneInput,    setPhoneInput]    = useState('');
@@ -171,8 +171,8 @@ export default function RegisterScreen({ navigation }) {
       setLoading(true);
       try {
         const res = await authAPI.verifyWard(form.ward, form.district);
-        setBoothInfo(res.data);
-      } catch { setBoothInfo(null); }
+        setThokuthiInfo(res.data);
+      } catch { setThokuthiInfo(null); }
       finally { setLoading(false); }
     }
     setStep(4);
@@ -323,10 +323,10 @@ export default function RegisterScreen({ navigation }) {
                     hint="Used to show your service type in worker profile and admin lists."
                   />
                 )}
-                {boothInfo && (
-                  <View style={[s.infoCard,{backgroundColor:boothInfo.workerCount>0?'#FEF3C7':'#DCFCE7'}]}>
-                    <Text style={{fontSize:20}}>{boothInfo.workerCount>0?'👥':'🎉'}</Text>
-                    <Text style={{flex:1,fontSize:13,color:T.text,lineHeight:19}}>{boothInfo.message}</Text>
+                {thokuthiInfo && (
+                  <View style={[s.infoCard,{backgroundColor:thokuthiInfo.workerCount>0?'#FEF3C7':'#DCFCE7'}]}>
+                    <Text style={{fontSize:20}}>{thokuthiInfo.workerCount>0?'👥':'🎉'}</Text>
+                    <Text style={{flex:1,fontSize:13,color:T.text,lineHeight:19}}>{thokuthiInfo.message}</Text>
                   </View>
                 )}
                 <TouchableOpacity style={[s.btn,(!form.district||loading)&&{opacity:0.6}]} onPress={handleStep3} disabled={!form.district||loading} activeOpacity={0.85}>

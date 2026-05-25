@@ -9,7 +9,7 @@ const {
   sendOtp,
   verifyOtp,
   verifyPhoneEmail,
-  verifyBooth,
+  verifyThokuthi,
   forgotPassword,
   verifyResetOtp,
   resetPassword,
@@ -27,8 +27,8 @@ router.post('/verify-phone-email', verifyPhoneEmail);  // ← phone.email widget
 router.post('/send-otp',           sendOtp);
 router.post('/verify-otp',         verifyOtp);
 
-// Booth verification for agents
-router.post('/verify-booth',       verifyBooth);       // ← NEW
+// Thokuthi verification for agents
+router.post('/verify-thokuthi',       verifyThokuthi);       // ← NEW
 
 // Password reset
 router.post('/forgot-password',    forgotPassword);

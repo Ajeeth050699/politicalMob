@@ -68,7 +68,7 @@ export default function WorkerDashboard({ navigation }) {
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={s.greetingTxt}>{greeting},</Text>
               <Text style={s.workerName}>{userInfo?.name}</Text>
-              <Text style={s.boothTxt}>🏠 Booth {userInfo?.booth || 'N/A'} · 📍 {userInfo?.district || 'N/A'}</Text>
+              <Text style={s.thokuthiTxt}>🏠 Thokuthi {userInfo?.thokuthi || 'N/A'} · 📍 {userInfo?.district || 'N/A'}</Text>
             </View>
             <TouchableOpacity onPress={handleLogout} style={s.logoutBtn}>
               <Text style={s.logoutTxt}>🚪</Text>
@@ -103,7 +103,7 @@ export default function WorkerDashboard({ navigation }) {
           </View>
         </LinearGradient>
 
-        {(!userInfo?.district || !userInfo?.ward || !userInfo?.booth) && (
+        {(!userInfo?.district || !userInfo?.ward || !userInfo?.thokuthi) && (
           <TouchableOpacity 
             style={{ backgroundColor: '#FEF3C7', marginHorizontal: 16, marginTop: 16, padding: 16, borderRadius: 14, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#F59E0B40' }}
             onPress={() => navigation.navigate('Profile')}
@@ -112,7 +112,7 @@ export default function WorkerDashboard({ navigation }) {
             <Text style={{ fontSize: 24, marginRight: 12 }}>⚠️</Text>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 14, fontWeight: '800', color: '#92400e', marginBottom: 2 }}>Complete your profile</Text>
-              <Text style={{ fontSize: 12, color: '#92400e' }}>Tap here to update your Ward, Booth, and District to receive proper complaint assignments.</Text>
+              <Text style={{ fontSize: 12, color: '#92400e' }}>Tap here to update your Ward, Thokuthi, and District to receive proper complaint assignments.</Text>
             </View>
             <Text style={{ fontSize: 20, color: '#92400e' }}>›</Text>
           </TouchableOpacity>
@@ -165,7 +165,7 @@ export default function WorkerDashboard({ navigation }) {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={s.complaintCat} numberOfLines={1}>{c.category}</Text>
-                  <Text style={s.complaintMeta}>📍 {c.booth} · 🏙️ {c.district}</Text>
+                  <Text style={s.complaintMeta}>📍 {c.thokuthi} · 🏙️ {c.district}</Text>
                 </View>
                 <View style={[s.complaintBadge, { backgroundColor: sc.bg + 'cc' }]}>
                   <Text style={[s.complaintBadgeTxt, { color: sc.color }]}>{c.status}</Text>
@@ -188,7 +188,7 @@ const s = StyleSheet.create({
   workerAvatar:{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   greetingTxt:{ fontSize: 12, color: 'rgba(255,255,255,0.7)' },
   workerName: { fontSize: 18, fontWeight: '900', color: '#fff' },
-  boothTxt:   { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
+  thokuthiTxt:   { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
   logoutBtn:  { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
   logoutTxt:  { fontSize: 18 },
 

@@ -18,24 +18,24 @@ const workerCanSeeComplaint = (worker, complaint) => {
   if (!worker || !complaint) return false;
   if (String(complaint.assignedWorker || '') === String(worker._id || '')) return true;
   
-  const sameThokuthi = same(complaint.ward || complaint.booth, worker.ward || worker.booth);
+  const sameThokuthi = same(complaint.ward || complaint.thokuthi, worker.ward || worker.thokuthi);
   const sameWardNo = !complaint.wardNo || !worker.wardNo || Number(complaint.wardNo) === Number(worker.wardNo);
   
   if (sameThokuthi && sameWardNo) return true;
   return false;
 };
 
-const findRoutingAgents = async ({ ward, wardNo, booth, pincode, district }) => {
+const findRoutingAgents = async ({ ward, wardNo, thokuthi, pincode, district }) => {
   let agents = [];
   let routingLevel = 'ward';
 
-  if (ward || booth) {
+  if (ward || thokuthi) {
     agents = await User.find({
       role: 'worker',
       isActive: true,
       $or: [
-        { ward: ward || booth, wardNo },
-        { booth: ward || booth, wardNo },
+        { ward: ward || thokuthi, wardNo },
+        { thokuthi: ward || thokuthi, wardNo },
       ],
     });
 
@@ -44,8 +44,8 @@ const findRoutingAgents = async ({ ward, wardNo, booth, pincode, district }) => 
         role: 'worker',
         isActive: true,
         $or: [
-          { ward: ward || booth },
-          { booth: ward || booth },
+          { ward: ward || thokuthi },
+          { thokuthi: ward || thokuthi },
         ],
       });
     }
@@ -73,9 +73,9 @@ const fmt = (c) => ({
   user:             c.user?.name    || 'Unknown',
   userId:           c.user?._id,
   userPhone:        c.citizenPhone  || c.user?.phone,
-  ward:             c.ward || c.booth,
+  ward:             c.ward || c.thokuthi,
   wardNo:           c.wardNo,
-  booth:            c.booth,
+  thokuthi:            c.thokuthi,
   district:         c.district,
   pincode:          c.pincode,
   priority:         c.priority,
@@ -98,10 +98,10 @@ const fmt = (c) => ({
 
 // ─────────────────────────────────────────────────────────────────
 // GET /api/complaints
-// public → own | worker → booth + pincode fallback + escalated | admin/agent → all
+// public → own | worker → thokuthi + pincode fallback + escalated | admin/agent → all
 // ─────────────────────────────────────────────────────────────────
 const getComplaints = asyncHandler(async (req, res) => {
-  const { status, district, booth, category, pincode, workerName, workerId } = req.query;
+  const { status, district, thokuthi, category, pincode, workerName, workerId } = req.query;
   let filter = {};
 
   if (['public', 'citizen'].includes(req.user.role)) {
@@ -109,14 +109,14 @@ const getComplaints = asyncHandler(async (req, res) => {
 
   } else if (req.user.role === 'worker') {
     const orConditions = [];
-    if (req.user.ward || req.user.booth) {
-      const area = req.user.ward || req.user.booth;
+    if (req.user.ward || req.user.thokuthi) {
+      const area = req.user.ward || req.user.thokuthi;
       if (req.user.wardNo) {
         orConditions.push({ ward: area, wardNo: req.user.wardNo });
-        orConditions.push({ booth: area, wardNo: req.user.wardNo });
+        orConditions.push({ thokuthi: area, wardNo: req.user.wardNo });
       } else {
         orConditions.push({ ward: area });
-        orConditions.push({ booth: area });
+        orConditions.push({ thokuthi: area });
       }
     }
     
@@ -131,7 +131,7 @@ const getComplaints = asyncHandler(async (req, res) => {
 
   if (status   && status   !== 'ALL') filter.status   = status;
   if (district && district !== 'ALL') filter.district = district;
-  if (booth    && isAdminOrAgent) filter.booth = booth;
+  if (thokuthi    && isAdminOrAgent) filter.thokuthi = thokuthi;
   if (req.query.ward && isAdminOrAgent) filter.ward = req.query.ward;
   if (req.query.wardNo && isAdminOrAgent) filter.wardNo = Number(req.query.wardNo);
   if (pincode && isAdminOrAgent) filter.pincode = pincode;
@@ -153,27 +153,27 @@ const getComplaints = asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────
 // POST /api/complaints
-// Smart routing: booth → pincode → district → escalate to admin
+// Smart routing: thokuthi → pincode → district → escalate to admin
 // ─────────────────────────────────────────────────────────────────
 const createComplaint = asyncHandler(async (req, res) => {
   const {
-    category, description, ward, wardNo, booth, district,
+    category, description, ward, wardNo, thokuthi, district,
     pincode, address, location, attachments, citizenPhone
   } = req.body;
 
-  const matchedWard = findWard(ward || booth || req.user.ward || req.user.booth);
+  const matchedWard = findWard(ward || thokuthi || req.user.ward || req.user.thokuthi);
   if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
 
   const userWard     = matchedWard.name;
   const userWardNo   = wardNo || req.user.wardNo;
-  const userBooth    = userWard;
+  const userThokuthi    = userWard;
   const userPincode  = pincode  || req.user.pincode;
   const userDistrict = district || req.user.district;
 
   const { agents, routingLevel, fallbackUsed } = await findRoutingAgents({
     ward: userWard,
     wardNo: userWardNo,
-    booth: userBooth,
+    thokuthi: userThokuthi,
     pincode: userPincode,
     district: userDistrict,
   });
@@ -186,7 +186,7 @@ const createComplaint = asyncHandler(async (req, res) => {
     description,
     ward:             userWard,
     wardNo:           userWardNo,
-    booth:            userBooth,
+    thokuthi:            userThokuthi,
     district:         userDistrict,
     pincode:          userPincode,
     address,
@@ -407,7 +407,7 @@ const escalatePending = asyncHandler(async (req, res) => {
     c.escalatedAt      = new Date();
     await c.save();
     for (const admin of admins) {
-      await notify(admin._id, `⚠️ Unattended 2+ hrs: ${c.category} in booth ${c.booth}`, 'complaint');
+      await notify(admin._id, `⚠️ Unattended 2+ hrs: ${c.category} in thokuthi ${c.thokuthi}`, 'complaint');
     }
   }
 

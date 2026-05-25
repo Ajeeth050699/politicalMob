@@ -8,11 +8,11 @@ const { Camp, Video, Exam, ExamResult, Notification, Emergency } = require('../m
 
 // @route GET /api/news
 const getNews = asyncHandler(async (req, res) => {
-  const { level, district, booth } = req.query;
+  const { level, district, thokuthi } = req.query;
   let filter = { status: 'published' };
   if (level)    filter.level    = level;
   if (district) filter.district = district;
-  if (booth)    filter.booth    = booth;
+  if (thokuthi)    filter.thokuthi    = thokuthi;
 
   const news = await News.find(filter).sort({ createdAt: -1 }).populate('createdBy', 'name');
   res.json(news.map((n) => ({
@@ -28,9 +28,9 @@ const getNews = asyncHandler(async (req, res) => {
 
 // @route POST /api/news
 const createNews = asyncHandler(async (req, res) => {
-  const { title, description, level, district, booth, status } = req.body;
+  const { title, description, level, district, thokuthi, status } = req.body;
   const news = await News.create({
-    title, description, level, district, booth, status,
+    title, description, level, district, thokuthi, status,
     createdBy: req.user._id,
   });
   res.status(201).json(news);
@@ -235,7 +235,7 @@ const getAnalyticsStats = asyncHandler(async (req, res) => {
   }
 
   const repeatAgg = await Complaint.aggregate([
-    { $group: { _id: { booth: '$booth', category: '$category' }, count: { $sum: 1 } } },
+    { $group: { _id: { thokuthi: '$thokuthi', category: '$category' }, count: { $sum: 1 } } },
     { $match: { count: { $gt: 1 } } },
   ]);
 

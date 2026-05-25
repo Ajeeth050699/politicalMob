@@ -104,7 +104,7 @@ export default function ComplaintDetail({ route, navigation }) {
 
   const rows = [
     { label:'Description',     value:complaint.description,                          icon:'📝' },
-    { label:'Booth',           value:complaint.booth,                                icon:'🏠' },
+    { label:'Thokuthi',           value:complaint.thokuthi,                                icon:'🏠' },
     { label:'District',        value:complaint.district,                             icon:'📍' },
     { label:'Submitted By',    value:complaint.user || complaint.user?.name || 'Unknown',              icon:'👤' },
     { label:'Contact Phone',   value:complaint.userPhone || 'Not provided',          icon:'📞' },
@@ -270,7 +270,7 @@ export default function ComplaintDetail({ route, navigation }) {
           {!complaint.assignedWorker && (
             <View style={s.infoCard}>
               <Text style={{ fontSize:20 }}>ℹ️</Text>
-              <Text style={s.infoTxt}>Your complaint is pending worker assignment. A worker from your booth will be assigned shortly.</Text>
+              <Text style={s.infoTxt}>Your complaint is pending worker assignment. A worker from your thokuthi will be assigned shortly.</Text>
             </View>
           )}
         </View>

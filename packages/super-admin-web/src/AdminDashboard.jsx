@@ -105,14 +105,14 @@ const generateComplaintsReport = (complaints, stats) => {
       </div>`).join("")}
     </div>`;
   const table = `<table>
-    <thead><tr>${["#","Category","User","Booth","District","Priority","Status","Date"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+    <thead><tr>${["#","Category","User","Thokuthi","District","Priority","Status","Date"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
     <tbody>${complaints.map((c,i)=>{
       const sc = {NEW:"background:#fef3c7;color:#f59e0b",ACCEPTED:"background:#dbeafe;color:#3b82f6","IN PROGRESS":"background:#ede9fe;color:#8b5cf6",COMPLETED:"background:#dcfce7;color:#22c55e"}[c.status]||"";
       return `<tr>
         <td>${i+1}</td>
         <td><strong>${c.category||""}</strong></td>
         <td>${c.user||""}</td>
-        <td>${c.booth||""}</td>
+        <td>${c.thokuthi||""}</td>
         <td>${c.district||""}</td>
         <td style="color:${c.priority==="high"?"#ef4444":c.priority==="medium"?"#f59e0b":"#22c55e"};font-weight:600;text-transform:capitalize">${c.priority||"medium"}</td>
         <td><span class="badge-status" style="${sc}">${c.status||""}</span></td>
@@ -131,7 +131,7 @@ const generateWorkersReport = (workers) => {
       <span class="badge">📅 ${new Date().toLocaleDateString("en-IN")} · ${workers.length} Workers</span>
     </div>`;
   const table = `<table>
-    <thead><tr>${["#","Name","Email","Phone","Booth","District","Resolved","Pending","Rate","Status"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+    <thead><tr>${["#","Name","Email","Phone","Thokuthi","District","Resolved","Pending","Rate","Status"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
     <tbody>${workers.map((w,i)=>{
       const total = (w.resolved||0)+(w.pending||0);
       const pct = total>0?Math.round((w.resolved/total)*100):0;
@@ -141,7 +141,7 @@ const generateWorkersReport = (workers) => {
         <td><strong>${w.name||""}</strong></td>
         <td>${w.email||""}</td>
         <td>${w.phone||""}</td>
-        <td>${w.booth||""}</td>
+        <td>${w.thokuthi||""}</td>
         <td>${w.district||""}</td>
         <td style="color:#22c55e;font-weight:600">${w.resolved||0}</td>
         <td style="color:#f59e0b;font-weight:600">${w.pending||0}</td>
@@ -436,11 +436,11 @@ export default function AdminDashboard() {
   const filteredComplaints = complaints.filter(c =>
     (filterStatus==="ALL" || c.status===filterStatus) &&
     (filterDistrict==="ALL" || c.district===filterDistrict) &&
-    [c.ward,c.booth,c.wardNo,c.pincode,c.assignedWorker,c.assignedWorkerId,c.user,c.category,c.status]
+    [c.ward,c.thokuthi,c.wardNo,c.pincode,c.assignedWorker,c.assignedWorkerId,c.user,c.category,c.status]
       .some(v => String(v || "").toLowerCase().includes(complaintSearch.toLowerCase()))
   );
   const filteredWorkers = workers.filter(w =>
-    [(w.name||""),(w.booth||""),(w.district||"")].some(v => v.toLowerCase().includes(searchWorker.toLowerCase()))
+    [(w.name||""),(w.thokuthi||""),(w.district||"")].some(v => v.toLowerCase().includes(searchWorker.toLowerCase()))
   );
 
   // ════════════════════════════════════════════════════════════════════
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
   };
 
   const AddComplaintModal = () => {
-    const [f, setF] = useState({ category:"Street Light Problem", description:"", booth:"", district:"Chennai" });
+    const [f, setF] = useState({ category:"Street Light Problem", description:"", thokuthi:"", district:"Chennai" });
     const [loading, setLoading] = useState(false);
     const set = k => e => setF(p => ({...p,[k]:e.target.value}));
     const submit = async e => {
@@ -501,7 +501,7 @@ export default function AdminDashboard() {
             <textarea style={{...iSx,minHeight:90,resize:"vertical"}} required value={f.description} onChange={set("description")} placeholder="Describe the issue..." />
           </Field>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <Field label="Booth" icon="🏠"><input style={iSx} required value={f.booth} onChange={set("booth")} placeholder="Booth number" /></Field>
+            <Field label="Thokuthi" icon="🏠"><input style={iSx} required value={f.thokuthi} onChange={set("thokuthi")} placeholder="Thokuthi number" /></Field>
             <Field label="District" icon="📍"><DistrictSelect value={f.district} onChange={set("district")} /></Field>
           </div>
           <SubmitBtn loading={loading} label="🚀 Submit Complaint" />
@@ -511,7 +511,7 @@ export default function AdminDashboard() {
   };
 
   const AddNewsModal = () => {
-    const [f, setF] = useState({ title:"", description:"", level:"State", district:"", booth:"", status:"published" });
+    const [f, setF] = useState({ title:"", description:"", level:"State", district:"", thokuthi:"", status:"published" });
     const [loading, setLoading] = useState(false);
     const set = k => e => setF(p => ({...p,[k]:e.target.value}));
     const submit = async e => {
@@ -530,7 +530,7 @@ export default function AdminDashboard() {
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
             <Field label="Level" icon="🏛️">
               <select style={sSx} value={f.level} onChange={set("level")}>
-                {["State","District","Booth"].map(l=><option key={l}>{l}</option>)}
+                {["State","District","Thokuthi"].map(l=><option key={l}>{l}</option>)}
               </select>
             </Field>
             <Field label="Status" icon="✅">
@@ -540,7 +540,7 @@ export default function AdminDashboard() {
               </select>
             </Field>
             {f.level!=="State" && <Field label="District" icon="📍"><DistrictSelect value={f.district||"Chennai"} onChange={set("district")} /></Field>}
-            {f.level==="Booth" && <Field label="Booth" icon="🏠"><input style={iSx} value={f.booth} onChange={set("booth")} placeholder="Booth number" /></Field>}
+            {f.level==="Thokuthi" && <Field label="Thokuthi" icon="🏠"><input style={iSx} value={f.thokuthi} onChange={set("thokuthi")} placeholder="Thokuthi number" /></Field>}
           </div>
           <SubmitBtn loading={loading} label="📢 Publish" />
         </form>
@@ -947,7 +947,7 @@ export default function AdminDashboard() {
                 <div style={{ width:7, height:7, borderRadius:"50%", background:pc(c.priority), flexShrink:0 }} />
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, fontWeight:600, color:T.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.category}</div>
-                  <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:11, color:T.textM }}>{c.booth} · {c.time}</div>
+                  <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:11, color:T.textM }}>{c.thokuthi} · {c.time}</div>
                 </div>
                 <span style={{ background:s.bg, color:s.color, padding:"3px 10px", borderRadius:50, fontSize:11, fontWeight:600, fontFamily:"'Source Sans 3',sans-serif", whiteSpace:"nowrap" }}>{c.status}</span>
               </div>
@@ -1018,7 +1018,7 @@ export default function AdminDashboard() {
                   <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, fontWeight:600, color:T.text }}>{c.category}</span>
                 </div>
                 <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:13, color:T.text }}>{c.user}</span>
-                <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>{c.booth}{c.wardNo ? ` / Ward ${c.wardNo}` : ""}</span>
+                <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>{c.thokuthi}{c.wardNo ? ` / Ward ${c.wardNo}` : ""}</span>
                 <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textL }}>{c.district}</span>
                 <span style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:pc(c.priority), fontWeight:600, textTransform:"capitalize" }}>{c.priority}</span>
                 <span style={{ background:s.bg, color:s.color, padding:"3px 10px", borderRadius:50, fontSize:11, fontWeight:600, fontFamily:"'Source Sans 3',sans-serif", display:"inline-block" }}>{c.status}</span>
@@ -1086,10 +1086,10 @@ export default function AdminDashboard() {
   const PageWorkers = () => (
     <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
       <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
-        <input placeholder="🔍  Search workers, booth, district..." value={searchWorker} onChange={e=>setSearchWorker(e.target.value)} style={{ ...iSx, flex:1, minWidth:220, width:"auto" }} />
+        <input placeholder="🔍  Search workers, thokuthi, district..." value={searchWorker} onChange={e=>setSearchWorker(e.target.value)} style={{ ...iSx, flex:1, minWidth:220, width:"auto" }} />
         <ActionBtn label="+ Add Worker" onClick={() => setModal("addWorker")} />
         <ExportMenu
-          onCSV={() => exportToCSV(filteredWorkers, "workers.csv", ["Name","Email","Phone","Booth","District","Resolved","Pending","Status"])}
+          onCSV={() => exportToCSV(filteredWorkers, "workers.csv", ["Name","Email","Phone","Thokuthi","District","Resolved","Pending","Status"])}
           onHTML={() => exportToHTML(generateWorkersReport(filteredWorkers), "workers_report")}
           onWord={() => exportToHTML(generateWorkersReport(filteredWorkers), "workers_report")}
         />
@@ -1107,7 +1107,7 @@ export default function AdminDashboard() {
                   <div style={{ width:44, height:44, borderRadius:"50%", background:`linear-gradient(135deg,${T.maroon},${T.gold})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, color:"#fff", fontFamily:"'Playfair Display',serif", fontWeight:700 }}>{(w.name||"?")[0].toUpperCase()}</div>
                   <div>
                     <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:15, fontWeight:600, color:T.text }}>{w.name}</div>
-                    <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>{w.booth} · {w.district}</div>
+                    <div style={{ fontFamily:"'Source Sans 3',sans-serif", fontSize:12, color:T.textM }}>{w.thokuthi} · {w.district}</div>
                   </div>
                 </div>
                 <span style={{ background:w.status==="active"?"#dcfce7":"#f3f4f6", color:w.status==="active"?"#166534":"#6b7280", padding:"3px 10px", borderRadius:50, fontSize:11, fontWeight:600, fontFamily:"'Source Sans 3',sans-serif", textTransform:"capitalize" }}>{w.status}</span>

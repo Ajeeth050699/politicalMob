@@ -37,7 +37,7 @@ export default function AdminComplaints({ navigation }) {
   const [thokuthis,     setThokuthis]     = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [refreshing,    setRefreshing]    = useState(false);
-  const [selectedThokuthi, setSelectedThokuthi] = useState(() => userInfo?.booth || userInfo?.ward || 'ALL');
+  const [selectedThokuthi, setSelectedThokuthi] = useState(() => userInfo?.thokuthi || userInfo?.ward || 'ALL');
   const [searchQuery,   setSearchQuery]   = useState('');
   const [filterStatus,  setFilterStatus]  = useState('ALL');
   const [toast,         setToast]         = useState({ visible:false, message:'', type:'error' });
@@ -48,7 +48,7 @@ export default function AdminComplaints({ navigation }) {
     try {
       const [complaintRes, thokuthisRes] = await Promise.all([
         complaintAPI.getAll({ 
-          ...(selectedThokuthi !== 'ALL' && { booth: selectedThokuthi }),
+          ...(selectedThokuthi !== 'ALL' && { thokuthi: selectedThokuthi }),
           ...(filterStatus !== 'ALL' && { status: filterStatus })
         }),
         systemAPI.getWards().catch(() => ({ data: { wards: [] } }))
@@ -76,7 +76,7 @@ export default function AdminComplaints({ navigation }) {
     return (
       c.category?.toLowerCase().includes(query) ||
       c.user?.toLowerCase().includes(query) ||
-      c.booth?.toLowerCase().includes(query) ||
+      c.thokuthi?.toLowerCase().includes(query) ||
       c.ward?.toLowerCase().includes(query) ||
       c.district?.toLowerCase().includes(query) ||
       c.description?.toLowerCase().includes(query)
@@ -110,7 +110,7 @@ export default function AdminComplaints({ navigation }) {
           </View>
           <View style={{ flex:1 }}>
             <Text style={s.catTxt} numberOfLines={1}>{c.category}</Text>
-            <Text style={s.metaTxt}>👤 {c.user} · 🏠 {c.booth}</Text>
+            <Text style={s.metaTxt}>👤 {c.user} · 🏠 {c.thokuthi}</Text>
           </View>
           <View style={[s.statusBadge, { backgroundColor:sm.bg }]}>
             <Text style={{ fontSize:10 }}>{sm.icon}</Text>
@@ -228,7 +228,7 @@ export default function AdminComplaints({ navigation }) {
       <View style={s.searchContainer}>
         <TextInput
           style={s.searchInput}
-          placeholder="🔍 Search by category, user, booth, ward..."
+          placeholder="🔍 Search by category, user, thokuthi, ward..."
           placeholderTextColor={T.textM}
           value={searchQuery}
           onChangeText={setSearchQuery}

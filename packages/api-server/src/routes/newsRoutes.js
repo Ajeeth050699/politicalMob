@@ -7,11 +7,11 @@ const { protect, adminOnly, workerOrAdmin } = require('../middleware/authMiddlew
 
 // GET /api/news
 router.get('/', protect, asyncHandler(async (req, res) => {
-  const { level, district, booth } = req.query;
+  const { level, district, thokuthi } = req.query;
   let filter = { status: 'published' };
   if (level)    filter.level    = level;
   if (district) filter.district = district;
-  if (booth)    filter.booth    = booth;
+  if (thokuthi)    filter.thokuthi    = thokuthi;
   const news = await News.find(filter).sort({ createdAt: -1 }).populate('createdBy', 'name');
   res.json(news.map((n) => ({
     id: n._id, title: n.title, description: n.description,

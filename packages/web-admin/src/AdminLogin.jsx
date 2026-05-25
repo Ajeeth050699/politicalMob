@@ -98,7 +98,7 @@ export default function AdminLogin() {
           <p style={{ fontSize:13, color:"rgba(255,255,255,0.55)", marginBottom:40, letterSpacing:0.5 }}>Tamil Nadu Government Admin Portal</p>
           {[
             { icon:"📊", label:"Real-time complaint analytics" },
-            { icon:"👥", label:"Manage booth field workers"   },
+            { icon:"👥", label:"Manage thokuthi field workers"   },
             { icon:"📰", label:"Publish news & welfare camps" },
             { icon:"📈", label:"District performance reports" },
             { icon:"🔔", label:"Push announcements to citizens" },

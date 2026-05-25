@@ -18,7 +18,7 @@ const publicUser = (u) => ({
   role: u.role,
   ward: u.ward,
   wardNo: u.wardNo,
-  booth: u.booth,
+  thokuthi: u.thokuthi,
   district: u.district,
   address: u.address,
   pincode: u.pincode,
@@ -46,7 +46,7 @@ router.get('/', protect, adminOnly, asyncHandler(async (req, res) => {
       (u.name || '').toLowerCase().includes(q) ||
       (u.email || '').toLowerCase().includes(q) ||
       (u.phone || '').toLowerCase().includes(q) ||
-      (u.ward || u.booth || '').toLowerCase().includes(q)
+      (u.ward || u.thokuthi || '').toLowerCase().includes(q)
     );
   }
 
@@ -66,7 +66,7 @@ router.get('/', protect, adminOnly, asyncHandler(async (req, res) => {
 }));
 
 router.post('/', protect, adminOnly, asyncHandler(async (req, res) => {
-  const { name, email, phone, password, role, ward, booth, district, address, pincode } = req.body;
+  const { name, email, phone, password, role, ward, thokuthi, district, address, pincode } = req.body;
   const requestedRole = role === 'citizen' ? 'public' : (role || 'public');
 
   if (!['public', 'citizen', 'worker', 'agent', 'admin', 'superadmin'].includes(requestedRole)) {
@@ -79,7 +79,7 @@ router.post('/', protect, adminOnly, asyncHandler(async (req, res) => {
     res.status(400); throw new Error('Name, email and password are required');
   }
   const matchedWard = ['public', 'citizen', 'worker', 'agent'].includes(requestedRole)
-    ? findWard(ward || booth)
+    ? findWard(ward || thokuthi)
     : null;
   if (['public', 'citizen', 'worker', 'agent'].includes(requestedRole) && (!matchedWard || !district || !address || !pincode)) {
     res.status(400); throw new Error('Ward, district, address and pincode are required');
@@ -98,7 +98,7 @@ router.post('/', protect, adminOnly, asyncHandler(async (req, res) => {
     role: requestedRole,
     ward: matchedWard?.name || '',
     wardNo: matchedWard?.id,
-    booth: matchedWard?.name || booth || '',
+    thokuthi: matchedWard?.name || thokuthi || '',
     district: district || '',
     address: address || '',
     pincode: pincode || '',
@@ -138,15 +138,15 @@ router.put('/:id', protect, adminOnly, asyncHandler(async (req, res) => {
   user.email = req.body.email ?? user.email;
   user.phone = req.body.phone ?? user.phone;
   user.role = nextRole;
-  if (req.body.ward !== undefined || req.body.booth !== undefined) {
-    const matchedWard = findWard(req.body.ward || req.body.booth);
+  if (req.body.ward !== undefined || req.body.thokuthi !== undefined) {
+    const matchedWard = findWard(req.body.ward || req.body.thokuthi);
     if (['public', 'citizen', 'worker', 'agent'].includes(nextRole) && !matchedWard) {
       res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required');
     }
     if (matchedWard) {
       user.ward = matchedWard.name;
       user.wardNo = matchedWard.id;
-      user.booth = matchedWard.name;
+      user.thokuthi = matchedWard.name;
     }
   }
   user.district = req.body.district ?? user.district;

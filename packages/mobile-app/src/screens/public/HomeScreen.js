@@ -309,7 +309,7 @@ function EmerCard({ e, index, onPress }) {
 const LEVEL_META = {
   State:    { icon: '🏛️', color: '#8B1A1A', bg: '#FEE2E2' },
   District: { icon: '🏙️', color: '#D4A017', bg: '#FEF3C7' },
-  Booth:    { icon: '📍', color: '#16a34a', bg: '#DCFCE7' },
+  Thokuthi:    { icon: '📍', color: '#16a34a', bg: '#DCFCE7' },
 };
 
 function NewsCard({ n, index, onPress }) {
@@ -473,7 +473,7 @@ export default function HomeScreen({ navigation }) {
             }}>
               <Text style={s.greetLabel}>{greetEmoji} {greeting},</Text>
               <Text style={s.greetName}>{userInfo?.name?.split(' ')[0] || 'Citizen'}</Text>
-              <Text style={s.greetSub}>📍 {userInfo?.district || 'Tamil Nadu'} · Booth {userInfo?.booth || '—'}</Text>
+              <Text style={s.greetSub}>📍 {userInfo?.district || 'Tamil Nadu'} · Thokuthi {userInfo?.thokuthi || '—'}</Text>
             </Animated.View>
 
             {/* Floating stats */}
@@ -489,7 +489,7 @@ export default function HomeScreen({ navigation }) {
           </Animated.View>
         </LinearGradient>
 
-        {(!userInfo?.district || !userInfo?.ward || !userInfo?.booth) && (
+        {(!userInfo?.district || !userInfo?.ward || !userInfo?.thokuthi) && (
           <TouchableOpacity 
             style={{ backgroundColor: '#FEF3C7', marginHorizontal: 16, marginTop: 16, padding: 16, borderRadius: 14, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#F59E0B40' }}
             onPress={() => navigation.navigate('Profile')}
@@ -498,7 +498,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={{ fontSize: 24, marginRight: 12 }}>⚠️</Text>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 14, fontWeight: '800', color: '#92400e', marginBottom: 2 }}>Complete your profile</Text>
-              <Text style={{ fontSize: 12, color: '#92400e' }}>Tap here to update your Ward, Booth, and District for accurate routing.</Text>
+              <Text style={{ fontSize: 12, color: '#92400e' }}>Tap here to update your Ward, Thokuthi, and District for accurate routing.</Text>
             </View>
             <Text style={{ fontSize: 20, color: '#92400e' }}>›</Text>
           </TouchableOpacity>

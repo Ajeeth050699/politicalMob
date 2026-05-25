@@ -17,7 +17,7 @@ router.get('/', protect, asyncHandler(async (req, res) => {
     const s = search.toLowerCase();
     workers = workers.filter((w) =>
       w.name.toLowerCase().includes(s) ||
-      (w.ward || w.booth || '').toLowerCase().includes(s) ||
+      (w.ward || w.thokuthi || '').toLowerCase().includes(s) ||
       (w.district || '').toLowerCase().includes(s)
     );
   }
@@ -29,7 +29,7 @@ router.get('/', protect, asyncHandler(async (req, res) => {
       role: w.role,
       ward: w.ward,
       wardNo: w.wardNo,
-      booth: w.booth, district: w.district,
+      thokuthi: w.thokuthi, district: w.district,
       pincode: w.pincode,
       address: w.address,
       profilePhoto: w.profilePhoto,
@@ -42,8 +42,8 @@ router.get('/', protect, asyncHandler(async (req, res) => {
 
 // POST /api/workers
 router.post('/', protect, adminOnly, asyncHandler(async (req, res) => {
-  const { name, email, phone, password, ward, wardNo, booth, district, pincode, address, profilePhoto, role } = req.body;
-  const matchedWard = findWard(ward || booth);
+  const { name, email, phone, password, ward, wardNo, thokuthi, district, pincode, address, profilePhoto, role } = req.body;
+  const matchedWard = findWard(ward || thokuthi);
   if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
   if (!wardNo) { res.status(400); throw new Error('Ward number is required'); }
   const workerRole = role === 'agent' ? 'agent' : 'worker';
@@ -54,13 +54,13 @@ router.post('/', protect, adminOnly, asyncHandler(async (req, res) => {
     role: workerRole,
     ward: matchedWard.name,
     wardNo: Number(wardNo),
-    booth: matchedWard.name,
+    thokuthi: matchedWard.name,
     district,
     pincode,
     address,
     profilePhoto,
   });
-  res.status(201).json({ _id: worker._id, name: worker.name, email: worker.email, role: worker.role, ward: worker.ward, wardNo: worker.wardNo, booth: worker.booth, district: worker.district, pincode: worker.pincode });
+  res.status(201).json({ _id: worker._id, name: worker.name, email: worker.email, role: worker.role, ward: worker.ward, wardNo: worker.wardNo, thokuthi: worker.thokuthi, district: worker.district, pincode: worker.pincode });
 }));
 
 // PUT /api/workers/:id
@@ -69,11 +69,11 @@ router.put('/:id', protect, adminOnly, asyncHandler(async (req, res) => {
   if (!worker || !['worker', 'agent'].includes(worker.role)) { res.status(404); throw new Error('Worker not found'); }
   worker.name     = req.body.name     || worker.name;
   worker.phone    = req.body.phone    || worker.phone;
-  if (req.body.ward || req.body.booth) {
-    const matchedWard = findWard(req.body.ward || req.body.booth);
+  if (req.body.ward || req.body.thokuthi) {
+    const matchedWard = findWard(req.body.ward || req.body.thokuthi);
     if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
     worker.ward = matchedWard.name;
-    worker.booth = matchedWard.name;
+    worker.thokuthi = matchedWard.name;
   }
   worker.wardNo   = req.body.wardNo !== undefined ? Number(req.body.wardNo) : worker.wardNo;
   worker.district = req.body.district || worker.district;
@@ -83,7 +83,7 @@ router.put('/:id', protect, adminOnly, asyncHandler(async (req, res) => {
   worker.role     = req.body.role === 'agent' ? 'agent' : (req.body.role === 'worker' ? 'worker' : worker.role);
   worker.isActive = req.body.isActive !== undefined ? req.body.isActive : worker.isActive;
   const updated = await worker.save();
-  res.json({ _id: updated._id, name: updated.name, role: updated.role, ward: updated.ward, wardNo: updated.wardNo, booth: updated.booth, district: updated.district, pincode: updated.pincode, isActive: updated.isActive });
+  res.json({ _id: updated._id, name: updated.name, role: updated.role, ward: updated.ward, wardNo: updated.wardNo, thokuthi: updated.thokuthi, district: updated.district, pincode: updated.pincode, isActive: updated.isActive });
 }));
 
 // DELETE /api/workers/:id

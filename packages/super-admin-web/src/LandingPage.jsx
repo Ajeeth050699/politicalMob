@@ -8,12 +8,12 @@ const C = {
 };
 
 const FEATURES = [
-  { icon:"📝", title:"File Complaints",    desc:"Submit civic issues with photo & video proof to your booth worker instantly." },
+  { icon:"📝", title:"File Complaints",    desc:"Submit civic issues with photo & video proof to your thokuthi worker instantly." },
   { icon:"📊", title:"Live Tracking",      desc:"Track complaint status from submission to resolution in real time." },
   { icon:"🏕️", title:"Welfare Camps",      desc:"Discover government welfare camps and social programs near you." },
   { icon:"📚", title:"Education Hub",      desc:"Access educational videos and earn certified government credentials." },
   { icon:"🚨", title:"Emergency Contacts", desc:"One-tap access to all Tamil Nadu emergency and social service numbers." },
-  { icon:"📰", title:"Local News",         desc:"Booth, district and state-level government updates in one place." },
+  { icon:"📰", title:"Local News",         desc:"Thokuthi, district and state-level government updates in one place." },
 ];
 
 const STATS = [
@@ -194,8 +194,8 @@ export default function LandingPage() {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:28, maxWidth:860, margin:"0 auto" }}>
           {[
             { n:"01", icon:"📱", title:"Register",     desc:"Create your account with phone OTP verification in 2 minutes." },
-            { n:"02", icon:"📝", title:"Report Issue",  desc:"Describe the issue, add photos or videos, and submit with booth details." },
-            { n:"03", icon:"👷", title:"Get Assigned",  desc:"Your complaint is instantly assigned to your local booth worker." },
+            { n:"02", icon:"📝", title:"Report Issue",  desc:"Describe the issue, add photos or videos, and submit with thokuthi details." },
+            { n:"03", icon:"👷", title:"Get Assigned",  desc:"Your complaint is instantly assigned to your local thokuthi worker." },
             { n:"04", icon:"✅", title:"Resolved",      desc:"Track progress and get confirmation when your issue is resolved." },
           ].map((s,i) => (
             <div key={i} className="step-card" style={{ textAlign:"center" }}>

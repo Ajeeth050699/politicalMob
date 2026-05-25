@@ -79,7 +79,7 @@ const getRecentComplaints = asyncHandler(async (req, res) => {
     id:       c._id,
     category: c.category,
     user:     c.user?.name || 'Unknown',
-    booth:    c.booth,
+    thokuthi:    c.thokuthi,
     district: c.district,
     priority: c.priority,
     status:   c.status,

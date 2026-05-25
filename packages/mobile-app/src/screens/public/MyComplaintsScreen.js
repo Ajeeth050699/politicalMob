@@ -94,7 +94,7 @@ export default function MyComplaintsScreen({ navigation }) {
 
           {/* Meta row */}
           <View style={s.metaRow}>
-            <Text style={s.metaItem}>📍 {c.booth}</Text>
+            <Text style={s.metaItem}>📍 {c.thokuthi}</Text>
             <Text style={s.metaDot}>·</Text>
             <Text style={s.metaItem}>🏙️ {c.district}</Text>
             <Text style={s.metaDot}>·</Text>

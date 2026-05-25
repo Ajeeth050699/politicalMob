@@ -79,7 +79,7 @@ export default function AdminDashboard({ navigation }) {
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={s.greetingTxt}>Welcome back,</Text>
               <Text style={s.adminName}>{userInfo?.name}</Text>
-              <Text style={s.boothTxt}>📍 {userInfo?.district || 'TN'} Admin</Text>
+              <Text style={s.thokuthiTxt}>📍 {userInfo?.district || 'TN'} Admin</Text>
             </View>
             <TouchableOpacity onPress={handleLogout} style={s.logoutBtn}>
               <Text style={s.logoutTxt}>🚪</Text>
@@ -245,7 +245,7 @@ const s = StyleSheet.create({
   adminAvatar:{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   greetingTxt:{ fontSize: 12, color: 'rgba(255,255,255,0.7)' },
   adminName:  { fontSize: 18, fontWeight: '900', color: '#fff' },
-  boothTxt:   { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
+  thokuthiTxt:   { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
   logoutBtn:  { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
   logoutTxt:  { fontSize: 18 },
 

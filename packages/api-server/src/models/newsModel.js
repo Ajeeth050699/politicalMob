@@ -4,9 +4,9 @@ const newsSchema = new mongoose.Schema(
   {
     title:       { type: String, required: true },
     description: { type: String, required: true },
-    level:       { type: String, enum: ['Booth', 'District', 'State'], required: true },
+    level:       { type: String, enum: ['Thokuthi', 'District', 'State'], required: true },
     createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    booth:       { type: String },
+    thokuthi:       { type: String },
     district:    { type: String },
     status:      { type: String, enum: ['published', 'draft'], default: 'published' },
     imageUrl:    { type: String },

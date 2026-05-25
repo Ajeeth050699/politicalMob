@@ -17,7 +17,7 @@ const resetOtpStore        = {};  // for forgot-password flow
 const register = asyncHandler(async (req, res) => {
   const {
     name, email, password, phone, role,
-    ward, wardNo, booth, district, address, pincode, profilePhoto, tamilNaduAccess, workCategory,
+    ward, wardNo, thokuthi, district, address, pincode, profilePhoto, tamilNaduAccess, workCategory,
   } = req.body;
 
   const digits = phone ? String(phone).replace(/\D/g, '') : '';
@@ -30,7 +30,7 @@ const register = asyncHandler(async (req, res) => {
 
   if (!district && !hasTamilNaduAccess) { res.status(400); throw new Error('District is required'); }
 
-  const wardName = ward || booth;
+  const wardName = ward || thokuthi;
   const matchedWard = wardName ? findWard(wardName) : null;
   if (!isAdminRole && !matchedWard) { res.status(400); throw new Error('Valid Thokuthi / assembly constituency is required'); }
   if (isAdminRole && wardName && !matchedWard) { res.status(400); throw new Error('Valid Thokuthi / assembly constituency is required'); }
@@ -56,7 +56,7 @@ const register = asyncHandler(async (req, res) => {
     role:    requestedRole,
     ward:    matchedWard?.name || '',
     wardNo:  wardNo ? Number(wardNo) : undefined,
-    booth:   matchedWard?.name || '',
+    thokuthi:   matchedWard?.name || '',
     district: district || '',
     address: address || '',
     pincode: pincode || '',
@@ -100,7 +100,7 @@ const register = asyncHandler(async (req, res) => {
       role:            user.role,
       ward:            user.ward,
       wardNo:          user.wardNo,
-      booth:           user.booth,
+      thokuthi:           user.thokuthi,
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
@@ -138,7 +138,7 @@ const login = asyncHandler(async (req, res) => {
       role:            user.role,
       ward:            user.ward,
       wardNo:          user.wardNo,
-      booth:           user.booth,
+      thokuthi:           user.thokuthi,
       district:        user.district,
       address:         user.address,
       pincode:         user.pincode,
@@ -169,7 +169,7 @@ const getProfile = asyncHandler(async (req, res) => {
     role:            user.role,
     ward:            user.ward,
     wardNo:          user.wardNo,
-    booth:           user.booth,
+    thokuthi:           user.thokuthi,
     district:        user.district,
     address:         user.address,
     pincode:         user.pincode,
@@ -196,11 +196,11 @@ const updateProfile = asyncHandler(async (req, res) => {
     const matchedWard = findWard(req.body.ward);
     if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
     user.ward = matchedWard.name;
-    user.booth = matchedWard.name;
+    user.thokuthi = matchedWard.name;
   }
   user.wardNo   = req.body.wardNo   !== undefined ? Number(req.body.wardNo) : user.wardNo;
-  if (req.body.booth !== undefined) {
-    user.booth = req.body.booth;
+  if (req.body.thokuthi !== undefined) {
+    user.thokuthi = req.body.thokuthi;
   }
   user.district = req.body.district !== undefined ? req.body.district : user.district;
   user.address  = req.body.address  !== undefined ? req.body.address  : user.address;
@@ -219,7 +219,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     role:     saved.role,
     ward:     saved.ward,
     wardNo:   saved.wardNo,
-    booth:    saved.booth,
+    thokuthi:    saved.thokuthi,
     district: saved.district,
     address:  saved.address,
     pincode:  saved.pincode,
@@ -453,11 +453,11 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────
-// POST /api/auth/verify-booth
+// POST /api/auth/verify-thokuthi
 // ─────────────────────────────────────────────────────────────────
-const verifyBooth = asyncHandler(async (req, res) => {
-  const { booth, ward, district } = req.body;
-  const matchedWard = findWard(ward || booth);
+const verifyThokuthi = asyncHandler(async (req, res) => {
+  const { thokuthi, ward, district } = req.body;
+  const matchedWard = findWard(ward || thokuthi);
   if (!matchedWard || !district) {
     res.status(400); throw new Error('Ward and district are required');
   }
@@ -472,7 +472,7 @@ const verifyBooth = asyncHandler(async (req, res) => {
   res.json({
     ward: matchedWard.name,
     wardNo: matchedWard.id,
-    booth: matchedWard.name,
+    thokuthi: matchedWard.name,
     district,
     workerCount,
     message: workerCount > 0
@@ -495,5 +495,5 @@ module.exports = {
   forgotPassword,
   verifyResetOtp,
   resetPassword,
-  verifyBooth,
+  verifyThokuthi,
 };

@@ -65,9 +65,9 @@ const T = {
     loginBtn: "Login",
     signupBtn: "Sign Up",
     reportBtn: "Report Issue",
-    h1: ["Your Voice.", "Your Booth.", "Your Tamil Nadu."],
+    h1: ["Your Voice.", "Your Thokuthi.", "Your Tamil Nadu."],
     heroDesc:
-      "Connecting citizens directly with booth-level party workers to report, resolve, and track public issues — from street lights to drainage, all in one platform.",
+      "Connecting citizens directly with thokuthi-level party workers to report, resolve, and track public issues — from street lights to drainage, all in one platform.",
     dlApp: "Download the App",
     adminDash: "Admin Dashboard →",
     liveTracker: "LIVE COMPLAINT TRACKER",
@@ -75,7 +75,7 @@ const T = {
     statLabels: [
       "Citizens Served",
       "Daily Complaints",
-      "Active Booths",
+      "Active Thokuthis",
       "Resolution Rate",
     ],
     svcTag: "What We Offer",
@@ -86,12 +86,12 @@ const T = {
       {
         icon: "🛣️",
         title: "Complaint Management",
-        desc: "Submit civic issues — road damage, street lights, water supply — directly to your booth worker with real-time status tracking.",
+        desc: "Submit civic issues — road damage, street lights, water supply — directly to your thokuthi worker with real-time status tracking.",
       },
       {
         icon: "📰",
         title: "Local & State News",
-        desc: "Stay informed with booth-level announcements, district updates, and Tamil Nadu development news in one place.",
+        desc: "Stay informed with thokuthi-level announcements, district updates, and Tamil Nadu development news in one place.",
       },
       {
         icon: "🎓",
@@ -111,7 +111,7 @@ const T = {
       {
         icon: "👤",
         title: "Worker Dashboard",
-        desc: "Booth-level party workers receive complaints, update resolution status, and post local announcements directly.",
+        desc: "Thokuthi-level party workers receive complaints, update resolution status, and post local announcements directly.",
       },
     ],
     howTag: "Simple Process",
@@ -120,12 +120,12 @@ const T = {
       {
         num: "01",
         title: "Submit Complaint",
-        desc: "Select category, describe the issue, confirm your booth number.",
+        desc: "Select category, describe the issue, confirm your thokuthi number.",
       },
       {
         num: "02",
         title: "Auto-Assigned",
-        desc: "System instantly routes complaint to your booth-level party worker.",
+        desc: "System instantly routes complaint to your thokuthi-level party worker.",
       },
       {
         num: "03",
@@ -159,10 +159,10 @@ const T = {
     learnMore: "Learn more",
     modalTitle: "Report a Complaint",
     modalSub:
-      "Submit your civic issue — routed to your booth worker immediately.",
+      "Submit your civic issue — routed to your thokuthi worker immediately.",
     fName: "Full Name",
     fPhone: "Phone Number",
-    fBooth: "Booth Number",
+    fThokuthi: "Thokuthi Number",
     fCat: "Complaint Category",
     fDesc: "Describe Your Issue",
     fDescPh: "Please describe the problem in detail...",
@@ -170,7 +170,7 @@ const T = {
     cancelBtn: "Cancel",
     successTitle: "Complaint Submitted!",
     successMsg:
-      "Your complaint has been registered and assigned to your booth worker. You'll receive SMS updates.",
+      "Your complaint has been registered and assigned to your thokuthi worker. You'll receive SMS updates.",
     cats: [
       "Street Light Problem",
       "Road Damage",
@@ -183,9 +183,9 @@ const T = {
     selectCat: "Select a category",
     required: "This field is required",
     complaints: [
-      { cat: "Road Damage", booth: "Booth #47", time: "2h ago" },
-      { cat: "Street Light", booth: "Booth #12", time: "5h ago" },
-      { cat: "Water Supply", booth: "Booth #89", time: "1h ago" },
+      { cat: "Road Damage", thokuthi: "Thokuthi #47", time: "2h ago" },
+      { cat: "Street Light", thokuthi: "Thokuthi #12", time: "5h ago" },
+      { cat: "Water Supply", thokuthi: "Thokuthi #89", time: "1h ago" },
     ],
     statuses: ["COMPLETED", "IN PROGRESS", "NEW"],
     eduCounts: ["120+", "45+", "Free", "30+"],
@@ -243,9 +243,9 @@ const T = {
     loginBtn: "உள்நுழைவு",
     signupBtn: "பதிவு செய்க",
     reportBtn: "புகார் அளிக்க",
-    h1: ["உங்கள் குரல்.", "உங்கள் பூத்.", "உங்கள் தமிழ்நாடு."],
+    h1: ["உங்கள் குரல்.", "உங்கள் தொகுதி.", "உங்கள் தமிழ்நாடு."],
     heroDesc:
-      "நகராட்சி சிக்கல்களை நேரடியாக பூத் அளவிலான கட்சி பணியாளர்களிடம் தெரிவிக்க, தீர்க்க மற்றும் கண்காணிக்க உதவும் தளம்.",
+      "நகராட்சி சிக்கல்களை நேரடியாக தொகுதி அளவிலான கட்சி பணியாளர்களிடம் தெரிவிக்க, தீர்க்க மற்றும் கண்காணிக்க உதவும் தளம்.",
     dlApp: "பயன்பாட்டை பதிவிறக்கவும்",
     adminDash: "நிர்வாக டாஷ்போர்டு →",
     liveTracker: "நேரடி புகார் கண்காணிப்பு",
@@ -253,7 +253,7 @@ const T = {
     statLabels: [
       "குடிமக்கள்",
       "தினசரி புகார்கள்",
-      "செயலில் உள்ள பூத்கள்",
+      "செயலில் உள்ள தொகுதிகள்",
       "தீர்வு விகிதம்",
     ],
     svcTag: "நாங்கள் வழங்குவது",
@@ -264,12 +264,12 @@ const T = {
       {
         icon: "🛣️",
         title: "புகார் மேலாண்மை",
-        desc: "சாலை சேதம், தெரு விளக்கு, குடிநீர் விநியோகம் போன்ற புகார்களை நேரடியாக பூத் பணியாளரிடம் சமர்ப்பிக்கவும்.",
+        desc: "சாலை சேதம், தெரு விளக்கு, குடிநீர் விநியோகம் போன்ற புகார்களை நேரடியாக தொகுதி பணியாளரிடம் சமர்ப்பிக்கவும்.",
       },
       {
         icon: "📰",
         title: "உள்ளூர் செய்திகள்",
-        desc: "பூத் அளவிலான அறிவிப்புகள், மாவட்ட புதுப்பிப்புகள் மற்றும் தமிழ்நாடு வளர்ச்சி செய்திகளை பெறுங்கள்.",
+        desc: "தொகுதி அளவிலான அறிவிப்புகள், மாவட்ட புதுப்பிப்புகள் மற்றும் தமிழ்நாடு வளர்ச்சி செய்திகளை பெறுங்கள்.",
       },
       {
         icon: "🎓",
@@ -289,7 +289,7 @@ const T = {
       {
         icon: "👤",
         title: "பணியாளர் டாஷ்போர்டு",
-        desc: "பூத் பணியாளர்கள் புகார்களை ஏற்று, நிலை புதுப்பித்து, உள்ளூர் அறிவிப்புகள் வெளியிடலாம்.",
+        desc: "தொகுதி பணியாளர்கள் புகார்களை ஏற்று, நிலை புதுப்பித்து, உள்ளூர் அறிவிப்புகள் வெளியிடலாம்.",
       },
     ],
     howTag: "எளிய செயல்முறை",
@@ -298,12 +298,12 @@ const T = {
       {
         num: "01",
         title: "புகார் சமர்ப்பிக்கவும்",
-        desc: "வகையை தேர்ந்தெடுத்து, சிக்கலை விவரித்து, உங்கள் பூத் எண்ணை உறுதிப்படுத்தவும்.",
+        desc: "வகையை தேர்ந்தெடுத்து, சிக்கலை விவரித்து, உங்கள் தொகுதிணை உறுதிப்படுத்தவும்.",
       },
       {
         num: "02",
         title: "தானாக ஒதுக்கப்படும்",
-        desc: "உங்கள் பூத் பணியாளரிடம் புகார் உடனடியாக அனுப்பப்படும்.",
+        desc: "உங்கள் தொகுதி பணியாளரிடம் புகார் உடனடியாக அனுப்பப்படும்.",
       },
       {
         num: "03",
@@ -339,7 +339,7 @@ const T = {
     modalSub: "உங்கள் நகராட்சி சிக்கலை சமர்ப்பிக்கவும்.",
     fName: "முழு பெயர்",
     fPhone: "தொலைபேசி எண்",
-    fBooth: "பூத் எண்",
+    fThokuthi: "தொகுதி",
     fCat: "புகார் வகை",
     fDesc: "சிக்கலை விவரிக்கவும்",
     fDescPh: "சிக்கலை விரிவாக விவரிக்கவும்...",
@@ -347,7 +347,7 @@ const T = {
     cancelBtn: "ரத்து செய்",
     successTitle: "புகார் சமர்ப்பிக்கப்பட்டது!",
     successMsg:
-      "உங்கள் புகார் பதிவு செய்யப்பட்டு பூத் பணியாளரிடம் ஒதுக்கப்பட்டது.",
+      "உங்கள் புகார் பதிவு செய்யப்பட்டு தொகுதி பணியாளரிடம் ஒதுக்கப்பட்டது.",
     cats: [
       "தெரு விளக்கு சிக்கல்",
       "சாலை சேதம்",
@@ -360,9 +360,9 @@ const T = {
     selectCat: "வகையை தேர்ந்தெடுக்கவும்",
     required: "இந்த தகவல் தேவை",
     complaints: [
-      { cat: "சாலை சேதம்", booth: "பூத் #47", time: "2 மணி முன்பு" },
-      { cat: "தெரு விளக்கு", booth: "பூத் #12", time: "5 மணி முன்பு" },
-      { cat: "குடிநீர் விநியோகம்", booth: "பூத் #89", time: "1 மணி முன்பு" },
+      { cat: "சாலை சேதம்", thokuthi: "தொகுதி #47", time: "2 மணி முன்பு" },
+      { cat: "தெரு விளக்கு", thokuthi: "தொகுதி #12", time: "5 மணி முன்பு" },
+      { cat: "குடிநீர் விநியோகம்", thokuthi: "தொகுதி #89", time: "1 மணி முன்பு" },
     ],
     statuses: ["முடிந்தது", "செயல்பாட்டில்", "புதிய"],
     eduCounts: ["120+", "45+", "இலவசம்", "30+"],
@@ -485,7 +485,7 @@ export default function Home() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    booth: "",
+    thokuthi: "",
     category: "",
     desc: "",
   });
@@ -529,7 +529,7 @@ export default function Home() {
     const e = {};
     if (!form.name.trim()) e.name = true;
     if (!form.phone.trim()) e.phone = true;
-    if (!form.booth.trim()) e.booth = true;
+    if (!form.thokuthi.trim()) e.thokuthi = true;
     if (!form.category) e.category = true;
     if (!form.desc.trim()) e.desc = true;
     setErrors(e);
@@ -556,7 +556,7 @@ export default function Home() {
       setTimeout(() => {
         setModal(false);
         setSubmitted(false);
-        setForm({ name: "", phone: "", booth: "", category: "", desc: "" });
+        setForm({ name: "", phone: "", thokuthi: "", category: "", desc: "" });
       }, 3200);
     }
   };
@@ -1214,7 +1214,7 @@ export default function Home() {
                           marginLeft: 10,
                         }}
                       >
-                        {c.booth}
+                        {c.thokuthi}
                       </span>
                     </div>
                     <div
@@ -2308,28 +2308,28 @@ export default function Home() {
                           marginBottom: 5,
                         }}
                       >
-                        {tx.fBooth} *
+                        {tx.fThokuthi} *
                       </label>
                       <input
                         type="text"
-                        value={form.booth}
+                        value={form.thokuthi}
                         placeholder="e.g. 47"
                         onChange={(e) => {
-                          setForm((v) => ({ ...v, booth: e.target.value }));
-                          if (errors.booth)
-                            setErrors((er) => ({ ...er, booth: false }));
+                          setForm((v) => ({ ...v, thokuthi: e.target.value }));
+                          if (errors.thokuthi)
+                            setErrors((er) => ({ ...er, thokuthi: false }));
                         }}
-                        style={inp(errors.booth, form.booth)}
+                        style={inp(errors.thokuthi, form.thokuthi)}
                         onFocus={(e) => (e.target.style.borderColor = C.gold)}
                         onBlur={(e) =>
-                          (e.target.style.borderColor = errors.booth
+                          (e.target.style.borderColor = errors.thokuthi
                             ? "#ef4444"
-                            : form.booth
+                            : form.thokuthi
                               ? C.gold
                               : C.inputBorder)
                         }
                       />
-                      {errors.booth && (
+                      {errors.thokuthi && (
                         <span
                           style={{
                             color: "#ef4444",

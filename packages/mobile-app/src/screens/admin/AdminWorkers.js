@@ -57,7 +57,7 @@ export default function AdminWorkers({ navigation }) {
     const query = searchQuery.toLowerCase();
     return (
       w.name?.toLowerCase().includes(query) ||
-      w.booth?.toLowerCase().includes(query) ||
+      w.thokuthi?.toLowerCase().includes(query) ||
       w.district?.toLowerCase().includes(query) ||
       w.workCategory?.toLowerCase().includes(query) ||
       w.email?.toLowerCase().includes(query)
@@ -66,13 +66,13 @@ export default function AdminWorkers({ navigation }) {
 
   // Generate CSV data
   const generateCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Work Category', 'Booth', 'District', 'Resolved', 'Pending', 'Status'];
+    const headers = ['Name', 'Email', 'Phone', 'Work Category', 'Thokuthi', 'District', 'Resolved', 'Pending', 'Status'];
     const rows = filtered.map(w => [
       w.name,
       w.email,
       w.phone,
       w.workCategory || 'N/A',
-      w.booth || 'N/A',
+      w.thokuthi || 'N/A',
       w.district || 'N/A',
       w.resolved || 0,
       w.pending || 0,
@@ -126,7 +126,7 @@ export default function AdminWorkers({ navigation }) {
 
         {/* Location Info */}
         <View style={s.locationInfo}>
-          <Text style={s.infoChip}>🏠 {w.booth || 'N/A'}</Text>
+          <Text style={s.infoChip}>🏠 {w.thokuthi || 'N/A'}</Text>
           <Text style={s.infoChip}>📍 {w.district || 'N/A'}</Text>
         </View>
 
@@ -218,7 +218,7 @@ export default function AdminWorkers({ navigation }) {
       <View style={s.searchContainer}>
         <TextInput
           style={s.searchInput}
-          placeholder="🔍 Search by name, email, category, booth..."
+          placeholder="🔍 Search by name, email, category, thokuthi..."
           placeholderTextColor={T.textM}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -303,8 +303,8 @@ export default function AdminWorkers({ navigation }) {
                 <View style={s.modalSection}>
                   <Text style={s.modalSectionTitle}>📍 Location</Text>
                   <View style={s.modalRow}>
-                    <Text style={s.modalRowLabel}>Booth:</Text>
-                    <Text style={s.modalRowValue}>{selectedWorker.booth || 'N/A'}</Text>
+                    <Text style={s.modalRowLabel}>Thokuthi:</Text>
+                    <Text style={s.modalRowValue}>{selectedWorker.thokuthi || 'N/A'}</Text>
                   </View>
                   <View style={s.modalRow}>
                     <Text style={s.modalRowLabel}>Ward No:</Text>

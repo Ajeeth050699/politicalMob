@@ -14,9 +14,9 @@ router.get('/stats', protect, adminOnly, asyncHandler(async (req, res) => {
     avgHours = Math.round(totalMs / resolved.length / 3600000);
   }
 
-  // Repeat complaints (same booth + category appearing more than once)
+  // Repeat complaints (same thokuthi + category appearing more than once)
   const repeatAgg = await Complaint.aggregate([
-    { $group: { _id: { booth: '$booth', category: '$category' }, count: { $sum: 1 } } },
+    { $group: { _id: { thokuthi: '$thokuthi', category: '$category' }, count: { $sum: 1 } } },
     { $match: { count: { $gt: 1 } } },
   ]);
 

@@ -24,7 +24,7 @@ export default function ProfileScreen({ navigation }) {
   const [email,  setEmail]  = useState(userInfo?.email || '');
   const [phone,  setPhone]  = useState(userInfo?.phone || '');
   const [district,setDistrict]= useState(userInfo?.district || '');
-  const [thokuthi, setThokuthi] = useState(userInfo?.ward || userInfo?.booth || '');
+  const [thokuthi, setThokuthi] = useState(userInfo?.ward || userInfo?.thokuthi || '');
   const [wardNo, setWardNo] = useState(userInfo?.wardNo ? String(userInfo.wardNo) : '');
   const [pincode,setPincode]= useState(userInfo?.pincode || '');
   const [address,setAddress]= useState(userInfo?.address || '');
@@ -102,9 +102,9 @@ export default function ProfileScreen({ navigation }) {
                 <Text style={s.pillTxt}>📍 {userInfo.district}</Text>
               </View>
             )}
-            {userInfo?.booth && (
+            {userInfo?.thokuthi && (
               <View style={s.pill}>
-                <Text style={s.pillTxt}>🏠 {userInfo.ward || userInfo.booth}</Text>
+                <Text style={s.pillTxt}>🏠 {userInfo.ward || userInfo.thokuthi}</Text>
               </View>
             )}
           </View>
@@ -180,7 +180,7 @@ export default function ProfileScreen({ navigation }) {
                 ? [{ label: 'Work Category', value: userInfo?.workCategory || '—', icon: '#' }]
                 : []),
               { label: 'District', value: userInfo?.district || '—',     icon: '📍'      },
-              { label: 'Thokuthi',     value: userInfo?.ward || userInfo?.booth || '—',     icon: '🏠'      },
+              { label: 'Thokuthi',     value: userInfo?.ward || userInfo?.thokuthi || '—',     icon: '🏠'      },
               { label: 'Ward No',      value: userInfo?.wardNo  || '—',     icon: '🔢'      },
               { label: 'Pincode',  value: userInfo?.pincode  || '—',     icon: '📮'      },
               { label: 'Address',  value: userInfo?.address  || '—',     icon: '📌'      },

@@ -19,7 +19,7 @@ const complaintSchema = new mongoose.Schema(
     // ── Location matching ─────────────────────────────────────────
     ward:     { type: String, required: true },
     wardNo:   { type: Number },
-    booth:    { type: String, required: true },
+    thokuthi:    { type: String, required: true },
     district: { type: String, required: true },
     pincode:  { type: String },   // for fallback matching
     address:  { type: String },
@@ -53,7 +53,7 @@ const complaintSchema = new mongoose.Schema(
 
     // ── Fallback & escalation ─────────────────────────────────────
     fallbackUsed:     { type: Boolean, default: false },
-    routingLevel:     { type: String, enum: ['ward', 'booth', 'pincode', 'nearby', 'admin'], default: 'ward' },
+    routingLevel:     { type: String, enum: ['ward', 'thokuthi', 'pincode', 'nearby', 'admin'], default: 'ward' },
     escalatedToAdmin: { type: Boolean, default: false },
     escalatedAt:      { type: Date },
 

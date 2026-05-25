@@ -20,7 +20,7 @@ router.get('/complaints', protect, (req, res) => {
       String(complaint.assignedWorkerId || complaint.assignedWorker?._id || complaint.assignedWorker || '') === userId ||
       (
         ['worker', 'agent'].includes(req.user.role) &&
-        String(complaint.ward || complaint.booth || '').trim().toLowerCase() === String(req.user.ward || req.user.booth || '').trim().toLowerCase()
+        String(complaint.ward || complaint.thokuthi || '').trim().toLowerCase() === String(req.user.ward || req.user.thokuthi || '').trim().toLowerCase()
       );
 
     if (canReceive) res.write(`data: ${JSON.stringify(event)}\n\n`);

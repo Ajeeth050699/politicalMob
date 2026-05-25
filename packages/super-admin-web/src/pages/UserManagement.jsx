@@ -39,7 +39,7 @@ function UserManagement() {
       
       const payload = { name, email, password, role };
       if (role === 'worker' || role === 'public') {
-         payload.booth = '000';
+         payload.thokuthi = '000';
          payload.district = 'Admin';
          payload.address = 'Admin';
          payload.pincode = '000000';

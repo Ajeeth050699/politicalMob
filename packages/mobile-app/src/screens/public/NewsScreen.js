@@ -10,10 +10,10 @@ import { T } from '../../constants/theme';
 const LEVEL_META = {
   State:    { icon: '🏛️', color: T.maroon,  bg: T.maroon  + '15', label: 'State News'    },
   District: { icon: '🏙️', color: T.gold,    bg: T.gold    + '15', label: 'District News' },
-  Booth:    { icon: '📍', color: T.green,   bg: T.green   + '15', label: 'Booth News'    },
+  Thokuthi:    { icon: '📍', color: T.green,   bg: T.green   + '15', label: 'Thokuthi News'    },
 };
 
-const FILTERS = ['All', 'State', 'District', 'Booth'];
+const FILTERS = ['All', 'State', 'District', 'Thokuthi'];
 
 // ── Accept navigation prop ──────────────────────────────────────────
 export default function NewsScreen({ navigation }) {
@@ -40,7 +40,7 @@ export default function NewsScreen({ navigation }) {
 
   const stateCnt    = news.filter(n => n.level === 'State').length;
   const districtCnt = news.filter(n => n.level === 'District').length;
-  const boothCnt    = news.filter(n => n.level === 'Booth').length;
+  const thokuthiCnt    = news.filter(n => n.level === 'Thokuthi').length;
 
   // ── Navigate to NewsDetail, passing the tapped news + full list ──
   const handleNewsPress = (item) => {
@@ -98,7 +98,7 @@ export default function NewsScreen({ navigation }) {
           {[
             { label: 'State',    count: stateCnt,    color: '#fca5a5' },
             { label: 'District', count: districtCnt, color: T.goldL   },
-            { label: 'Booth',    count: boothCnt,    color: '#86efac' },
+            { label: 'Thokuthi',    count: thokuthiCnt,    color: '#86efac' },
             { label: 'Total',    count: news.length, color: '#fff'    },
           ].map(({ label, count, color }) => (
             <View key={label} style={s.countCard}>

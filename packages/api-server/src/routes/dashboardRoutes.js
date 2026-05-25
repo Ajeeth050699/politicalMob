@@ -63,7 +63,7 @@ router.get('/complaints/recent', asyncHandler(async (req, res) => {
     .populate('assignedWorker', 'name');
   res.json(complaints.map((c) => ({
     id: c._id, category: c.category, user: c.user?.name || 'Unknown',
-    booth: c.booth, district: c.district, priority: c.priority,
+    thokuthi: c.thokuthi, district: c.district, priority: c.priority,
     status: c.status, time: timeAgo(c.createdAt),
   })));
 }));

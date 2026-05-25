@@ -38,7 +38,7 @@ function AcceptModal({ visible, complaint, onConfirm, onCancel, loading }) {
           {complaint && (
             <View style={m.info}>
               <Text style={m.infoTxt}>📋 {complaint.category}</Text>
-              <Text style={m.infoTxt}>🏠 {complaint.booth} · 📍 {complaint.district}</Text>
+              <Text style={m.infoTxt}>🏠 {complaint.thokuthi} · 📍 {complaint.district}</Text>
               <Text style={m.infoTxt}>👤 {complaint.user}</Text>
               {complaint.userPhone && <Text style={m.infoTxt}>📞 {complaint.userPhone}</Text>}
             </View>
@@ -158,7 +158,7 @@ export default function AssignedComplaints({ navigation }) {
           </View>
           <View style={{ flex:1 }}>
             <Text style={s.catTxt} numberOfLines={1}>{c.category}</Text>
-            <Text style={s.metaTxt}>👤 {c.user} · 🏠 {c.booth}</Text>
+            <Text style={s.metaTxt}>👤 {c.user} · 🏠 {c.thokuthi}</Text>
             {c.userPhone && <Text style={s.metaTxt}>📞 {c.userPhone}</Text>}
           </View>
           <View style={[s.statusBadge, { backgroundColor:sm.bg }]}>
@@ -254,7 +254,7 @@ export default function AssignedComplaints({ navigation }) {
       {/* Header */}
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
         <Text style={s.headerTitle}>Complaints</Text>
-        <Text style={s.headerSub}>Your booth area complaints</Text>
+        <Text style={s.headerSub}>Your thokuthi area complaints</Text>
         <View style={s.statsRow}>
           {[
             { label:'New',      count:counts.NEW,         color:'#fca5a5' },
@@ -298,7 +298,7 @@ export default function AssignedComplaints({ navigation }) {
             <Text style={{ fontSize:52, marginBottom:14 }}>📋</Text>
             <Text style={s.emptyTitle}>No complaints found</Text>
             <Text style={s.emptySub}>
-              {filter==='ALL' ? 'Complaints in your booth will appear here' : `No ${filter.toLowerCase()} complaints`}
+              {filter==='ALL' ? 'Complaints in your thokuthi will appear here' : `No ${filter.toLowerCase()} complaints`}
             </Text>
           </View>
         }

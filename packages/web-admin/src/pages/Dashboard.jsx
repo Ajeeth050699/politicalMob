@@ -158,14 +158,14 @@ const generateComplaintsReport = (complaints, stats) => {
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   return `<h1>People Connect — Complaints Report</h1>
   <p>${total} Records · ${pct}% Completion Rate</p>
-  <table><thead><tr>${["#", "Category", "User", "Booth", "District", "Priority", "Status", "Date"].map((h) => `<th>${h}</th>`).join("")}</tr></thead>
-  <tbody>${complaints.map((c, i) => `<tr><td>${i + 1}</td><td>${c.category || ""}</td><td>${c.user || ""}</td><td>${c.booth || ""}</td><td>${c.district || ""}</td><td>${c.priority || ""}</td><td>${c.status || ""}</td><td>${c.time ? new Date(c.time).toLocaleDateString("en-IN") : ""}</td></tr>`).join("")}</tbody></table>`;
+  <table><thead><tr>${["#", "Category", "User", "Thokuthi", "District", "Priority", "Status", "Date"].map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+  <tbody>${complaints.map((c, i) => `<tr><td>${i + 1}</td><td>${c.category || ""}</td><td>${c.user || ""}</td><td>${c.thokuthi || ""}</td><td>${c.district || ""}</td><td>${c.priority || ""}</td><td>${c.status || ""}</td><td>${c.time ? new Date(c.time).toLocaleDateString("en-IN") : ""}</td></tr>`).join("")}</tbody></table>`;
 };
 
 const generateWorkersReport = (workers) => {
   return `<h1>People Connect — Workers Report</h1>
-  <table><thead><tr>${["#", "Name", "Email", "Phone", "Booth", "District", "Resolved", "Pending"].map((h) => `<th>${h}</th>`).join("")}</tr></thead>
-  <tbody>${workers.map((w, i) => `<tr><td>${i + 1}</td><td>${w.name || ""}</td><td>${w.email || ""}</td><td>${w.phone || ""}</td><td>${w.booth || ""}</td><td>${w.district || ""}</td><td>${w.resolved || 0}</td><td>${w.pending || 0}</td></tr>`).join("")}</tbody></table>`;
+  <table><thead><tr>${["#", "Name", "Email", "Phone", "Thokuthi", "District", "Resolved", "Pending"].map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+  <tbody>${workers.map((w, i) => `<tr><td>${i + 1}</td><td>${w.name || ""}</td><td>${w.email || ""}</td><td>${w.phone || ""}</td><td>${w.thokuthi || ""}</td><td>${w.district || ""}</td><td>${w.resolved || 0}</td><td>${w.pending || 0}</td></tr>`).join("")}</tbody></table>`;
 };
 
 const generateAnalyticsReport = (
@@ -605,7 +605,7 @@ export default function AdminDashboard() {
       (filterDistrict === "ALL" || c.district === filterDistrict),
   );
   const filteredWorkers = workers.filter((w) =>
-    [w.name || "", w.booth || "", w.district || ""].some((v) =>
+    [w.name || "", w.thokuthi || "", w.district || ""].some((v) =>
       v.toLowerCase().includes(searchWorker.toLowerCase()),
     ),
   );
@@ -617,7 +617,7 @@ export default function AdminDashboard() {
       email: "",
       phone: "",
       password: "",
-      booth: "",
+      thokuthi: "",
       district: "Chennai",
     });
     const [loading, setLoading] = useState(false);
@@ -684,13 +684,13 @@ export default function AdminDashboard() {
                 placeholder="Min 6 chars"
               />
             </Field>
-            <Field label="Booth No." icon="🏠">
+            <Field label="Thokuthi No." icon="🏠">
               <input
                 style={iSx}
                 required
-                value={f.booth}
-                onChange={set("booth")}
-                placeholder="e.g. Booth 12"
+                value={f.thokuthi}
+                onChange={set("thokuthi")}
+                placeholder="e.g. Thokuthi 12"
               />
             </Field>
             <Field label="District" icon="📍">
@@ -707,7 +707,7 @@ export default function AdminDashboard() {
     const [f, setF] = useState({
       category: "Street Light Problem",
       description: "",
-      booth: "",
+      thokuthi: "",
       district: "Chennai",
     });
     const [loading, setLoading] = useState(false);
@@ -764,13 +764,13 @@ export default function AdminDashboard() {
               gap: 12,
             }}
           >
-            <Field label="Booth" icon="🏠">
+            <Field label="Thokuthi" icon="🏠">
               <input
                 style={iSx}
                 required
-                value={f.booth}
-                onChange={set("booth")}
-                placeholder="Booth number"
+                value={f.thokuthi}
+                onChange={set("thokuthi")}
+                placeholder="Thokuthi number"
               />
             </Field>
             <Field label="District" icon="📍">
@@ -789,7 +789,7 @@ export default function AdminDashboard() {
       description: "",
       level: "State",
       district: "",
-      booth: "",
+      thokuthi: "",
       status: "published",
     });
     const [loading, setLoading] = useState(false);
@@ -838,7 +838,7 @@ export default function AdminDashboard() {
           >
             <Field label="Level" icon="🏛️">
               <select style={sSx} value={f.level} onChange={set("level")}>
-                {["State", "District", "Booth"].map((l) => (
+                {["State", "District", "Thokuthi"].map((l) => (
                   <option key={l}>{l}</option>
                 ))}
               </select>
@@ -857,13 +857,13 @@ export default function AdminDashboard() {
                 />
               </Field>
             )}
-            {f.level === "Booth" && (
-              <Field label="Booth" icon="🏠">
+            {f.level === "Thokuthi" && (
+              <Field label="Thokuthi" icon="🏠">
                 <input
                   style={iSx}
-                  value={f.booth}
-                  onChange={set("booth")}
-                  placeholder="Booth number"
+                  value={f.thokuthi}
+                  onChange={set("thokuthi")}
+                  placeholder="Thokuthi number"
                 />
               </Field>
             )}
@@ -2570,7 +2570,7 @@ export default function AdminDashboard() {
                       color: T.textM,
                     }}
                   >
-                    {c.booth} · {c.time}
+                    {c.thokuthi} · {c.time}
                   </div>
                 </div>
                 <span
@@ -2736,7 +2736,7 @@ export default function AdminDashboard() {
                 "ID",
                 "Category",
                 "User",
-                "Booth",
+                "Thokuthi",
                 "District",
                 "Priority",
                 "Status",
@@ -2831,7 +2831,7 @@ export default function AdminDashboard() {
                               color: T.textM,
                             }}
                           >
-                            {c.user} · {c.booth} · {c.district}
+                            {c.user} · {c.thokuthi} · {c.district}
                           </div>
                         </div>
                       </div>
@@ -2922,7 +2922,7 @@ export default function AdminDashboard() {
                     "ID",
                     "Category",
                     "User",
-                    "Booth",
+                    "Thokuthi",
                     "District",
                     "Priority",
                     "Status",
@@ -3023,7 +3023,7 @@ export default function AdminDashboard() {
                           color: T.textL,
                         }}
                       >
-                        {c.booth}
+                        {c.thokuthi}
                       </span>
                     )}
                     <span
@@ -3155,7 +3155,7 @@ export default function AdminDashboard() {
         }}
       >
         <input
-          placeholder="🔍  Search workers, booth, district..."
+          placeholder="🔍  Search workers, thokuthi, district..."
           value={searchWorker}
           onChange={(e) => setSearchWorker(e.target.value)}
           style={{
@@ -3173,7 +3173,7 @@ export default function AdminDashboard() {
               "Name",
               "Email",
               "Phone",
-              "Booth",
+              "Thokuthi",
               "District",
               "Resolved",
               "Pending",
@@ -3270,7 +3270,7 @@ export default function AdminDashboard() {
                         color: T.textM,
                       }}
                     >
-                      {w.booth} · {w.district}
+                      {w.thokuthi} · {w.district}
                     </div>
                   </div>
                 </div>
@@ -4571,12 +4571,12 @@ export default function AdminDashboard() {
     const [q, setQ] = useState("");
     const [form, setForm] = useState({
       name: "", email: "", phone: "", password: "", role: "admin",
-      booth: "", district: "Chennai", address: "", pincode: "",
+      thokuthi: "", district: "Chennai", address: "", pincode: "",
     });
     const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
     const visibleUsers = users.filter((u) => {
       const roleOk = roleFilter === "ALL" || u.role === roleFilter;
-      const text = `${u.name || ""} ${u.email || ""} ${u.phone || ""} ${u.ward || ""} ${u.booth || ""} ${u.district || ""}`.toLowerCase();
+      const text = `${u.name || ""} ${u.email || ""} ${u.phone || ""} ${u.ward || ""} ${u.thokuthi || ""} ${u.district || ""}`.toLowerCase();
       return roleOk && text.includes(q.toLowerCase());
     });
     const createUser = async (e) => {
@@ -4584,7 +4584,7 @@ export default function AdminDashboard() {
       try {
         const { data } = await axios.post(`${API}/api/users`, form, getConfig());
         setUsers((p) => [data, ...p]);
-        setForm({ name: "", email: "", phone: "", password: "", role: "admin", booth: "", district: "Chennai", address: "", pincode: "" });
+        setForm({ name: "", email: "", phone: "", password: "", role: "admin", thokuthi: "", district: "Chennai", address: "", pincode: "" });
         showToast("User created");
       } catch (err) { alert(err?.response?.data?.message || "Failed to create user"); }
     };
@@ -4622,7 +4622,7 @@ export default function AdminDashboard() {
             <input style={iSx} placeholder="Mobile" value={form.phone} onChange={set("phone")} />
             <input style={iSx} placeholder="Password" value={form.password} onChange={set("password")} required />
             <select style={sSx} value={form.role} onChange={set("role")}>{["admin", "worker", "agent", "public", "superadmin"].map((r) => <option key={r} value={r}>{r}</option>)}</select>
-            <input style={iSx} placeholder="Ward / assembly constituency" value={form.booth} onChange={set("booth")} />
+            <input style={iSx} placeholder="Ward / assembly constituency" value={form.thokuthi} onChange={set("thokuthi")} />
             <DistrictSelect value={form.district} onChange={set("district")} />
             <input style={iSx} placeholder="Pincode" value={form.pincode} onChange={set("pincode")} />
             <input style={{ ...iSx, gridColumn: isMobile ? "auto" : "span 3" }} placeholder="Address / area" value={form.address} onChange={set("address")} />
@@ -4636,13 +4636,13 @@ export default function AdminDashboard() {
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-              <thead><tr style={{ background: T.bg }}>{["Name", "Role", "Mobile", "Booth", "District", "Pincode", "Status", "Actions"].map((h) => <th key={h} style={{ textAlign: "left", padding: 12, fontSize: 12, color: T.textM }}>{h}</th>)}</tr></thead>
+              <thead><tr style={{ background: T.bg }}>{["Name", "Role", "Mobile", "Thokuthi", "District", "Pincode", "Status", "Actions"].map((h) => <th key={h} style={{ textAlign: "left", padding: 12, fontSize: 12, color: T.textM }}>{h}</th>)}</tr></thead>
               <tbody>{visibleUsers.map((u) => (
                 <tr key={u.id} style={{ borderBottom: `1px solid ${T.border}` }}>
                   <td style={{ padding: 12 }}><div style={{ fontWeight: 700 }}>{u.name}</div><div style={{ fontSize: 12, color: T.textM }}>{u.email}</div></td>
                   <td style={{ padding: 12, textTransform: "capitalize" }}>{u.role}</td>
                   <td style={{ padding: 12 }}>{u.phone || "-"}</td>
-                  <td style={{ padding: 12 }}>{u.ward || u.booth || "-"}</td>
+                  <td style={{ padding: 12 }}>{u.ward || u.thokuthi || "-"}</td>
                   <td style={{ padding: 12 }}>{u.district || "-"}</td>
                   <td style={{ padding: 12 }}>{u.pincode || "-"}</td>
                   <td style={{ padding: 12, color: u.isActive ? T.green : T.red, fontWeight: 700 }}>{u.isActive ? "Active" : "Inactive"}</td>

@@ -11,7 +11,7 @@ const { width } = Dimensions.get('window');
 const LEVEL_META = {
   State:    { icon: '🏛️', color: '#8B1A1A', bg: '#FEE2E2', grad: ['#4a0a0a', '#8B1A1A', '#A52020'], label: 'State News' },
   District: { icon: '🏙️', color: '#b45309', bg: '#FEF3C7', grad: ['#451a03', '#b45309', '#d97706'], label: 'District News' },
-  Booth:    { icon: '📍', color: '#065f46', bg: '#DCFCE7', grad: ['#022c22', '#065f46', '#16a34a'], label: 'Booth News' },
+  Thokuthi:    { icon: '📍', color: '#065f46', bg: '#DCFCE7', grad: ['#022c22', '#065f46', '#16a34a'], label: 'Thokuthi News' },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

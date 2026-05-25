@@ -16,7 +16,7 @@ const getWorkers = asyncHandler(async (req, res) => {
     const s = search.toLowerCase();
     workers = workers.filter((w) =>
       w.name.toLowerCase().includes(s) ||
-      (w.booth    || '').toLowerCase().includes(s) ||
+      (w.thokuthi    || '').toLowerCase().includes(s) ||
       (w.district || '').toLowerCase().includes(s)
     );
   }
@@ -29,7 +29,7 @@ const getWorkers = asyncHandler(async (req, res) => {
       name:     w.name,
       email:    w.email,
       phone:    w.phone,
-      booth:    w.booth,
+      thokuthi:    w.thokuthi,
       district: w.district,
       workCategory: w.workCategory,
       status:   w.isActive ? 'active' : 'inactive',
@@ -46,21 +46,21 @@ const getWorkers = asyncHandler(async (req, res) => {
 // @route  POST /api/workers
 // @access Private (admin)
 const createWorker = asyncHandler(async (req, res) => {
-  const { name, email, phone, password, booth, district, workCategory } = req.body;
+  const { name, email, phone, password, thokuthi, district, workCategory } = req.body;
 
   const exists = await User.findOne({ email });
   if (exists) { res.status(400); throw new Error('Email already registered'); }
 
   const worker = await User.create({
     name, email, phone, password,
-    role: 'worker', booth, district, workCategory
+    role: 'worker', thokuthi, district, workCategory
   });
 
   res.status(201).json({
     _id:      worker._id,
     name:     worker.name,
     email:    worker.email,
-    booth:    worker.booth,
+    thokuthi:    worker.thokuthi,
     district: worker.district,
     workCategory: worker.workCategory
   });
@@ -77,7 +77,7 @@ const updateWorker = asyncHandler(async (req, res) => {
 
   worker.name     = req.body.name     || worker.name;
   worker.phone    = req.body.phone    || worker.phone;
-  worker.booth    = req.body.booth    || worker.booth;
+  worker.thokuthi    = req.body.thokuthi    || worker.thokuthi;
   worker.district = req.body.district || worker.district;
   worker.workCategory = req.body.workCategory || worker.workCategory;
   if (req.body.isActive !== undefined) worker.isActive = req.body.isActive;
@@ -86,7 +86,7 @@ const updateWorker = asyncHandler(async (req, res) => {
   res.json({
     _id:      updated._id,
     name:     updated.name,
-    booth:    updated.booth,
+    thokuthi:    updated.thokuthi,
     district: updated.district,
     workCategory: updated.workCategory,
     isActive: updated.isActive,
