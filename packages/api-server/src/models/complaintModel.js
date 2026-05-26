@@ -28,9 +28,17 @@ const complaintSchema = new mongoose.Schema(
     // ── Status flow: NEW → ACCEPTED → IN PROGRESS → COMPLETED ─────
     status: {
       type: String,
-      enum: ['NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED'],
+      enum: ['NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED', 'REVOKED'],
       default: 'NEW',
     },
+    revokeReason: { type: String },
+    rejectedBy: [
+      {
+        worker: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        reason: { type: String },
+        date: { type: Date, default: Date.now }
+      }
+    ],
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
 
     // ── Agent assignment ──────────────────────────────────────────

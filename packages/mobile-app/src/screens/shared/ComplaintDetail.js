@@ -45,6 +45,11 @@ export default function ComplaintDetail({ route, navigation }) {
   const [uploading,    setUploading]    = useState(false);
   const [viewerUri,    setViewerUri]    = useState(null);
   const [viewerVisible,setViewerVisible]= useState(false);
+  
+  // Modals state
+  const [rejectModal, setRejectModal] = useState(false);
+  const [revokeModal, setRevokeModal] = useState(false);
+  const [reasonText, setReasonText]   = useState('');
 
   useEffect(() => {
     complaintAPI.getById(id)
@@ -52,6 +57,36 @@ export default function ComplaintDetail({ route, navigation }) {
       .catch(() => navigation.goBack())
       .finally(() => setLoading(false));
   }, [id]);
+
+  const handleReject = async () => {
+    if (!reasonText.trim()) return;
+    setUploading(true);
+    try {
+      const { data } = await complaintAPI.reject(id, { reason: reasonText });
+      setComplaint(data);
+      setRejectModal(false);
+      setReasonText('');
+    } catch (err) {
+      // handle error if needed
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    if (!reasonText.trim()) return;
+    setUploading(true);
+    try {
+      const { data } = await complaintAPI.revoke(id, { reason: reasonText });
+      setComplaint(data);
+      setRevokeModal(false);
+      setReasonText('');
+    } catch (err) {
+      // handle error if needed
+    } finally {
+      setUploading(false);
+    }
+  };
 
   if (loading) return (
     <View style={s.center}><ActivityIndicator color={T.maroon} size="large" /><Text style={{ color:T.textM, marginTop:10 }}>Loading...</Text></View>
@@ -106,14 +141,43 @@ export default function ComplaintDetail({ route, navigation }) {
     { label:'Description',     value:complaint.description,                          icon:'📝' },
     { label:'Thokuthi',           value:complaint.thokuthi,                                icon:'🏠' },
     { label:'District',        value:complaint.district,                             icon:'📍' },
-    { label:'Submitted By',    value:complaint.user || complaint.user?.name || 'Unknown',              icon:'👤' },
-    { label:'Contact Phone',   value:complaint.userPhone || 'Not provided',          icon:'📞' },
-    { label:'Assigned Worker', value:complaint.assignedWorker || complaint.assignedWorker?.name || 'Pending assignment', icon:'👷' },
     { label:'Pincode',         value:complaint.pincode || 'Not provided',             icon:'📮' },
     { label:'Address',         value:complaint.address || 'Not provided',             icon:'📌' },
     { label:'GPS Location',    value:(complaint.location && complaint.location.lat && complaint.location.lng) ? `${Number(complaint.location.lat).toFixed(5)}, ${Number(complaint.location.lng).toFixed(5)}\n(Tap to view on map)` : 'Not provided', icon:'🧭', onPress: (complaint.location && complaint.location.lat && complaint.location.lng) ? openMap : null },
     { label:'Date Submitted',  value:new Date(complaint.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}), icon:'📅' },
   ];
+
+  const renderContactCard = (title, name, phone, photo, icon, role) => {
+    if (!name) return null;
+    return (
+      <View style={s.contactCard}>
+        <View style={s.contactHeader}>
+          <Text style={s.contactTitle}>{title}</Text>
+        </View>
+        <View style={s.contactBody}>
+          <View style={s.contactAvatar}>
+            {photo ? (
+              <Image source={{ uri: photo }} style={{ width: '100%', height: '100%', borderRadius: 24 }} />
+            ) : (
+              <Text style={{ fontSize: 24 }}>{icon}</Text>
+            )}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.contactName}>{name}</Text>
+            <Text style={s.contactRole}>{role}</Text>
+          </View>
+          {!!phone && (
+            <TouchableOpacity 
+              style={s.callBtn} 
+              onPress={() => Linking.openURL(`tel:${phone}`)}
+            >
+              <Text style={{ fontSize: 18 }}>📞</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={s.root}>
@@ -163,6 +227,15 @@ export default function ComplaintDetail({ route, navigation }) {
 
         {/* ── Details ── */}
         <View style={s.body}>
+          {/* Contact Cards */}
+          {(userInfo?.role === 'worker' || userInfo?.role === 'admin' || userInfo?.role === 'superadmin' || userInfo?.role === 'agent') &&
+            renderContactCard('Citizen Details', complaint.user, complaint.userPhone, complaint.userProfilePhoto, '👤', 'Raised by Citizen')
+          }
+          {(userInfo?.role === 'public' || userInfo?.role === 'citizen' || userInfo?.role === 'admin' || userInfo?.role === 'superadmin' || userInfo?.role === 'agent') &&
+            complaint.assignedWorker &&
+            renderContactCard('Assigned Worker', complaint.assignedWorker, complaint.assignedWorkerPhone, complaint.assignedWorkerProfilePhoto, '👷', 'Handling this complaint')
+          }
+
           {rows.map(({ label, value, icon, onPress }) => {
             const RowView = onPress ? TouchableOpacity : View;
             return (
@@ -267,6 +340,30 @@ export default function ComplaintDetail({ route, navigation }) {
             </TouchableOpacity>
           )}
 
+          {/* Worker Reject Button */}
+          {isAssignedWorker && (complaint.status === 'ACCEPTED' || complaint.status === 'IN PROGRESS') && (
+            <TouchableOpacity
+              style={[s.outlineBtn, uploading && { opacity: 0.7 }]}
+              onPress={() => setRejectModal(true)}
+              disabled={uploading}
+              activeOpacity={0.85}
+            >
+              <Text style={s.outlineBtnTxt}>❌ Reject Complaint</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Citizen Revoke Button */}
+          {(userInfo?.role === 'public' || userInfo?.role === 'citizen') && (complaint.status === 'NEW' || complaint.status === 'ACCEPTED') && (
+            <TouchableOpacity
+              style={[s.outlineBtn, uploading && { opacity: 0.7 }]}
+              onPress={() => setRevokeModal(true)}
+              disabled={uploading}
+              activeOpacity={0.85}
+            >
+              <Text style={s.outlineBtnTxt}>🗑️ Revoke Complaint</Text>
+            </TouchableOpacity>
+          )}
+
           {!complaint.assignedWorker && (
             <View style={s.infoCard}>
               <Text style={{ fontSize:20 }}>ℹ️</Text>
@@ -276,12 +373,82 @@ export default function ComplaintDetail({ route, navigation }) {
         </View>
       </ScrollView>
 
-      {/* Full screen image viewer */}
+        {/* Full screen image viewer */}
       <ImageViewer
         visible={viewerVisible}
         uri={viewerUri}
         onClose={() => { setViewerVisible(false); setViewerUri(null); }}
       />
+
+      {/* Reject Modal */}
+      <Modal visible={rejectModal} transparent animationType="slide" onRequestClose={() => setRejectModal(false)}>
+        <View style={s.modalOverlay}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>Reject Complaint</Text>
+            <Text style={s.modalDesc}>Please provide a reason for rejecting this complaint. It will be reassigned.</Text>
+            <View style={s.inputWrap}>
+              <Text style={{ fontSize: 16, marginRight: 8 }}>💬</Text>
+              <TextInput
+                style={{ flex: 1, paddingVertical: 12, fontSize: 15, color: T.text }}
+                placeholder="Enter rejection reason..."
+                placeholderTextColor={T.textM}
+                value={reasonText}
+                onChangeText={setReasonText}
+                multiline
+              />
+            </View>
+            <View style={s.modalActions}>
+              <TouchableOpacity style={s.modalCancelBtn} onPress={() => { setRejectModal(false); setReasonText(''); }}>
+                <Text style={s.modalCancelTxt}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[s.modalSubmitBtn, { backgroundColor: T.maroon }]} onPress={handleReject}>
+                <Text style={s.modalSubmitTxt}>{uploading ? 'Wait...' : 'Reject'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Revoke Modal */}
+      <Modal visible={revokeModal} transparent animationType="slide" onRequestClose={() => setRevokeModal(false)}>
+        <View style={s.modalOverlay}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>Revoke Complaint</Text>
+            <Text style={s.modalDesc}>Are you sure you want to cancel this complaint?</Text>
+            
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+              {["Resolved on its own", "Duplicate complaint", "Wrong location", "Other"].map(r => (
+                <TouchableOpacity 
+                  key={r} 
+                  style={[s.reasonChip, reasonText === r && { backgroundColor: T.maroon, borderColor: T.maroon }]}
+                  onPress={() => setReasonText(r)}
+                >
+                  <Text style={[s.reasonTxt, reasonText === r && { color: '#fff' }]}>{r}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={s.inputWrap}>
+              <TextInput
+                style={{ flex: 1, paddingVertical: 12, fontSize: 15, color: T.text }}
+                placeholder="Optional explanation..."
+                placeholderTextColor={T.textM}
+                value={reasonText}
+                onChangeText={setReasonText}
+              />
+            </View>
+
+            <View style={s.modalActions}>
+              <TouchableOpacity style={s.modalCancelBtn} onPress={() => { setRevokeModal(false); setReasonText(''); }}>
+                <Text style={s.modalCancelTxt}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[s.modalSubmitBtn, { backgroundColor: T.maroon }]} onPress={handleRevoke}>
+                <Text style={s.modalSubmitTxt}>{uploading ? 'Wait...' : 'Revoke'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -313,6 +480,16 @@ const s = StyleSheet.create({
   rowLabel:   { fontSize:11, color:T.textM, fontWeight:'700', textTransform:'uppercase', letterSpacing:0.5, marginBottom:4 },
   rowValue:   { fontSize:15, color:T.text, fontWeight:'500', lineHeight:22 },
 
+  // Contact Card
+  contactCard: { backgroundColor:'#fff', borderRadius:16, marginBottom:10, borderWidth:1, borderColor:T.border, overflow:'hidden', elevation:2, shadowColor:'#000', shadowOpacity:0.04, shadowRadius:8 },
+  contactHeader: { backgroundColor:T.maroon+'10', paddingHorizontal:16, paddingVertical:10, borderBottomWidth:1, borderBottomColor:T.border },
+  contactTitle: { fontSize:12, fontWeight:'700', color:T.textM, textTransform:'uppercase', letterSpacing:0.5 },
+  contactBody: { flexDirection:'row', alignItems:'center', padding:16, gap:14 },
+  contactAvatar: { width:48, height:48, borderRadius:24, backgroundColor:T.bg, alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:T.border },
+  contactName: { fontSize:16, fontWeight:'700', color:T.text, marginBottom:2 },
+  contactRole: { fontSize:13, color:T.textM },
+  callBtn: { width:40, height:40, borderRadius:20, backgroundColor:'#dcfce7', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'#16a34a40' },
+
   // Attachments
   attachSection: { backgroundColor:'#fff', borderRadius:16, padding:16, marginBottom:10, borderWidth:1, borderColor:T.border, elevation:2, shadowColor:'#000', shadowOpacity:0.04, shadowRadius:8 },
   attachHeader:  { flexDirection:'row', alignItems:'center', gap:10, marginBottom:6 },
@@ -339,7 +516,23 @@ const s = StyleSheet.create({
   completeBtn: { borderRadius:50, overflow:'hidden', marginBottom:10, elevation:4, shadowColor:T.maroon, shadowOpacity:0.35, shadowRadius:10 },
   completeBtnGrad: { paddingVertical:15, alignItems:'center' },
   completeBtnTxt: { color:'#fff', fontSize:15, fontWeight:'800' },
+  outlineBtn: { borderRadius:50, paddingVertical:14, alignItems:'center', borderWidth:1, borderColor:T.maroon, marginBottom:10 },
+  outlineBtnTxt: { color:T.maroon, fontSize:15, fontWeight:'800' },
 
   infoCard:   { backgroundColor:'#fef3c7', borderRadius:16, padding:16, flexDirection:'row', alignItems:'flex-start', gap:12, borderWidth:1, borderColor:'#d97706'+'40' },
   infoTxt:    { fontSize:13, color:'#92400e', flex:1, lineHeight:19 },
+
+  // Modals
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 },
+  modalCard: { backgroundColor: '#fff', borderRadius: 20, padding: 24, elevation: 10 },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: T.text, marginBottom: 8 },
+  modalDesc: { fontSize: 14, color: T.textM, marginBottom: 20 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: T.border, borderRadius: 12, paddingHorizontal: 12, marginBottom: 24, backgroundColor: T.bg },
+  modalActions: { flexDirection: 'row', gap: 12 },
+  modalCancelBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 12, backgroundColor: T.bg },
+  modalCancelTxt: { fontSize: 15, fontWeight: '700', color: T.textM },
+  modalSubmitBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 12 },
+  modalSubmitTxt: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  reasonChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: T.border, marginRight: 8, backgroundColor: T.bg },
+  reasonTxt: { fontSize: 13, color: T.textM, fontWeight: '600' },
 });

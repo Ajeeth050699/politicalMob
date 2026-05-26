@@ -3,10 +3,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ScrollView, ActivityIndicator, KeyboardAvoidingView,
-  Platform, StatusBar,
+  Platform, StatusBar, Image, Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI, systemAPI } from '../../services/api';
 import PopupToast from '../../components/PopupToast';
@@ -88,6 +89,7 @@ export default function RegisterScreen({ navigation }) {
   const [wards,         setWards]         = useState([]);
   const [pricing,       setPricing]       = useState({});
   const [phoneInput,    setPhoneInput]    = useState('');
+  const [profilePhoto,  setProfilePhoto]  = useState(null);
   const [toast,         setToast]         = useState({visible:false,message:'',type:'error'});
   const [form, setForm] = useState({
     name:'', email:'', password:'', confirmPassword:'',
@@ -119,8 +121,32 @@ export default function RegisterScreen({ navigation }) {
     loadSystemData();
   }, []);
 
+  const handleCapturePhoto = async () => {
+    try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (perm.status !== 'granted') {
+        showToast('Camera permission is required.');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        // Send base64 to server so we don't need complex multipart handling for now
+        setProfilePhoto(`data:image/jpeg;base64,${result.assets[0].base64}`);
+      }
+    } catch (error) {
+      showToast('Error capturing photo.');
+    }
+  };
+
   // Step 1 validation
   const handleStep1 = () => {
+    if (!profilePhoto)                                { showToast('Please capture your profile photo.'); return; }
     if (!form.name.trim()||form.name.trim().length<2) { showToast('Please enter your full name.'); return; }
     if (form.password.length<6)                       { showToast('Password must be at least 6 characters.'); return; }
     if (form.password!==form.confirmPassword)         { showToast('Passwords do not match.'); return; }
@@ -188,6 +214,7 @@ export default function RegisterScreen({ navigation }) {
         role:form.role, ward:form.ward, wardNo:Number(form.wardNo), district:form.district,
         address:form.address, pincode:form.pincode,
         workCategory:(form.role==='worker' || form.role==='agent') ? form.workCategory.trim() : '',
+        profilePhoto: profilePhoto,
       });
     } catch(err) {
       const msg = err?.response?.data?.message || 'Registration failed. Please try again.';
@@ -231,6 +258,24 @@ export default function RegisterScreen({ navigation }) {
             {/* ══ STEP 1 ══ */}
             {step===1 && (
               <>
+                <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                  <TouchableOpacity onPress={handleCapturePhoto} style={{
+                    width: 100, height: 100, borderRadius: 50, backgroundColor: T.bg,
+                    borderWidth: 2, borderColor: profilePhoto ? T.maroon : T.border,
+                    alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                  }}>
+                    {profilePhoto ? (
+                      <Image source={{ uri: profilePhoto }} style={{ width: '100%', height: '100%' }} />
+                    ) : (
+                      <>
+                        <Text style={{ fontSize: 30 }}>📸</Text>
+                        <Text style={{ fontSize: 10, color: T.textM, marginTop: 4 }}>Add Photo</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                  {!profilePhoto && <Text style={{ fontSize: 11, color: T.textM, marginTop: 8 }}>Profile photo is required</Text>}
+                </View>
+
                 <Field label="Full Name *"        icon="👤" value={form.name}            onChange={set('name')}            placeholder="Your full name" />
                 <Field label="Email (optional)"   icon="✉️" value={form.email}           onChange={set('email')}           placeholder="your@email.com" keyboard="email-address" hint="Email is optional. Used for password reset." />
                 <Field label="Password *"         icon="🔒" value={form.password}        onChange={set('password')}        placeholder="Min 6 characters" secure />

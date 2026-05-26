@@ -73,6 +73,7 @@ const fmt = (c) => ({
   user:             c.user?.name    || 'Unknown',
   userId:           c.user?._id,
   userPhone:        c.citizenPhone  || c.user?.phone,
+  userProfilePhoto: c.user?.profilePhoto,
   ward:             c.ward || c.thokuthi,
   wardNo:           c.wardNo,
   thokuthi:            c.thokuthi,
@@ -82,6 +83,8 @@ const fmt = (c) => ({
   status:           c.status,
   assignedWorker:   c.assignedWorker?.name,
   assignedWorkerId: c.assignedWorker?._id,
+  assignedWorkerPhone: c.assignedWorker?.phone,
+  assignedWorkerProfilePhoto: c.assignedWorker?.profilePhoto,
   lockedToAgent:    c.lockedToAgent,
   acceptedAt:       c.acceptedAt,
   proofPhoto:       c.proofPhoto,
@@ -140,8 +143,8 @@ const getComplaints = asyncHandler(async (req, res) => {
 
   let complaints = await Complaint.find(filter)
     .sort({ createdAt: -1 })
-    .populate('user',           'name phone')
-    .populate('assignedWorker', 'name phone');
+    .populate('user',           'name phone profilePhoto')
+    .populate('assignedWorker', 'name phone profilePhoto');
 
   if (workerName && isAdminOrAgent) {
     const q = String(workerName).trim().toLowerCase();
@@ -217,8 +220,8 @@ const createComplaint = asyncHandler(async (req, res) => {
   }
 
   const populated = await Complaint.findById(complaint._id)
-    .populate('user', 'name phone')
-    .populate('assignedWorker', 'name phone');
+    .populate('user', 'name phone profilePhoto')
+    .populate('assignedWorker', 'name phone profilePhoto');
 
   const out = fmt(populated);
   emitComplaintEvent('created', out);
@@ -330,8 +333,8 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
   }
 
   const populated = await Complaint.findById(complaint._id)
-    .populate('user', 'name phone')
-    .populate('assignedWorker', 'name phone');
+    .populate('user', 'name phone profilePhoto')
+    .populate('assignedWorker', 'name phone profilePhoto');
 
   const out = fmt(populated);
   emitComplaintEvent('updated', out);
@@ -371,8 +374,8 @@ const uploadProof = asyncHandler(async (req, res) => {
   await notify(citizenId, `🎉 "${complaint.category}" is resolved! Proof uploaded by worker.`, 'complaint');
 
   const populated = await Complaint.findById(complaint._id)
-    .populate('user', 'name phone')
-    .populate('assignedWorker', 'name phone');
+    .populate('user', 'name phone profilePhoto')
+    .populate('assignedWorker', 'name phone profilePhoto');
 
   const out = fmt(populated);
   emitComplaintEvent('proof_uploaded', out);
@@ -414,6 +417,87 @@ const escalatePending = asyncHandler(async (req, res) => {
   res.json({ message: `Escalated ${pending.length} complaints`, escalated: pending.length });
 });
 
+// ─────────────────────────────────────────────────────────────────
+// PUT /api/complaints/:id/reject
+// Worker rejects an assigned complaint with a remark
+// ─────────────────────────────────────────────────────────────────
+const rejectComplaint = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'worker') {
+    res.status(403); throw new Error('Only workers can reject complaints.');
+  }
+  const { reason } = req.body;
+  if (!reason) {
+    res.status(400); throw new Error('Rejection reason is required.');
+  }
+
+  const complaint = await Complaint.findById(req.params.id);
+  if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+
+  // A worker can reject if it's assigned to them, or if it's new and they are just declining to take it
+  if (complaint.assignedWorker && String(complaint.assignedWorker) !== String(req.user._id)) {
+    res.status(403); throw new Error('This complaint is assigned to another worker.');
+  }
+
+  complaint.rejectedBy.push({ worker: req.user._id, reason });
+  
+  if (String(complaint.assignedWorker) === String(req.user._id)) {
+    complaint.assignedWorker = null;
+    complaint.lockedToAgent = false;
+    complaint.acceptedAt = null;
+    // We send it back to NEW so someone else can pick it up
+    complaint.status = 'NEW';
+  }
+
+  await complaint.save();
+
+  const populated = await Complaint.findById(complaint._id)
+    .populate('user', 'name phone profilePhoto')
+    .populate('assignedWorker', 'name phone profilePhoto');
+
+  const out = fmt(populated);
+  emitComplaintEvent('updated', out);
+  res.json(out);
+});
+
+// ─────────────────────────────────────────────────────────────────
+// PUT /api/complaints/:id/revoke
+// Citizen revokes their own complaint
+// ─────────────────────────────────────────────────────────────────
+const revokeComplaint = asyncHandler(async (req, res) => {
+  const { reason } = req.body;
+  if (!reason) {
+    res.status(400); throw new Error('Revocation reason is required.');
+  }
+
+  const complaint = await Complaint.findById(req.params.id);
+  if (!complaint) { res.status(404); throw new Error('Complaint not found'); }
+
+  if (String(complaint.user) !== String(req.user._id)) {
+    res.status(403); throw new Error('You can only revoke your own complaints.');
+  }
+
+  if (['COMPLETED', 'REVOKED'].includes(complaint.status)) {
+    res.status(400); throw new Error(`Cannot revoke a ${complaint.status} complaint.`);
+  }
+
+  complaint.status = 'REVOKED';
+  complaint.revokeReason = reason;
+  await complaint.save();
+
+  // Notify worker if it was assigned
+  if (complaint.assignedWorker) {
+    await notify(complaint.assignedWorker, `❌ Complaint "${complaint.category}" has been revoked by the citizen.`, 'complaint');
+  }
+
+  const populated = await Complaint.findById(complaint._id)
+    .populate('user', 'name phone profilePhoto')
+    .populate('assignedWorker', 'name phone profilePhoto');
+
+  const out = fmt(populated);
+  emitComplaintEvent('updated', out);
+  res.json(out);
+});
+
 module.exports = {
   getComplaints,
   createComplaint,
@@ -423,4 +507,6 @@ module.exports = {
   uploadProof,
   deleteComplaint,
   escalatePending,
+  rejectComplaint,
+  revokeComplaint,
 };

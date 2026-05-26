@@ -453,6 +453,18 @@ export default function AddComplaintScreen({ navigation }) {
       showToast("Please select your Thokuthi.");
       return;
     }
+
+    Alert.alert(
+      "Confirm Complaint",
+      "Are you sure you want to submit this complaint? Please verify all details before submitting.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Submit", style: "default", onPress: performSubmit }
+      ]
+    );
+  };
+
+  const performSubmit = async () => {
     if (!form.wardNo.trim()) {
       showToast("Please enter your ward number.");
       return;

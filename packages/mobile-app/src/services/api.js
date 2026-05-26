@@ -71,8 +71,10 @@ export const complaintAPI = {
   getById:         (id)       => api.get(`/complaints/${id}`),
   create:          (data)     => api.post('/complaints', data),
   accept:          (id)       => api.put(`/complaints/${id}/accept`),   // ← NEW
+  reject:          (id, data) => api.put(`/complaints/${id}/reject`, data),
   updateStatus:    (id, data) => api.put(`/complaints/${id}/status`, data),
   uploadProof:     (id, data) => api.put(`/complaints/${id}/proof`, data),
+  revoke:          (id, data) => api.put(`/complaints/${id}/revoke`, data),
   escalatePending: ()         => api.post('/complaints/escalate-pending'), // ← NEW
   delete:          (id)       => api.delete(`/complaints/${id}`),
 };
