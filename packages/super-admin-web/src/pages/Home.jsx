@@ -500,12 +500,17 @@ export default function Home() {
     ward: "",
     tamilNaduAccess: true,
     role: "superadmin",
+    profilePhoto: null,
   });
   const [authErrors, setAuthErrors] = useState({});
   const [authSuccess, setAuthSuccess] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [activeC, setActiveC] = useState(null);
+
+  const [stream, setStream] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const tx = T[lang];
   const C = dark ? THEMES.dark : THEMES.light;

@@ -500,12 +500,17 @@ export default function Home() {
     ward: "",
     tamilNaduAccess: false,
     role: "admin",
+    profilePhoto: null,
   });
   const [authErrors, setAuthErrors] = useState({});
   const [authSuccess, setAuthSuccess] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [activeC, setActiveC] = useState(null);
+
+  const [stream, setStream] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const tx = T[lang];
   const C = dark ? THEMES.dark : THEMES.light;
@@ -546,6 +551,7 @@ export default function Home() {
     if (authTab === "signup" && !authForm.phone.trim()) e.phone = true;
     if (authTab === "signup" && !authForm.district && !authForm.tamilNaduAccess)
       e.district = true;
+    if (authTab === "signup" && !authForm.profilePhoto) e.profilePhoto = true;
     setAuthErrors(e);
     return !Object.keys(e).length;
   };
@@ -581,6 +587,7 @@ export default function Home() {
           district: authForm.district,
           ward: authForm.ward || undefined,
           tamilNaduAccess: authForm.tamilNaduAccess,
+          profilePhoto: authForm.profilePhoto,
         };
 
     try {
@@ -2688,6 +2695,127 @@ export default function Home() {
                 >
                   {/* Signup extra fields */}
                   {authTab === "signup" && (
+                    <>
+                      <div style={{ marginBottom: 4 }}>
+                        <label
+                          style={{
+                            fontFamily: "'Source Sans 3',sans-serif",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.textLight,
+                            display: "block",
+                            marginBottom: 8,
+                          }}
+                        >
+                          Profile Photo (Live Capture) *
+                        </label>
+                        <div
+                          style={{
+                            position: "relative",
+                            width: "100%",
+                            height: 160,
+                            background: C.inputBg,
+                            borderRadius: 10,
+                            overflow: "hidden",
+                            border: `1.5px solid ${authErrors.profilePhoto ? "#ef4444" : authForm.profilePhoto ? C.gold : C.inputBorder}`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {authForm.profilePhoto ? (
+                            <>
+                              <img src={authForm.profilePhoto} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="Profile" />
+                              <button
+                                type="button"
+                                onClick={() => setAuthForm((v) => ({ ...v, profilePhoto: null }))}
+                                style={{
+                                  position: "absolute",
+                                  top: 10,
+                                  right: 10,
+                                  background: "rgba(0,0,0,0.5)",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: 20,
+                                  padding: "5px 10px",
+                                  fontSize: 12,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Retake
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover", display: stream ? "block" : "none" }} />
+                              {!stream ? (
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    try {
+                                      const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                                      setStream(s);
+                                      if (videoRef.current) videoRef.current.srcObject = s;
+                                    } catch (err) {
+                                      alert("Camera access denied or unavailable.");
+                                    }
+                                  }}
+                                  className="pri-btn"
+                                  style={{ padding: "8px 16px", fontSize: 13 }}
+                                >
+                                  Start Camera
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (videoRef.current && canvasRef.current) {
+                                      const video = videoRef.current;
+                                      const canvas = canvasRef.current;
+                                      canvas.width = video.videoWidth;
+                                      canvas.height = video.videoHeight;
+                                      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+                                      setAuthForm((v) => ({ ...v, profilePhoto: canvas.toDataURL("image/jpeg", 0.8) }));
+                                      stream.getTracks().forEach((t) => t.stop());
+                                      setStream(null);
+                                    }
+                                  }}
+                                  style={{
+                                    position: "absolute",
+                                    bottom: 10,
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    background: C.gold,
+                                    color: "#fff",
+                                    padding: "8px 24px",
+                                    borderRadius: 20,
+                                    border: "none",
+                                    cursor: "pointer",
+                                    fontSize: 13,
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  📸 Capture
+                                </button>
+                              )}
+                            </>
+                          )}
+                          <canvas ref={canvasRef} style={{ display: "none" }} />
+                        </div>
+                        {authErrors.profilePhoto && (
+                          <span
+                            style={{
+                              color: "#ef4444",
+                              fontSize: 11,
+                              marginTop: 3,
+                              display: "block",
+                            }}
+                          >
+                            Live profile photo is required
+                          </span>
+                        )}
+                      </div>
+
                     <div
                       className="auth-form-grid"
                       style={{
@@ -2793,6 +2921,7 @@ export default function Home() {
                         )}
                       </div>
                     </div>
+                    </>
                   )}
 
                   {/* Email */}

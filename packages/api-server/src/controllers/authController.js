@@ -28,6 +28,7 @@ const register = asyncHandler(async (req, res) => {
   const isAdminRole = ['admin', 'superadmin'].includes(requestedRole);
   const hasTamilNaduAccess = !!tamilNaduAccess || requestedRole === 'superadmin';
 
+  if (!profilePhoto) { res.status(400); throw new Error('Live profile picture capture is mandatory for all users.'); }
   if (!district && !hasTamilNaduAccess) { res.status(400); throw new Error('District is required'); }
 
   const wardName = ward || thokuthi;
