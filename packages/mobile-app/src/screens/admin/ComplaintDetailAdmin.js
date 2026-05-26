@@ -1,11 +1,11 @@
-import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
-  TouchableOpacity, Platform, StatusBar, Image, Modal, Dimensions,
+  TouchableOpacity, StatusBar, Image, Modal, Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { complaintAPI } from '../../services/api';
+import { Picker } from '@react-native-picker/picker';
+import { complaintAPI, workerAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -40,21 +40,49 @@ function ImageViewer({ visible, uri, onClose }) {
 }
 
 export default function ComplaintDetailAdmin({ route, navigation }) {
-  const { t } = useTranslation();
   const { id } = route.params;
   const [complaint,     setComplaint]     = useState(null);
   const [loading,       setLoading]       = useState(true);
   const [viewerUri,     setViewerUri]     = useState(null);
   const [viewerVisible, setViewerVisible] = useState(false);
+  const [workers,       setWorkers]       = useState([]);
+  const [selectedWorkerId, setSelectedWorkerId] = useState('');
+  const [assigning,     setAssigning]     = useState(false);
+  const [assignError,   setAssignError]   = useState('');
 
   useEffect(() => {
     complaintAPI.getById(id)
-      .then(({ data }) => setComplaint(data))
+      .then(async ({ data }) => {
+        setComplaint(data);
+        setSelectedWorkerId(data.assignedWorkerId ? String(data.assignedWorkerId) : '');
+        const workersRes = await workerAPI.getAll({
+          ...(data.district && { district: data.district }),
+        });
+        setWorkers((workersRes.data || []).filter((w) => w.status === 'active'));
+      })
       .catch(() => {
         navigation.goBack();
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, navigation]);
+
+  const handleAssignWorker = async () => {
+    if (!selectedWorkerId || assigning || complaint.status === 'COMPLETED') return;
+    setAssigning(true);
+    setAssignError('');
+    try {
+      const { data } = await complaintAPI.updateStatus(id, {
+        assignedWorker: selectedWorkerId,
+        status: complaint.status === 'NEW' ? 'ACCEPTED' : complaint.status,
+      });
+      setComplaint(data);
+      setSelectedWorkerId(data.assignedWorkerId ? String(data.assignedWorkerId) : selectedWorkerId);
+    } catch (err) {
+      setAssignError(err?.response?.data?.message || 'Failed to assign worker.');
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   if (loading) return (
     <View style={s.center}>
@@ -163,6 +191,37 @@ export default function ComplaintDetailAdmin({ route, navigation }) {
               </>
             )}
           </View>
+
+          {!isResolved && (
+            <View style={s.assignBox}>
+              <Text style={s.assignLabel}>Assign active worker</Text>
+              <View style={s.assignPickerWrap}>
+                <Picker
+                  selectedValue={selectedWorkerId}
+                  onValueChange={setSelectedWorkerId}
+                  style={s.assignPicker}
+                >
+                  <Picker.Item label="Select worker" value="" />
+                  {workers.map((w) => (
+                    <Picker.Item
+                      key={w.id}
+                      label={`${w.name} - ${w.thokuthi || w.district || 'Field worker'}`}
+                      value={String(w.id)}
+                    />
+                  ))}
+                </Picker>
+              </View>
+              {!!assignError && <Text style={s.assignError}>{assignError}</Text>}
+              <TouchableOpacity
+                style={[s.assignBtn, (!selectedWorkerId || assigning) && s.assignBtnDisabled]}
+                onPress={handleAssignWorker}
+                disabled={!selectedWorkerId || assigning}
+                activeOpacity={0.85}
+              >
+                <Text style={s.assignBtnText}>{assigning ? 'Assigning...' : 'Assign Task'}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {isResolved && (
             <View style={s.resolvedBanner}>
@@ -276,6 +335,14 @@ const s = StyleSheet.create({
   workerDetail: { fontSize: 12, color: T.textL },
   noWorkerText: { fontSize: 14, fontWeight: '700', color: '#991b1b' },
   noWorkerSubText:{ fontSize: 12, color: T.textM, marginTop: 4 },
+  assignBox:    { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: T.border },
+  assignLabel:  { fontSize: 12, fontWeight: '700', color: T.textL, marginBottom: 8 },
+  assignPickerWrap:{ borderWidth: 1, borderColor: T.border, borderRadius: 10, backgroundColor: T.bg, overflow: 'hidden', marginBottom: 10 },
+  assignPicker: { height: 44 },
+  assignError:  { fontSize: 12, color: T.red, marginBottom: 8, fontWeight: '600' },
+  assignBtn:    { backgroundColor: T.maroon, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  assignBtnDisabled:{ opacity: 0.55 },
+  assignBtnText:{ color: '#fff', fontSize: 13, fontWeight: '800' },
   resolvedBanner:{ marginTop: 12, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#dcfce7', borderRadius: 8 },
   resolvedText: { fontSize: 12, fontWeight: '700', color: '#166534' },
 

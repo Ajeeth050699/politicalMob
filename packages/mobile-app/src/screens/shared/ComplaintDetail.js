@@ -1,14 +1,14 @@
-import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
   TouchableOpacity, Platform, StatusBar, Image, Modal,
-  Dimensions, Linking,
+  Dimensions, Linking, TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { complaintAPI } from '../../services/api';
-import { T, STATUS_COLORS, PRIORITY_COLORS } from '../../constants/theme';
+import { T, PRIORITY_COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
@@ -17,7 +17,7 @@ const CATEGORY_ICONS = {
   'Street Light Problem':'💡', 'Road Damage':'🛣️', 'Garbage Issue':'🗑️',
   'Water Supply Problem':'💧', 'Drainage Issue':'🚰', 'Public Safety Issue':'🚨', 'Others':'📝',
 };
-const STATUS_ICONS = { 'NEW':'🆕', 'IN PROGRESS':'⚙️', 'COMPLETED':'✅' };
+const STATUS_ICONS = { 'NEW':'🆕', 'ACCEPTED':'✅', 'IN PROGRESS':'⚙️', 'COMPLETED':'✅' };
 
 // ── Full screen image viewer ────────────────────────────────────────
 function ImageViewer({ visible, uri, onClose }) {
@@ -37,7 +37,6 @@ function ImageViewer({ visible, uri, onClose }) {
 }
 
 export default function ComplaintDetail({ route, navigation }) {
-  const { t, i18n } = useTranslation();
   const { userInfo } = useAuth();
   const { id } = route.params;
   const [complaint,    setComplaint]    = useState(null);
@@ -56,7 +55,7 @@ export default function ComplaintDetail({ route, navigation }) {
       .then(({ data }) => setComplaint(data))
       .catch(() => navigation.goBack())
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, navigation]);
 
   const handleReject = async () => {
     if (!reasonText.trim()) return;
@@ -66,7 +65,7 @@ export default function ComplaintDetail({ route, navigation }) {
       setComplaint(data);
       setRejectModal(false);
       setReasonText('');
-    } catch (err) {
+    } catch (_err) {
       // handle error if needed
     } finally {
       setUploading(false);
@@ -81,7 +80,7 @@ export default function ComplaintDetail({ route, navigation }) {
       setComplaint(data);
       setRevokeModal(false);
       setReasonText('');
-    } catch (err) {
+    } catch (_err) {
       // handle error if needed
     } finally {
       setUploading(false);
@@ -93,7 +92,6 @@ export default function ComplaintDetail({ route, navigation }) {
   );
   if (!complaint) return null;
 
-  const sc       = STATUS_COLORS[complaint.status] || { bg:'#f3f4f6', color:'#6b7280' };
   const pc       = PRIORITY_COLORS[complaint.priority] || T.amber;
   const catIcon  = CATEGORY_ICONS[complaint.category] || '📝';
   const attachments = complaint.attachments || [];
@@ -115,21 +113,32 @@ export default function ComplaintDetail({ route, navigation }) {
 
   const uploadCompletionProof = async () => {
     try {
-      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (perm.status !== 'granted') return;
+      const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+      if (cameraPerm.status !== 'granted') return;
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
+      const locationPerm = await Location.requestForegroundPermissionsAsync();
+      if (locationPerm.status !== 'granted') return;
+
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.85,
-        videoMaxDuration: 60,
       });
       if (result.canceled) return;
 
       const asset = result.assets[0];
       setUploading(true);
-      const payload = asset.type === 'video'
-        ? { videoUrl: asset.uri }
-        : { photoUrl: asset.uri };
+      const payload = {
+        photoUrl: asset.uri,
+        proofLocation: {
+          lat: currentLocation.coords.latitude,
+          lng: currentLocation.coords.longitude,
+          accuracy: currentLocation.coords.accuracy,
+        },
+      };
       const { data } = await complaintAPI.uploadProof(id, payload);
       setComplaint(data);
     } finally {
@@ -219,7 +228,7 @@ export default function ComplaintDetail({ route, navigation }) {
                     {step==='IN PROGRESS'?'In Progress':step==='ACCEPTED'?'Accepted':step.charAt(0)+step.slice(1).toLowerCase()}
                   </Text>
                 </View>
-                {i<2 && <View style={[s.timelineLine, isDone && { backgroundColor:T.green }]} />}
+                {i<3 && <View style={[s.timelineLine, isDone && { backgroundColor:T.green }]} />}
               </React.Fragment>
             );
           })}
@@ -304,7 +313,12 @@ export default function ComplaintDetail({ route, navigation }) {
               <Text style={{ fontSize:24 }}>📸</Text>
               <View style={{ flex:1 }}>
                 <Text style={s.proofTitle}>Resolution Proof Uploaded</Text>
-                <Text style={s.proofSub}>Worker has submitted proof of resolution</Text>
+                <Text style={s.proofSub}>
+                  Worker has submitted proof of resolution
+                  {complaint.proofLocation?.lat && complaint.proofLocation?.lng
+                    ? ` at ${Number(complaint.proofLocation.lat).toFixed(5)}, ${Number(complaint.proofLocation.lng).toFixed(5)}`
+                    : ''}
+                </Text>
               </View>
               <TouchableOpacity onPress={() => { setViewerUri(complaint.proofPhoto); setViewerVisible(true); }}>
                 <View style={s.proofBadge}><Text style={s.proofBadgeTxt}>View</Text></View>

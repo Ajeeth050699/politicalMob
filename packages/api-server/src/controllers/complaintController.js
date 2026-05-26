@@ -89,6 +89,8 @@ const fmt = (c) => ({
   acceptedAt:       c.acceptedAt,
   proofPhoto:       c.proofPhoto,
   proofVideo:       c.proofVideo,
+  proofLocation:    c.proofLocation,
+  proofUploadedAt:  c.proofUploadedAt,
   attachments:      c.attachments   || [],
   fallbackUsed:     c.fallbackUsed,
   routingLevel:     c.routingLevel,
@@ -312,10 +314,18 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
   }
 
   const oldStatus    = complaint.status;
+  if (req.body.status === 'COMPLETED' && !complaint.proofPhoto) {
+    res.status(400);
+    throw new Error('Upload an after-repair photo before completing this complaint.');
+  }
+
   complaint.status   = req.body.status   || complaint.status;
   complaint.priority = req.body.priority || complaint.priority;
   if (req.body.assignedWorker && (['admin', 'superadmin', 'agent'].includes(req.user.role))) {
     complaint.assignedWorker = req.body.assignedWorker;
+    complaint.lockedToAgent = true;
+    complaint.acceptedAt = complaint.acceptedAt || new Date();
+    if (complaint.status === 'NEW') complaint.status = 'ACCEPTED';
   }
   await complaint.save();
 
@@ -365,8 +375,34 @@ const uploadProof = asyncHandler(async (req, res) => {
     throw new Error('Only the assigned worker can upload proof.');
   }
 
-  complaint.proofPhoto = req.body.photoUrl || (req.file ? `/uploads/${req.file.filename}` : complaint.proofPhoto);
+  const photoUrl = req.body.photoUrl || (req.file ? `/uploads/${req.file.filename}` : null);
+  const proofLocation = req.body.proofLocation || {};
+  const hasValidProofLocation =
+    Number.isFinite(Number(proofLocation.lat)) &&
+    Number.isFinite(Number(proofLocation.lng));
+
+  if (req.user.role === 'worker') {
+    if (!photoUrl) {
+      res.status(400);
+      throw new Error('After-repair photo is required to complete this complaint.');
+    }
+
+    if (!hasValidProofLocation) {
+      res.status(400);
+      throw new Error('Current GPS location is required with the after-repair photo.');
+    }
+  }
+
+  complaint.proofPhoto = photoUrl || complaint.proofPhoto;
   complaint.proofVideo = req.body.videoUrl || complaint.proofVideo;
+  if (hasValidProofLocation) {
+    complaint.proofLocation = {
+      lat: Number(proofLocation.lat),
+      lng: Number(proofLocation.lng),
+      accuracy: Number.isFinite(Number(proofLocation.accuracy)) ? Number(proofLocation.accuracy) : undefined,
+    };
+  }
+  complaint.proofUploadedAt = new Date();
   complaint.status     = 'COMPLETED';
   await complaint.save();
 

@@ -49,6 +49,12 @@ const complaintSchema = new mongoose.Schema(
     // ── Proof ─────────────────────────────────────────────────────
     proofPhoto: { type: String },
     proofVideo: { type: String },
+    proofLocation: {
+      lat: { type: Number },
+      lng: { type: Number },
+      accuracy: { type: Number },
+    },
+    proofUploadedAt: { type: Date },
 
     // ── Citizen attachments ───────────────────────────────────────
     attachments: [
