@@ -4,7 +4,7 @@ import {
   TouchableOpacity, ActivityIndicator, Platform, StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { complaintAPI, workerAPI } from '../../services/api';
+import { complaintAPI, workerAPI, notificationAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 
@@ -18,18 +18,21 @@ export default function AdminDashboard({ navigation }) {
     totalWorkers: 0,
     activeWorkers: 0,
   });
+  const [recentNotifications, setRecentNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = async () => {
     try {
-      const [complaintRes, workerRes] = await Promise.all([
+      const [complaintRes, workerRes, notifRes] = await Promise.all([
         complaintAPI.getAll(),
         workerAPI.getAll(),
+        notificationAPI.getAll({ limit: 5 }).catch(() => ({ data: [] })),
       ]);
 
       const complaints = complaintRes.data || [];
       const workers = workerRes.data || [];
+      const notifs = notifRes.data?.data || notifRes.data || [];
 
       setStats({
         totalComplaints: complaints.length,
@@ -39,6 +42,8 @@ export default function AdminDashboard({ navigation }) {
         totalWorkers: workers.length,
         activeWorkers: workers.filter(w => w.status === 'active').length,
       });
+      
+      setRecentNotifications(Array.isArray(notifs) ? notifs.slice(0, 3) : []);
     } catch (err) {
       console.error('Error loading stats:', err);
     } finally {
@@ -197,7 +202,45 @@ export default function AdminDashboard({ navigation }) {
           </View>
         </View>
 
-        {/* ── Recent Activity ── */}
+        {/* ── Notifications ── */}
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>🔔 Recent Activity</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AdminNotifications')}>
+              <Text style={s.seeAll}>See all →</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {recentNotifications.length > 0 ? (
+            <View>
+              {recentNotifications.map((notif, i) => (
+                <TouchableOpacity
+                  key={notif.id}
+                  style={s.notificationItem}
+                  onPress={() => navigation.navigate('NotificationDetail', { id: notif.id })}
+                  activeOpacity={0.7}
+                >
+                  <View style={s.notifIconBox}>
+                    <Text style={{ fontSize: 18 }}>
+                      {notif.type === 'complaint' ? '📋' : notif.type === 'worker' ? '👷' : '📢'}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.notifMsg} numberOfLines={1}>{notif.msg}</Text>
+                    <Text style={s.notifTime}>{new Date(notif.time).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</Text>
+                  </View>
+                  {notif.status === 'unread' && <View style={s.notifDot} />}
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <View style={s.emptyState}>
+              <Text style={s.emptyStateText}>No recent notifications</Text>
+            </View>
+          )}
+        </View>
+
+        {/* ── Dashboard Insights ── */}
         <View style={[s.section, { marginBottom: 32 }]}>
           <Text style={s.sectionTitle}>📊 Dashboard Insights</Text>
           
@@ -287,4 +330,13 @@ const s = StyleSheet.create({
   insightIcon:{ width: 40, height: 40, borderRadius: 10, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center' },
   insightTitle:{ fontSize: 12, fontWeight: '700', color: T.text },
   insightValue:{ fontSize: 11, color: T.textM, marginTop: 2 },
+
+  notificationItem: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: T.border },
+  notifIconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center' },
+  notifMsg: { fontSize: 12, color: T.text, fontWeight: '600', marginBottom: 2 },
+  notifTime: { fontSize: 10, color: T.textM },
+  notifDot: { width: 6, height: 6, borderRadius: '50%', backgroundColor: T.maroon },
+  
+  emptyState: { paddingVertical: 16, alignItems: 'center' },
+  emptyStateText: { fontSize: 12, color: T.textM },
 });

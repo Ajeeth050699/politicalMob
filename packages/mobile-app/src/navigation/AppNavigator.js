@@ -28,15 +28,18 @@ import ProfileScreen from "../screens/shared/ProfileScreen";
 import BillingScreen from "../screens/shared/BillingScreen";
 import ComplaintDetail from "../screens/shared/ComplaintDetail";
 import NewsDetailScreen from "../screens/shared/NewsDetailScreen";
+import NotificationDetail from "../screens/shared/NotificationDetail";
 
 // ── Worker Screens ────────────────────────────────────────────────
 import WorkerDashboard from "../screens/worker/WorkerDashboard";
 import AssignedComplaints from "../screens/worker/AssignedComplaints";
+import NotificationScreen from "../screens/shared/NotificationScreen";
 
 // ── Admin Screens ─────────────────────────────────────────────────
 import AdminDashboard from "../screens/admin/AdminDashboard";
 import AdminComplaints from "../screens/admin/AdminComplaints";
 import AdminWorkers from "../screens/admin/AdminWorkers";
+import AdminNotifications from "../screens/admin/AdminNotifications";
 import ComplaintDetailAdmin from "../screens/admin/ComplaintDetailAdmin";
 
 const Stack = createNativeStackNavigator();
@@ -60,8 +63,8 @@ const PublicTabs = () => (
         const icons = {
           Home: "home",
           Complaints: "clipboard-list",
+          Notifications: "bell",
           News: "newspaper",
-          Education: "school",
           Emergency: "phone-alert",
         };
         return (
@@ -76,8 +79,8 @@ const PublicTabs = () => (
   >
     <Tab.Screen name="Home" component={HomeScreen} />
     <Tab.Screen name="Complaints" component={MyComplaintsScreen} />
+    <Tab.Screen name="Notifications" component={NotificationScreen} />
     <Tab.Screen name="News" component={NewsScreen} />
-    <Tab.Screen name="Education" component={EducationScreen} />
     <Tab.Screen name="Emergency" component={EmergencyScreen} />
   </Tab.Navigator>
 );
@@ -100,8 +103,8 @@ const WorkerTabs = () => (
         const icons = {
           Dashboard: "view-dashboard",
           Complaints: "clipboard-check",
+          Notifications: "bell",
           News: "newspaper",
-          Videos: "play-circle",
           Profile: "account",
         };
         return (
@@ -116,8 +119,8 @@ const WorkerTabs = () => (
   >
     <Tab.Screen name="Dashboard" component={WorkerDashboard} />
     <Tab.Screen name="Complaints" component={AssignedComplaints} />
+    <Tab.Screen name="Notifications" component={NotificationScreen} />
     <Tab.Screen name="News" component={NewsScreen} />
-    <Tab.Screen name="Videos" component={EducationScreen} />
     <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
@@ -140,6 +143,7 @@ const AdminTabs = () => (
         const icons = {
           Dashboard: "view-dashboard",
           Complaints: "clipboard-list",
+          Notifications: "bell",
           Workers: "account-multiple",
           Profile: "account",
         };
@@ -155,6 +159,7 @@ const AdminTabs = () => (
   >
     <Tab.Screen name="Dashboard" component={AdminDashboard} />
     <Tab.Screen name="Complaints" component={AdminComplaints} />
+    <Tab.Screen name="Notifications" component={AdminNotifications} />
     <Tab.Screen name="Workers" component={AdminWorkers} />
     <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
@@ -200,6 +205,7 @@ export default function AppNavigator() {
           <Stack.Screen name="PublicTabs" component={PublicTabs} />
           <Stack.Screen name="AddComplaint" component={AddComplaintScreen} />
           <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
+          <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
           <Stack.Screen name="Exam" component={ExamScreen} />
           <Stack.Screen name="Camps" component={CampsScreen} />
@@ -213,7 +219,9 @@ export default function AppNavigator() {
           <Stack.Screen name="AdminTabs" component={AdminTabs} />
           <Stack.Screen name="AdminComplaints" component={AdminComplaints} />
           <Stack.Screen name="AdminWorkers" component={AdminWorkers} />
+          <Stack.Screen name="AdminNotifications" component={AdminNotifications} />
           <Stack.Screen name="ComplaintDetailAdmin" component={ComplaintDetailAdmin} />
+          <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Billing" component={BillingScreen} />
@@ -224,6 +232,7 @@ export default function AppNavigator() {
         <>
           <Stack.Screen name="WorkerTabs" component={WorkerTabs} />
           <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
+          <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Billing" component={BillingScreen} />

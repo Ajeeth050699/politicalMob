@@ -65,13 +65,17 @@ const examResultSchema = new mongoose.Schema(
 // ── Notification ──────────────────────────────────────────────────
 const notificationSchema = new mongoose.Schema(
   {
-    user:           { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    msg:            { type: String, required: true },
-    type:           { type: String, enum: ['complaint', 'worker', 'camp', 'news', 'announcement'], default: 'announcement' },
-    targetRole:     { type: String, enum: ['all', 'public', 'worker', 'admin'], default: 'all' },
-    targetDistrict: { type: String },
-    createdBy:      { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    readBy:         [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    user:                 { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    msg:                  { type: String, required: true },
+    type:                 { type: String, enum: ['complaint', 'worker', 'camp', 'news', 'announcement'], default: 'announcement' },
+    targetRole:           { type: String, enum: ['all', 'public', 'worker', 'admin'], default: 'all' },
+    targetDistrict:       { type: String },
+    createdBy:            { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    readBy:               [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    relatedComplaintId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Complaint' },
+    relatedWorkerId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status:               { type: String, enum: ['unread', 'read', 'archived'], default: 'unread' },
+    actionUrl:            { type: String },
   },
   { timestamps: true }
 );

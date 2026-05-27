@@ -5,10 +5,17 @@ const { findWard } = require('../constants/wards');
 const { emitComplaintEvent } = require('../realtime/complaintEvents');
 
 // ── In-app notification helper ─────────────────────────────────────
-const notify = async (userId, msg, type = 'complaint') => {
+const notify = async (userId, msg, type = 'complaint', complaintId = null, workerId = null) => {
   try {
     const { Notification } = require('../models/otherModels');
-    await Notification.create({ user: userId, msg, type });
+    await Notification.create({ 
+      user: userId, 
+      msg, 
+      type,
+      relatedComplaintId: complaintId,
+      relatedWorkerId: workerId,
+      status: 'unread'
+    });
   } catch {}
 };
 
@@ -209,7 +216,9 @@ const createComplaint = asyncHandler(async (req, res) => {
     await notify(
       agent._id,
       `New complaint in your ${routingLevel === 'ward' ? 'ward' : 'nearby area'}: ${category}`,
-      'complaint'
+      'complaint',
+      complaint._id,
+      agent._id
     );
   }
 
@@ -217,7 +226,12 @@ const createComplaint = asyncHandler(async (req, res) => {
   if (escalateImmediately) {
     const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
     for (const admin of admins) {
-      await notify(admin._id, `No workers/agents for: ${category} in ward ${userWard}`, 'complaint');
+      await notify(
+        admin._id, 
+        `No workers/agents for: ${category} in ward ${userWard}`, 
+        'complaint',
+        complaint._id
+      );
     }
   }
 
@@ -283,8 +297,11 @@ const acceptComplaint = asyncHandler(async (req, res) => {
   await notify(
     updated.user._id,
     `✅ Your complaint "${updated.category}" has been accepted by Worker ${req.user.name}.`,
-    'complaint'
+    'complaint',
+    updated._id,
+    req.user._id
   );
+  
 
   const out = fmt(updated);
   emitComplaintEvent('accepted', out);
@@ -337,8 +354,9 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
       'COMPLETED':   `🎉 Your complaint "${complaint.category}" has been resolved!`,
     };
     const citizenId = typeof complaint.user === 'object' ? complaint.user._id : complaint.user;
+    const workerId = typeof complaint.assignedWorker === 'object' ? complaint.assignedWorker._id : complaint.assignedWorker;
     if (msgs[complaint.status]) {
-      await notify(citizenId, msgs[complaint.status], 'complaint');
+      await notify(citizenId, msgs[complaint.status], 'complaint', complaint._id, workerId);
     }
   }
 
@@ -446,7 +464,7 @@ const escalatePending = asyncHandler(async (req, res) => {
     c.escalatedAt      = new Date();
     await c.save();
     for (const admin of admins) {
-      await notify(admin._id, `⚠️ Unattended 2+ hrs: ${c.category} in thokuthi ${c.thokuthi}`, 'complaint');
+      await notify(admin._id, `⚠️ Unattended 2+ hrs: ${c.category} in thokuthi ${c.thokuthi}`, 'complaint', c._id);
     }
   }
 
@@ -522,7 +540,13 @@ const revokeComplaint = asyncHandler(async (req, res) => {
 
   // Notify worker if it was assigned
   if (complaint.assignedWorker) {
-    await notify(complaint.assignedWorker, `❌ Complaint "${complaint.category}" has been revoked by the citizen.`, 'complaint');
+    await notify(
+      complaint.assignedWorker, 
+      `❌ Complaint "${complaint.category}" has been revoked by the citizen.`, 
+      'complaint',
+      complaint._id,
+      complaint.assignedWorker
+    );
   }
 
   const populated = await Complaint.findById(complaint._id)

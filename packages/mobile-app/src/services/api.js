@@ -113,8 +113,11 @@ export const educationAPI = {
 
 // ── NOTIFICATIONS ────────────────────────────────────────────────
 export const notificationAPI = {
-  getAll:  ()     => api.get('/notifications'),
-  create:  (data) => api.post('/notifications', data),
+  getAll:     (params) => api.get('/notifications', { params }),
+  getById:    (id)     => api.get(`/notifications/${id}`),
+  markRead:   (id)     => api.put(`/notifications/${id}/read`),
+  archive:    (id)     => api.put(`/notifications/${id}/archive`),
+  create:     (data)   => api.post('/notifications', data),
 };
 
 // ── DASHBOARD ────────────────────────────────────────────────────

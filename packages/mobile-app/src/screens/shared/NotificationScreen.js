@@ -28,28 +28,37 @@ export default function NotificationsScreen({ navigation }) {
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter,     setFilter]     = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('unread');
 
   const FILTERS = ['ALL', 'complaint', 'news', 'camp', 'announcement'];
+  const STATUS_FILTERS = ['unread', 'read', 'ALL'];
 
   const load = async (refresh = false) => {
     if (refresh) setRefreshing(true);
     try {
-      const { data } = await notificationAPI.getAll();
-      setNotifs(data);
+      const params = {};
+      if (filter !== 'ALL') params.type = filter;
+      if (statusFilter !== 'ALL') params.status = statusFilter;
+      const { data } = await notificationAPI.getAll(params);
+      setNotifs(Array.isArray(data) ? data : data?.data || []);
     } catch { /* silent */ } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [filter, statusFilter]);
 
-  const filtered = filter === 'ALL' ? notifs : notifs.filter(n => n.type === filter);
+  const filtered = notifs;
 
   const renderItem = ({ item: n }) => {
     const meta = TYPE_META[n.type] || TYPE_META.announcement;
     return (
-      <View style={[s.card, { borderLeftColor: meta.color, borderLeftWidth: 4 }]}>
+      <TouchableOpacity
+        style={[s.card, { borderLeftColor: meta.color, borderLeftWidth: 4, opacity: n.status === 'read' ? 0.7 : 1 }]}
+        onPress={() => navigation.navigate('NotificationDetail', { id: n.id })}
+        activeOpacity={0.7}
+      >
         <View style={[s.iconBox, { backgroundColor: meta.bg }]}>
           <Text style={{ fontSize: 22 }}>{meta.icon}</Text>
         </View>
@@ -62,7 +71,7 @@ export default function NotificationsScreen({ navigation }) {
           </View>
           <Text style={s.msg}>{n.msg}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -112,6 +121,22 @@ export default function NotificationsScreen({ navigation }) {
             {f !== 'ALL' && <Text style={{ fontSize: 11, marginRight: 3 }}>{TYPE_META[f]?.icon}</Text>}
             <Text style={[s.chipTxt, filter === f && { color: '#fff' }]}>
               {f === 'ALL' ? 'All' : TYPE_META[f]?.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* ── Status Filter ── */}
+      <View style={s.filterRow}>
+        {STATUS_FILTERS.map(s_f => (
+          <TouchableOpacity
+            key={s_f}
+            style={[s.chip, statusFilter === s_f && s.chipActive]}
+            onPress={() => setStatusFilter(s_f)}
+            activeOpacity={0.8}
+          >
+            <Text style={[s.chipTxt, statusFilter === s_f && { color: '#fff' }]}>
+              {s_f === 'ALL' ? 'All Status' : s_f === 'unread' ? '○ Unread' : '✓ Read'}
             </Text>
           </TouchableOpacity>
         ))}
