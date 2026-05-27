@@ -167,7 +167,7 @@ export default function WorkerDashboard({ navigation }) {
                   <Text style={s.complaintCat} numberOfLines={1}>{c.category}</Text>
                   <Text style={s.complaintMeta}>📍 {c.thokuthi} · 🏙️ {c.district}</Text>
                 </View>
-                <View style={[s.complaintBadge, { backgroundColor: sc.bg + 'cc' }]}>
+                <View style={[s.complaintBadge, { backgroundColor: sc.bg || '#f3f4f6' }]}>
                   <Text style={[s.complaintBadgeTxt, { color: sc.color }]}>{c.status}</Text>
                 </View>
               </TouchableOpacity>

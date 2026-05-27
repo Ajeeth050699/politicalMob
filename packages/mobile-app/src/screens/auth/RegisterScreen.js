@@ -189,11 +189,11 @@ export default function RegisterScreen({ navigation }) {
     if (!form.wardNo.trim()) { showToast('Please enter your ward number.'); return; }
     if (!form.pincode.trim()) { showToast('Please enter your pincode.'); return; }
     if (!form.address.trim()) { showToast('Please enter your address or area.'); return; }
-    if ((form.role==='worker' || form.role==='agent') && !form.workCategory.trim()) {
+    if (form.role==='worker' && !form.workCategory.trim()) {
       showToast('Please enter your work category.');
       return;
     }
-    if ((form.role==='worker' || form.role==='agent') && form.ward) {
+    if (form.role==='worker' && form.ward) {
       setLoading(true);
       try {
         const res = await authAPI.verifyWard(form.ward, form.district);
@@ -213,7 +213,7 @@ export default function RegisterScreen({ navigation }) {
         password:form.password, phone:verifiedPhone,
         role:form.role, ward:form.ward, wardNo:Number(form.wardNo), district:form.district,
         address:form.address, pincode:form.pincode,
-        workCategory:(form.role==='worker' || form.role==='agent') ? form.workCategory.trim() : '',
+        workCategory:form.role==='worker' ? form.workCategory.trim() : '',
         profilePhoto: profilePhoto,
       });
     } catch(err) {
@@ -282,7 +282,7 @@ export default function RegisterScreen({ navigation }) {
                 <Field label="Confirm Password *" icon="🔒" value={form.confirmPassword} onChange={set('confirmPassword')} placeholder="Re-enter password" secure />
                 <Text style={fs.label}>I am registering as *</Text>
                 <View style={{flexDirection:'row',gap:10,marginBottom:20}}>
-                  {[{v:'public',l:'Citizen',d:'Rs. 1/month'},{v:'worker',l:'Worker',d:'Rs. 10/month'},{v:'agent',l:'Agent',d:'Rs. 100/month'}].map(r=>(
+                  {[{v:'public',l:'Citizen',d:'Rs. 1/month'},{v:'worker',l:'Worker',d:'Rs. 10/month'}].map(r=>(
                     <TouchableOpacity key={r.v} style={[s.roleCard,form.role===r.v&&s.roleCardActive]} onPress={()=>set('role')(r.v)} activeOpacity={0.85}>
                       <Text style={[s.roleLabel,form.role===r.v&&{color:'#fff'}]}>{r.l}</Text>
                       <Text style={[s.roleDesc,form.role===r.v&&{color:'rgba(255,255,255,0.75)'}]}>{r.d}</Text>
@@ -354,11 +354,11 @@ export default function RegisterScreen({ navigation }) {
                     ))}
                   </Picker>
                 </View>
-                <Text style={fs.hint}>Complaints are automatically routed to workers and agents assigned to this Thokuthi and ward number.</Text>
+                <Text style={fs.hint}>Complaints are automatically routed to workers assigned to this Thokuthi and ward number.</Text>
                 <Field label="Ward Number *" icon="🏠" value={form.wardNo} onChange={set('wardNo')} placeholder="Enter ward number" keyboard="numeric" />
                 <Field label="Pincode *"      icon="📮" value={form.pincode} onChange={set('pincode')} placeholder="6-digit pincode" keyboard="numeric" hint="Used for fallback complaint routing" />
                 <Field label="Address *"      icon="🏘️" value={form.address} onChange={set('address')} placeholder="Door no, street, area" />
-                {(form.role==='worker' || form.role==='agent') && (
+                {form.role==='worker' && (
                   <Field
                     label="Work Category *"
                     icon="#"
@@ -389,9 +389,9 @@ export default function RegisterScreen({ navigation }) {
                     ['Name',     form.name,           '👤'],
                     ['Phone',    verifiedPhone,        '📱'],
                     ['Email',    form.email||'—',      '✉️'],
-                    ['Role',     form.role==='agent'?'Agent':form.role==='worker'?'Worker':'Citizen','🎭'],
-                    ...(form.role==='worker' || form.role==='agent' ? [['Work Category', form.workCategory || '—', '#']] : []),
-                    ['Plan',     `Rs. ${(pricing[form.role] || pricing.public)?.amount || (form.role==='agent'?100:form.role==='worker'?10:1)}/month`, '₹'],
+                    ['Role',     form.role==='worker'?'Worker':'Citizen','🎭'],
+                    ...(form.role==='worker' ? [['Work Category', form.workCategory || '—', '#']] : []),
+                    ['Plan',     `Rs. ${(pricing[form.role] || pricing.public)?.amount || (form.role==='worker'?10:1)}/month`, '₹'],
                     ['District', form.district,        '📍'],
                     ['Thokuthi', form.ward    ||'—',   '🏠'],
                     ['Ward No',  form.wardNo  ||'—',   '🔢'],
@@ -404,7 +404,7 @@ export default function RegisterScreen({ navigation }) {
                     </View>
                   ))}
                 </View>
-                {(form.role==='worker' || form.role==='agent') && (
+                {form.role==='worker' && (
                   <View style={s.workerBanner}>
                     <Text style={{fontSize:20}}>👷</Text>
                     <Text style={{flex:1,fontSize:13,color:'#1e40af',lineHeight:19}}>

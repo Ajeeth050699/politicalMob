@@ -25,6 +25,10 @@ export default function AdminWorkers({ navigation }) {
   const [toast,         setToast]         = useState({ visible:false, message:'', type:'error' });
 
   const showToast = (msg, type='error') => setToast({ visible:true, message:msg, type });
+  const goBack = () => {
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.navigate('Dashboard');
+  };
 
   const load = async () => {
     try {
@@ -176,6 +180,9 @@ export default function AdminWorkers({ navigation }) {
 
       {/* Header */}
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
+        <TouchableOpacity onPress={goBack} style={s.backBtn}>
+          <Text style={s.backTxt}>←</Text>
+        </TouchableOpacity>
         <Text style={s.headerTitle}>👷 Workers Management</Text>
         <Text style={s.headerSub}>View and manage field workers</Text>
       </LinearGradient>
@@ -205,6 +212,7 @@ export default function AdminWorkers({ navigation }) {
               selectedValue={filterDistrict}
               onValueChange={(value) => setFilterDistrict(value)}
               style={s.picker}
+              dropdownIconColor={T.maroon}
             >
               {districts.map((dist) => (
                 <Picker.Item key={dist} label={dist} value={dist} />
@@ -212,6 +220,10 @@ export default function AdminWorkers({ navigation }) {
             </Picker>
           </View>
         </View>
+      </View>
+
+      <View style={s.activeFilters}>
+        <Text style={s.activeFilterText}>District: {filterDistrict === 'ALL' ? 'All' : filterDistrict}</Text>
       </View>
 
       {/* Search Bar */}
@@ -364,9 +376,11 @@ const s = StyleSheet.create({
   root:    { flex: 1, backgroundColor: T.bg },
   center:  { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  header:     { paddingTop: 20, paddingBottom: 16, paddingHorizontal: 16 },
-  headerTitle:{ fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 4 },
-  headerSub:  { fontSize: 12, color: 'rgba(255,255,255,0.8)' },
+  header:     { paddingTop: Platform.OS === 'ios' ? 58 : 46, paddingBottom: 16, paddingHorizontal: 16 },
+  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 54 : 42, left: 16, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' },
+  backTxt:    { color: '#fff', fontSize: 20, fontWeight: '800' },
+  headerTitle:{ fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 4, textAlign: 'center' },
+  headerSub:  { fontSize: 12, color: 'rgba(255,255,255,0.8)', textAlign: 'center' },
 
   quickStats:  { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 12, gap: 10, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
   statQuick:   { flex: 1, paddingVertical: 10, backgroundColor: T.bg, borderRadius: 10, alignItems: 'center' },
@@ -377,7 +391,9 @@ const s = StyleSheet.create({
   filterItem:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
   filterLabel:    { fontSize: 12, fontWeight: '700', color: T.text, minWidth: 70 },
   pickerContainer:{ flex: 1, borderWidth: 1, borderColor: T.border, borderRadius: 8, overflow: 'hidden' },
-  picker:         { height: 40, paddingHorizontal: 8 },
+  picker:         { height: 40, paddingHorizontal: 8, color: T.text, backgroundColor: '#fff' },
+  activeFilters:  { flexDirection: 'row', gap: 8, flexWrap: 'wrap', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  activeFilterText: { fontSize: 11, fontWeight: '700', color: T.maroon, backgroundColor: T.maroon + '12', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
 
   searchContainer:{ paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#fff' },
   searchInput:   { backgroundColor: T.bg, borderWidth: 1, borderColor: T.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 12, color: T.text },

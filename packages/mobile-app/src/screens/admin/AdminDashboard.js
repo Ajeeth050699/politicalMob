@@ -1,278 +1,340 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
   TouchableOpacity, ActivityIndicator, Platform, StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { complaintAPI, workerAPI, notificationAPI } from '../../services/api';
+import { complaintAPI, dashboardAPI, notificationAPI, workerAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+
+const STATUS_META = {
+  NEW: { label: 'New', color: T.amber, bg: '#FEF3C7' },
+  ACCEPTED: { label: 'Accepted', color: T.blue, bg: '#DBEAFE' },
+  'IN PROGRESS': { label: 'In Progress', color: '#8b5cf6', bg: '#EDE9FE' },
+  COMPLETED: { label: 'Completed', color: T.green, bg: '#DCFCE7' },
+};
+
+const CATEGORY_ICONS = {
+  'Street Light Problem': '💡',
+  'Road Damage': '🛣️',
+  'Garbage Issue': '🗑️',
+  'Water Supply Problem': '💧',
+  'Drainage Issue': '🚰',
+  'Public Safety Issue': '🚨',
+  Others: '📝',
+};
+
+function StatTile({ label, value, sub, color, icon, onPress }) {
+  return (
+    <TouchableOpacity
+      style={s.statTile}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.82 : 1}
+      disabled={!onPress}
+    >
+      <View style={[s.statIconBox, { backgroundColor: color + '18' }]}>
+        <Text style={s.statIcon}>{icon}</Text>
+      </View>
+      <Text style={s.statValue}>{value}</Text>
+      <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
+      {!!sub && <Text style={s.statSub} numberOfLines={1}>{sub}</Text>}
+    </TouchableOpacity>
+  );
+}
+
+function SectionHeader({ title, action, onPress }) {
+  return (
+    <View style={s.sectionHeader}>
+      <Text style={s.sectionTitle}>{title}</Text>
+      {!!action && (
+        <TouchableOpacity onPress={onPress} activeOpacity={0.75}>
+          <Text style={s.sectionAction}>{action}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
 
 export default function AdminDashboard({ navigation }) {
   const { userInfo, logout } = useAuth();
   const [stats, setStats] = useState({
     totalComplaints: 0,
     newComplaints: 0,
+    acceptedComplaints: 0,
     inProgressComplaints: 0,
     completedComplaints: 0,
     totalWorkers: 0,
     activeWorkers: 0,
   });
+  const [recentComplaints, setRecentComplaints] = useState([]);
   const [recentNotifications, setRecentNotifications] = useState([]);
+  const [weekly, setWeekly] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = async () => {
     try {
-      const [complaintRes, workerRes, notifRes] = await Promise.all([
-        complaintAPI.getAll(),
-        workerAPI.getAll(),
-        notificationAPI.getAll({ limit: 5 }).catch(() => ({ data: [] })),
+      const [
+        statRes,
+        weeklyRes,
+        categoryRes,
+        districtRes,
+        recentRes,
+        workerRes,
+        notifRes,
+      ] = await Promise.all([
+        dashboardAPI.getStats().catch(() => null),
+        dashboardAPI.getWeekly().catch(() => null),
+        dashboardAPI.getByCategory().catch(() => null),
+        dashboardAPI.getDistrictPerf().catch(() => null),
+        dashboardAPI.getRecentComplaints().catch(() => null),
+        workerAPI.getAll().catch(() => ({ data: [] })),
+        notificationAPI.getAll({ limit: 5, status: 'ALL' }).catch(() => ({ data: { data: [] } })),
       ]);
 
-      const complaints = complaintRes.data || [];
-      const workers = workerRes.data || [];
-      const notifs = notifRes.data?.data || notifRes.data || [];
+      let complaints = Array.isArray(recentRes?.data) ? recentRes.data : [];
+      let computedStats = {
+        totalComplaints: statRes?.data?.totalComplaints || 0,
+        newComplaints: statRes?.data?.pending || 0,
+        acceptedComplaints: 0,
+        inProgressComplaints: statRes?.data?.inProgress || 0,
+        completedComplaints: statRes?.data?.completed || 0,
+        totalWorkers: workerRes.data?.length || 0,
+        activeWorkers: statRes?.data?.activeWorkers || workerRes.data?.filter(w => w.status === 'active').length || 0,
+      };
 
-      setStats({
-        totalComplaints: complaints.length,
-        newComplaints: complaints.filter(c => c.status === 'NEW').length,
-        inProgressComplaints: complaints.filter(c => c.status === 'IN PROGRESS').length,
-        completedComplaints: complaints.filter(c => c.status === 'COMPLETED').length,
-        totalWorkers: workers.length,
-        activeWorkers: workers.filter(w => w.status === 'active').length,
-      });
-      
+      if (!statRes || !recentRes) {
+        const complaintRes = await complaintAPI.getAll().catch(() => ({ data: [] }));
+        const allComplaints = complaintRes.data || [];
+        complaints = allComplaints.slice(0, 10);
+        computedStats = {
+          ...computedStats,
+          totalComplaints: allComplaints.length,
+          newComplaints: allComplaints.filter(c => c.status === 'NEW').length,
+          acceptedComplaints: allComplaints.filter(c => c.status === 'ACCEPTED').length,
+          inProgressComplaints: allComplaints.filter(c => c.status === 'IN PROGRESS').length,
+          completedComplaints: allComplaints.filter(c => c.status === 'COMPLETED').length,
+        };
+      }
+
+      setStats(computedStats);
+      setWeekly(Array.isArray(weeklyRes?.data) ? weeklyRes.data : []);
+      setCategories(Array.isArray(categoryRes?.data) ? categoryRes.data : []);
+      setDistricts(Array.isArray(districtRes?.data) ? districtRes.data : []);
+      setRecentComplaints(Array.isArray(complaints) ? complaints.slice(0, 6) : []);
+
+      const notifs = notifRes.data?.data || notifRes.data || [];
       setRecentNotifications(Array.isArray(notifs) ? notifs.slice(0, 3) : []);
-    } catch (err) {
-      console.error('Error loading stats:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => { load(); }, []);
-  const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
-  const completionRate = stats.totalComplaints > 0 
-    ? Math.round((stats.completedComplaints / stats.totalComplaints) * 100)
-    : 0;
-
-  const handleLogout = () => {
-    logout();
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
   };
 
-  if (loading) return (
-    <View style={s.center}>
-      <ActivityIndicator color={T.maroon} size="large" />
-    </View>
-  );
+  const completionRate = stats.totalComplaints > 0
+    ? Math.round((stats.completedComplaints / stats.totalComplaints) * 100)
+    : 0;
+  const attentionCount = stats.newComplaints + stats.acceptedComplaints + stats.inProgressComplaints;
+  const activeWorkerRate = stats.totalWorkers > 0
+    ? Math.round((stats.activeWorkers / stats.totalWorkers) * 100)
+    : 0;
+  const maxWeekly = Math.max(1, ...weekly.map(w => Math.max(w.complaints || 0, w.resolved || 0)));
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={s.center}>
+        <ActivityIndicator color={T.maroon} size="large" />
+        <Text style={s.loadingText}>Loading admin dashboard...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={s.root}>
-      <StatusBar backgroundColor={T.maroon} barStyle="light-content" />
+      <StatusBar backgroundColor={T.maroonD} barStyle="light-content" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} />}
+        contentContainerStyle={s.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} colors={[T.maroon]} />}
       >
-        {/* ── Hero Header ── */}
-        <LinearGradient colors={[T.maroon, T.maroonL, '#B03A3A']} style={s.header}>
+        <LinearGradient colors={[T.maroonD, T.maroon, '#B23A2F']} style={s.header}>
           <View style={s.headerTop}>
-            <View style={s.adminAvatar}>
-              <Text style={{ fontSize: 24 }}>👨‍💼</Text>
+            <View style={s.avatar}>
+              <Text style={s.avatarTxt}>{(userInfo?.name || 'A').charAt(0).toUpperCase()}</Text>
             </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={s.greetingTxt}>Welcome back,</Text>
-              <Text style={s.adminName}>{userInfo?.name}</Text>
-              <Text style={s.thokuthiTxt}>📍 {userInfo?.district || 'TN'} Admin</Text>
+            <View style={s.headerCopy}>
+              <Text style={s.greeting}>{greeting}</Text>
+              <Text style={s.adminName} numberOfLines={1}>{userInfo?.name || 'Admin'}</Text>
+              <Text style={s.adminMeta} numberOfLines={1}>{userInfo?.district || 'Tamil Nadu'} administration</Text>
             </View>
-            <TouchableOpacity onPress={handleLogout} style={s.logoutBtn}>
-              <Text style={s.logoutTxt}>🚪</Text>
+            <TouchableOpacity onPress={logout} style={s.headerButton} activeOpacity={0.75}>
+              <Text style={s.headerButtonTxt}>⎋</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Completion Rate Card */}
-          <View style={s.completionCard}>
-            <View style={s.completionLeft}>
-              <Text style={s.completionTitle}>Overall Completion</Text>
-              <Text style={s.completionNum}>{completionRate}%</Text>
+          <View style={s.healthPanel}>
+            <View>
+              <Text style={s.healthLabel}>Resolution rate</Text>
+              <Text style={s.healthValue}>{completionRate}%</Text>
             </View>
-            <View style={s.completionBarBg}>
-              <View style={[s.completionBarFill, { width: `${completionRate}%` }]} />
+            <View style={s.healthRight}>
+              <Text style={s.healthNote}>{attentionCount} need attention</Text>
+              <View style={s.progressTrack}>
+                <View style={[s.progressFill, { width: `${completionRate}%` }]} />
+              </View>
             </View>
           </View>
         </LinearGradient>
 
-        {/* ── Stats Grid ── */}
-        <View style={s.statsGridContainer}>
-          <View style={[s.statCard, s.complaintCard]}>
-            <Text style={s.statIcon}>📋</Text>
-            <Text style={s.statNumber}>{stats.totalComplaints}</Text>
-            <Text style={s.statLabel}>Total Complaints</Text>
-          </View>
-          <View style={[s.statCard, s.newCard]}>
-            <Text style={s.statIcon}>🆕</Text>
-            <Text style={s.statNumber}>{stats.newComplaints}</Text>
-            <Text style={s.statLabel}>New</Text>
-          </View>
-          <View style={[s.statCard, s.progressCard]}>
-            <Text style={s.statIcon}>⚙️</Text>
-            <Text style={s.statNumber}>{stats.inProgressComplaints}</Text>
-            <Text style={s.statLabel}>In Progress</Text>
-          </View>
-          <View style={[s.statCard, s.doneCard]}>
-            <Text style={s.statIcon}>✅</Text>
-            <Text style={s.statNumber}>{stats.completedComplaints}</Text>
-            <Text style={s.statLabel}>Completed</Text>
-          </View>
+        <View style={s.statGrid}>
+          <StatTile label="Total" value={stats.totalComplaints} sub="Complaints" color={T.maroon} icon="📋" onPress={() => navigation.navigate('AdminComplaints')} />
+          <StatTile label="New" value={stats.newComplaints} sub="Unassigned" color={T.amber} icon="🆕" onPress={() => navigation.navigate('AdminComplaints', { status: 'NEW' })} />
+          <StatTile label="Progress" value={stats.inProgressComplaints} sub="Active work" color="#8b5cf6" icon="⚙️" onPress={() => navigation.navigate('AdminComplaints', { status: 'IN PROGRESS' })} />
+          <StatTile label="Done" value={stats.completedComplaints} sub="Resolved" color={T.green} icon="✓" onPress={() => navigation.navigate('AdminComplaints', { status: 'COMPLETED' })} />
         </View>
 
-        {/* ── Workers Section ── */}
         <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>👷 Workers</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AdminWorkers')}>
-              <Text style={s.seeAll}>See all →</Text>
+          <SectionHeader title="Operations" />
+          <View style={s.opsGrid}>
+            <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminComplaints')} activeOpacity={0.82}>
+              <Text style={s.opsIcon}>🔎</Text>
+              <Text style={s.opsTitle}>Review Complaints</Text>
+              <Text style={s.opsSub}>Filter by thokuthi, status, and search.</Text>
             </TouchableOpacity>
-          </View>
-          
-          <View style={s.workerStats}>
-            <View style={s.workerStatItem}>
-              <Text style={s.workerStatNumber}>{stats.totalWorkers}</Text>
-              <Text style={s.workerStatLabel}>Total Workers</Text>
-            </View>
-            <View style={s.workerStatItem}>
-              <Text style={[s.workerStatNumber, { color: T.green }]}>{stats.activeWorkers}</Text>
-              <Text style={s.workerStatLabel}>Active Now</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* ── Quick Actions ── */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>🚀 Quick Actions</Text>
-          <View style={s.actionsGrid}>
-            <TouchableOpacity
-              style={s.actionCard}
-              onPress={() => navigation.navigate('AdminComplaints')}
-              activeOpacity={0.8}
-            >
-              <LinearGradient colors={['#f59e0b22', '#f59e0b11']} style={s.actionCardBg}>
-                <Text style={s.actionIcon}>📋</Text>
-                <Text style={s.actionTitle}>All Complaints</Text>
-                <Text style={s.actionDesc}>View and filter</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={s.actionCard}
-              onPress={() => navigation.navigate('AdminWorkers')}
-              activeOpacity={0.8}
-            >
-              <LinearGradient colors={['#3b82f622', '#3b82f611']} style={s.actionCardBg}>
-                <Text style={s.actionIcon}>👷</Text>
-                <Text style={s.actionTitle}>Workers</Text>
-                <Text style={s.actionDesc}>Manage team</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={s.actionCard}
-              onPress={() => navigation.navigate('AdminComplaints')}
-              activeOpacity={0.8}
-            >
-              <LinearGradient colors={['#22c55e22', '#22c55e11']} style={s.actionCardBg}>
-                <Text style={s.actionIcon}>✅</Text>
-                <Text style={s.actionTitle}>Resolved</Text>
-                <Text style={s.actionDesc}>{stats.completedComplaints} completed</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={s.actionCard}
-              onPress={() => navigation.navigate('AdminComplaints')}
-              activeOpacity={0.8}
-            >
-              <LinearGradient colors={['#8b5cf622', '#8b5cf611']} style={s.actionCardBg}>
-                <Text style={s.actionIcon}>⚙️</Text>
-                <Text style={s.actionTitle}>In Progress</Text>
-                <Text style={s.actionDesc}>{stats.inProgressComplaints} active</Text>
-              </LinearGradient>
+            <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminWorkers')} activeOpacity={0.82}>
+              <Text style={s.opsIcon}>👷</Text>
+              <Text style={s.opsTitle}>Worker Coverage</Text>
+              <Text style={s.opsSub}>{stats.activeWorkers}/{stats.totalWorkers} active, {activeWorkerRate}% coverage.</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* ── Notifications ── */}
         <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>🔔 Recent Activity</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AdminNotifications')}>
-              <Text style={s.seeAll}>See all →</Text>
-            </TouchableOpacity>
-          </View>
-          
-          {recentNotifications.length > 0 ? (
-            <View>
-              {recentNotifications.map((notif, i) => (
-                <TouchableOpacity
-                  key={notif.id}
-                  style={s.notificationItem}
-                  onPress={() => navigation.navigate('NotificationDetail', { id: notif.id })}
-                  activeOpacity={0.7}
-                >
-                  <View style={s.notifIconBox}>
-                    <Text style={{ fontSize: 18 }}>
-                      {notif.type === 'complaint' ? '📋' : notif.type === 'worker' ? '👷' : '📢'}
-                    </Text>
+          <SectionHeader title="7-Day Trend" />
+          <View style={s.trendCard}>
+            {weekly.length === 0 ? (
+              <Text style={s.emptyText}>Weekly trend data will appear here.</Text>
+            ) : weekly.map((item) => {
+              const complaintHeight = Math.max(6, Math.round(((item.complaints || 0) / maxWeekly) * 82));
+              const resolvedHeight = Math.max(6, Math.round(((item.resolved || 0) / maxWeekly) * 82));
+              return (
+                <View key={item.day} style={s.trendColumn}>
+                  <View style={s.barPair}>
+                    <View style={[s.bar, s.barComplaint, { height: complaintHeight }]} />
+                    <View style={[s.bar, s.barResolved, { height: resolvedHeight }]} />
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.notifMsg} numberOfLines={1}>{notif.msg}</Text>
-                    <Text style={s.notifTime}>{new Date(notif.time).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</Text>
-                  </View>
-                  {notif.status === 'unread' && <View style={s.notifDot} />}
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <View style={s.emptyState}>
-              <Text style={s.emptyStateText}>No recent notifications</Text>
-            </View>
-          )}
+                  <Text style={s.trendLabel}>{item.day}</Text>
+                </View>
+              );
+            })}
+          </View>
+          <View style={s.legendRow}>
+            <Text style={s.legendText}>● Complaints</Text>
+            <Text style={[s.legendText, { color: T.green }]}>● Resolved</Text>
+          </View>
         </View>
 
-        {/* ── Dashboard Insights ── */}
-        <View style={[s.section, { marginBottom: 32 }]}>
-          <Text style={s.sectionTitle}>📊 Dashboard Insights</Text>
-          
-          <View style={s.insightCard}>
-            <View style={s.insightIcon}>
-              <Text style={{ fontSize: 24 }}>📈</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.insightTitle}>Completion Rate</Text>
-              <Text style={s.insightValue}>{completionRate}% of all complaints resolved</Text>
-            </View>
-          </View>
+        <View style={s.section}>
+          <SectionHeader title="Category Mix" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryRow}>
+            {categories.length === 0 ? (
+              <View style={s.inlineEmpty}><Text style={s.emptyText}>No category data.</Text></View>
+            ) : categories.map((cat) => (
+              <View key={cat.name} style={s.categoryCard}>
+                <Text style={s.categoryIcon}>{CATEGORY_ICONS[cat.name] || '📝'}</Text>
+                <Text style={s.categoryName} numberOfLines={2}>{cat.name}</Text>
+                <Text style={s.categoryValue}>{cat.value}%</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
 
-          <View style={s.insightCard}>
-            <View style={s.insightIcon}>
-              <Text style={{ fontSize: 24 }}>⏳</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.insightTitle}>Pending Tasks</Text>
-              <Text style={s.insightValue}>{stats.newComplaints + stats.inProgressComplaints} complaints need attention</Text>
-            </View>
+        <View style={s.section}>
+          <SectionHeader title="District Performance" />
+          <View style={s.tableCard}>
+            {districts.length === 0 ? (
+              <Text style={s.emptyText}>District performance data will appear after complaints are filed.</Text>
+            ) : districts.slice(0, 5).map((district) => {
+              const rate = district.total > 0 ? Math.round((district.resolved / district.total) * 100) : 0;
+              return (
+                <View key={district.district} style={s.districtRow}>
+                  <View style={s.districtNameWrap}>
+                    <Text style={s.districtName} numberOfLines={1}>{district.district}</Text>
+                    <Text style={s.districtMeta}>{district.pending} pending</Text>
+                  </View>
+                  <View style={s.districtTrack}>
+                    <View style={[s.districtFill, { width: `${rate}%` }]} />
+                  </View>
+                  <Text style={s.districtRate}>{rate}%</Text>
+                </View>
+              );
+            })}
           </View>
+        </View>
 
-          <View style={s.insightCard}>
-            <View style={s.insightIcon}>
-              <Text style={{ fontSize: 24 }}>👥</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.insightTitle}>Active Team</Text>
-              <Text style={s.insightValue}>{stats.activeWorkers} out of {stats.totalWorkers} workers active</Text>
-            </View>
-          </View>
+        <View style={s.section}>
+          <SectionHeader title="Recent Complaints" action="See all →" onPress={() => navigation.navigate('AdminComplaints')} />
+          {recentComplaints.length === 0 ? (
+            <View style={s.emptyCard}><Text style={s.emptyText}>No complaints yet.</Text></View>
+          ) : recentComplaints.map((item) => {
+            const meta = STATUS_META[item.status] || STATUS_META.NEW;
+            return (
+              <TouchableOpacity
+                key={String(item.id || item._id)}
+                style={s.complaintCard}
+                onPress={() => navigation.navigate('ComplaintDetailAdmin', { id: item.id || item._id })}
+                activeOpacity={0.84}
+              >
+                <View style={[s.complaintIconBox, { backgroundColor: meta.bg }]}>
+                  <Text style={s.complaintIcon}>{CATEGORY_ICONS[item.category] || '📝'}</Text>
+                </View>
+                <View style={s.complaintInfo}>
+                  <Text style={s.complaintTitle} numberOfLines={1}>{item.category || 'Complaint'}</Text>
+                  <Text style={s.complaintMeta} numberOfLines={1}>{item.thokuthi || item.ward || 'Thokuthi'} · {item.district || 'District'}</Text>
+                </View>
+                <View style={[s.statusBadge, { backgroundColor: meta.bg }]}>
+                  <Text style={[s.statusText, { color: meta.color }]}>{meta.label}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <View style={s.section}>
+          <SectionHeader title="Notifications" action="See all →" onPress={() => navigation.navigate('AdminNotifications')} />
+          {recentNotifications.length === 0 ? (
+            <View style={s.emptyCard}><Text style={s.emptyText}>No recent notifications.</Text></View>
+          ) : recentNotifications.map((notif) => (
+            <TouchableOpacity
+              key={String(notif.id)}
+              style={s.notificationCard}
+              onPress={() => navigation.navigate('NotificationDetail', { id: notif.id })}
+              activeOpacity={0.84}
+            >
+              <View style={s.notificationDot} />
+              <View style={s.notificationBody}>
+                <Text style={s.notificationMsg} numberOfLines={2}>{notif.msg}</Text>
+                <Text style={s.notificationTime}>{notif.time ? new Date(notif.time).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent'}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
       </ScrollView>
     </View>
@@ -280,63 +342,90 @@ export default function AdminDashboard({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  root:    { flex: 1, backgroundColor: T.bg },
-  center:  { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  root: { flex: 1, backgroundColor: T.bg },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: T.bg },
+  loadingText: { color: T.textM, marginTop: 10, fontSize: 13 },
+  scrollContent: { paddingBottom: 34 },
 
-  header:     { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 24, paddingHorizontal: 20 },
-  headerTop:  { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  adminAvatar:{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  greetingTxt:{ fontSize: 12, color: 'rgba(255,255,255,0.7)' },
-  adminName:  { fontSize: 18, fontWeight: '900', color: '#fff' },
-  thokuthiTxt:   { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
-  logoutBtn:  { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
-  logoutTxt:  { fontSize: 18 },
+  header: { paddingTop: Platform.OS === 'ios' ? 58 : 46, paddingHorizontal: 18, paddingBottom: 22 },
+  headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
+  avatar: { width: 50, height: 50, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  avatarTxt: { color: '#fff', fontSize: 20, fontWeight: '900' },
+  headerCopy: { flex: 1, minWidth: 0 },
+  greeting: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '700' },
+  adminName: { color: '#fff', fontSize: 20, fontWeight: '900', marginTop: 1 },
+  adminMeta: { color: 'rgba(255,255,255,0.72)', fontSize: 12, marginTop: 2 },
+  headerButton: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
+  headerButtonTxt: { color: '#fff', fontSize: 20, fontWeight: '800' },
 
-  completionCard: { backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', flexDirection: 'row', alignItems: 'center', gap: 12 },
-  completionLeft: { flex: 1 },
-  completionTitle:{ fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
-  completionNum:  { fontSize: 20, fontWeight: '900', color: '#E8B84B' },
-  completionBarBg:{ flex: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 4, overflow: 'hidden' },
-  completionBarFill:{ height: '100%', backgroundColor: '#E8B84B', borderRadius: 4 },
+  healthPanel: { backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', flexDirection: 'row', alignItems: 'center', gap: 14 },
+  healthLabel: { color: 'rgba(255,255,255,0.76)', fontSize: 12, fontWeight: '700' },
+  healthValue: { color: T.goldL, fontSize: 34, fontWeight: '900', lineHeight: 38 },
+  healthRight: { flex: 1, gap: 8 },
+  healthNote: { color: 'rgba(255,255,255,0.82)', fontSize: 12, fontWeight: '700', textAlign: 'right' },
+  progressTrack: { height: 9, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 5, backgroundColor: T.goldL },
 
-  statsGridContainer:{ paddingHorizontal: 12, paddingVertical: 16, display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  statCard:   { flex: 1, minWidth: '47%', backgroundColor: '#fff', borderRadius: 14, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: T.border, elevation: 2 },
-  complaintCard:{ borderLeftWidth: 4, borderLeftColor: '#f59e0b' },
-  newCard:    { borderLeftWidth: 4, borderLeftColor: '#fca5a5' },
-  progressCard:{ borderLeftWidth: 4, borderLeftColor: '#8b5cf6' },
-  doneCard:   { borderLeftWidth: 4, borderLeftColor: '#86efac' },
-  statIcon:   { fontSize: 22, marginBottom: 6 },
-  statNumber: { fontSize: 18, fontWeight: '900', color: T.text },
-  statLabel:  { fontSize: 10, color: T.textM, marginTop: 2, fontWeight: '600' },
+  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 14, paddingTop: 14 },
+  statTile: { width: '48%', minHeight: 132, backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+  statIconBox: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  statIcon: { fontSize: 21 },
+  statValue: { color: T.text, fontSize: 24, fontWeight: '900' },
+  statLabel: { color: T.text, fontSize: 13, fontWeight: '800', marginTop: 2 },
+  statSub: { color: T.textM, fontSize: 11, marginTop: 2 },
 
-  section:      { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 4 },
-  sectionHeader:{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: T.text },
-  seeAll:       { fontSize: 12, color: T.maroon, fontWeight: '700' },
+  section: { paddingHorizontal: 14, paddingTop: 22 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  sectionTitle: { color: T.text, fontSize: 17, fontWeight: '900' },
+  sectionAction: { color: T.maroon, fontSize: 13, fontWeight: '800' },
 
-  workerStats: { flexDirection: 'row', gap: 12, marginBottom: 4 },
-  workerStatItem:{ flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: T.border },
-  workerStatNumber:{ fontSize: 18, fontWeight: '900', color: T.maroon },
-  workerStatLabel: { fontSize: 10, color: T.textM, marginTop: 4, fontWeight: '600' },
+  opsGrid: { flexDirection: 'row', gap: 10 },
+  opsCard: { flex: 1, minHeight: 126, backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.border },
+  opsIcon: { fontSize: 26, marginBottom: 8 },
+  opsTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
+  opsSub: { color: T.textM, fontSize: 11, lineHeight: 16, marginTop: 4 },
 
-  actionsGrid:{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 4 },
-  actionCard: { flex: 1, minWidth: '47%', borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: T.border },
-  actionCardBg:{ padding: 14, alignItems: 'center' },
-  actionIcon: { fontSize: 28, marginBottom: 6 },
-  actionTitle:{ fontSize: 12, fontWeight: '700', color: T.text, textAlign: 'center' },
-  actionDesc: { fontSize: 10, color: T.textM, marginTop: 2, textAlign: 'center' },
+  trendCard: { height: 142, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: T.border, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
+  trendColumn: { alignItems: 'center', flex: 1 },
+  barPair: { height: 88, flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
+  bar: { width: 7, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+  barComplaint: { backgroundColor: T.maroon },
+  barResolved: { backgroundColor: T.green },
+  trendLabel: { color: T.textM, fontSize: 10, fontWeight: '700', marginTop: 7 },
+  legendRow: { flexDirection: 'row', gap: 16, paddingTop: 8, paddingHorizontal: 4 },
+  legendText: { color: T.maroon, fontSize: 11, fontWeight: '700' },
 
-  insightCard:{ backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: T.border },
-  insightIcon:{ width: 40, height: 40, borderRadius: 10, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center' },
-  insightTitle:{ fontSize: 12, fontWeight: '700', color: T.text },
-  insightValue:{ fontSize: 11, color: T.textM, marginTop: 2 },
+  categoryRow: { gap: 10, paddingRight: 14 },
+  categoryCard: { width: 118, minHeight: 126, backgroundColor: '#fff', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: T.border },
+  categoryIcon: { fontSize: 24, marginBottom: 8 },
+  categoryName: { color: T.text, fontSize: 12, fontWeight: '800', lineHeight: 16, minHeight: 32 },
+  categoryValue: { color: T.maroon, fontSize: 20, fontWeight: '900', marginTop: 8 },
+  inlineEmpty: { width: '100%', backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.border },
 
-  notificationItem: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: T.border },
-  notifIconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center' },
-  notifMsg: { fontSize: 12, color: T.text, fontWeight: '600', marginBottom: 2 },
-  notifTime: { fontSize: 10, color: T.textM },
-  notifDot: { width: 6, height: 6, borderRadius: '50%', backgroundColor: T.maroon },
-  
-  emptyState: { paddingVertical: 16, alignItems: 'center' },
-  emptyStateText: { fontSize: 12, color: T.textM },
+  tableCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: T.border, padding: 12 },
+  districtRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: T.border },
+  districtNameWrap: { width: 108 },
+  districtName: { color: T.text, fontSize: 12, fontWeight: '800' },
+  districtMeta: { color: T.textM, fontSize: 10, marginTop: 1 },
+  districtTrack: { flex: 1, height: 8, backgroundColor: T.bg, borderRadius: 4, overflow: 'hidden' },
+  districtFill: { height: '100%', backgroundColor: T.green, borderRadius: 4 },
+  districtRate: { width: 38, textAlign: 'right', color: T.text, fontSize: 12, fontWeight: '900' },
+
+  complaintCard: { backgroundColor: '#fff', borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: T.border, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  complaintIconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  complaintIcon: { fontSize: 20 },
+  complaintInfo: { flex: 1, minWidth: 0 },
+  complaintTitle: { color: T.text, fontSize: 13, fontWeight: '900' },
+  complaintMeta: { color: T.textM, fontSize: 11, marginTop: 3 },
+  statusBadge: { paddingHorizontal: 9, paddingVertical: 5, borderRadius: 10 },
+  statusText: { fontSize: 10, fontWeight: '900' },
+
+  notificationCard: { backgroundColor: '#fff', borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: T.border, flexDirection: 'row', gap: 10 },
+  notificationDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: T.maroon, marginTop: 5 },
+  notificationBody: { flex: 1 },
+  notificationMsg: { color: T.text, fontSize: 13, fontWeight: '700', lineHeight: 18 },
+  notificationTime: { color: T.textM, fontSize: 10, marginTop: 4 },
+
+  emptyCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.border },
+  emptyText: { color: T.textM, fontSize: 12, textAlign: 'center' },
 });

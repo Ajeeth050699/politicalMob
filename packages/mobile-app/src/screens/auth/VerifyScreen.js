@@ -155,7 +155,7 @@ export default function VerifyScreen({ route, navigation }) {
               ) : (
                 <TouchableOpacity onPress={handleResend}>
                   <Text style={s.resendLink}>
-                    Didn't receive?{' '}
+                    {"Didn't receive? "}
                     <Text style={{ color: T.maroon, fontWeight: '800' }}>Resend OTP</Text>
                   </Text>
                 </TouchableOpacity>

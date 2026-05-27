@@ -491,6 +491,7 @@ export default function AdminDashboard() {
   const [filterDistrict, setFilterDistrict] = useState("ALL");
   const [searchWorker, setSearchWorker] = useState("");
   const [activeRow, setActiveRow] = useState(null);
+  const [pageHistory, setPageHistory] = useState([]);
 
   const showToast = (msg) => setToast(msg);
   const handleLogout = () => {
@@ -1436,7 +1437,18 @@ export default function AdminDashboard() {
   ];
 
   const navigateTo = (id) => {
+    if (id !== page) setPageHistory((prev) => [...prev, page].slice(-8));
     setPage(id);
+    if (isMobile) setMobileSideOpen(false);
+  };
+
+  const goBackPage = () => {
+    setPageHistory((prev) => {
+      const next = [...prev];
+      const last = next.pop();
+      setPage(last || "dashboard");
+      return next;
+    });
     if (isMobile) setMobileSideOpen(false);
   };
 
@@ -1726,6 +1738,29 @@ export default function AdminDashboard() {
               }}
             >
               ☰
+            </button>
+          )}
+          {page !== "dashboard" && (
+            <button
+              onClick={goBackPage}
+              style={{
+                height: 36,
+                padding: "0 12px",
+                borderRadius: 10,
+                border: `1px solid ${T.border}`,
+                background: T.bg,
+                color: T.maroon,
+                cursor: "pointer",
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 13,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                flexShrink: 0,
+              }}
+            >
+              ← Back
             </button>
           )}
           <div style={{ minWidth: 0 }}>
@@ -2513,7 +2548,7 @@ export default function AdminDashboard() {
               Recent Complaints
             </div>
             <button
-              onClick={() => setPage("complaints")}
+              onClick={() => navigateTo("complaints")}
               style={{
                 fontFamily: "'Source Sans 3',sans-serif",
                 fontSize: 13,
@@ -2719,6 +2754,14 @@ export default function AdminDashboard() {
           value={filterDistrict}
           onChange={(e) => setFilterDistrict(e.target.value)}
         />
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <span style={{ padding: "5px 10px", borderRadius: 50, background: "rgba(123,28,28,0.08)", color: T.maroon, fontSize: 12, fontWeight: 700 }}>
+            Status: {filterStatus === "ALL" ? "All" : filterStatus}
+          </span>
+          <span style={{ padding: "5px 10px", borderRadius: 50, background: "rgba(123,28,28,0.08)", color: T.maroon, fontSize: 12, fontWeight: 700 }}>
+            District: {filterDistrict === "ALL" ? "All" : filterDistrict}
+          </span>
+        </div>
         <span
           style={{
             fontFamily: "'Source Sans 3',sans-serif",
@@ -4887,10 +4930,10 @@ export default function AdminDashboard() {
           style={{
             flex: 1,
             padding: isMobile
-              ? "12px 12px 80px"
+              ? "18px 12px 80px"
               : isTablet
-                ? "16px 20px"
-                : "24px 28px",
+                ? "22px 20px"
+                : "32px 28px",
             overflowY: "auto",
           }}
         >

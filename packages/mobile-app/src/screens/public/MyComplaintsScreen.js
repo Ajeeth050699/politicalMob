@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  RefreshControl, ActivityIndicator, Platform, StatusBar,
+  RefreshControl, ActivityIndicator, Platform, StatusBar, ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { complaintAPI } from '../../services/api';
@@ -86,7 +86,7 @@ export default function MyComplaintsScreen({ navigation }) {
               <Text style={{ fontSize: 20 }}>{CATEGORY_ICONS[c.category] || '📝'}</Text>
               <Text style={s.categoryText} numberOfLines={1}>{c.category}</Text>
             </View>
-            <View style={[s.statusBadge, { backgroundColor: sc.bg + 'cc' }]}>
+            <View style={[s.statusBadge, { backgroundColor: sc.bg || '#f3f4f6' }]}>
               <Text style={{ fontSize: 12 }}>{STATUS_ICONS[c.status]}</Text>
               <Text style={[s.statusText, { color: sc.color }]}>{c.status}</Text>
             </View>
@@ -152,7 +152,7 @@ export default function MyComplaintsScreen({ navigation }) {
       </LinearGradient>
 
       {/* ── Filter tabs ── */}
-      <View style={s.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterScroll} contentContainerStyle={s.filterRow}>
         {FILTERS.map((f) => (
           <TouchableOpacity
             key={f}
@@ -165,7 +165,7 @@ export default function MyComplaintsScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* ── List ── */}
       <FlatList
@@ -229,7 +229,8 @@ const s = StyleSheet.create({
   statLabel:   { fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 2, fontWeight: '600' },
 
   // filter
-  filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterScroll:{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   filterChip:  { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
   filterChipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
   filterText:  { fontSize: 12, fontWeight: '600', color: T.textL },

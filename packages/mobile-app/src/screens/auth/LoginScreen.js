@@ -144,7 +144,7 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             <Text style={s.footerTxt}>
-              Don't have an account?{' '}
+              {"Don't have an account? " }
               <Text style={{ color:T.maroon, fontWeight:'700' }} onPress={() => navigation.navigate('Register')}>
                 Create Account
               </Text>

@@ -143,8 +143,8 @@ const getComplaints = asyncHandler(async (req, res) => {
 
   if (status   && status   !== 'ALL') filter.status   = status;
   if (district && district !== 'ALL') filter.district = district;
-  if (thokuthi    && isAdminOrAgent) filter.thokuthi = thokuthi;
-  if (req.query.ward && isAdminOrAgent) filter.ward = req.query.ward;
+  if (thokuthi && thokuthi !== 'ALL' && isAdminOrAgent) filter.thokuthi = thokuthi;
+  if (req.query.ward && req.query.ward !== 'ALL' && isAdminOrAgent) filter.ward = req.query.ward;
   if (req.query.wardNo && isAdminOrAgent) filter.wardNo = Number(req.query.wardNo);
   if (pincode && isAdminOrAgent) filter.pincode = pincode;
   if (workerId && isAdminOrAgent) filter.assignedWorker = workerId;

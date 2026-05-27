@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, FlatList, StyleSheet,
+  View, Text, FlatList, StyleSheet, ScrollView,
   ActivityIndicator, RefreshControl, TouchableOpacity, Platform, StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { notificationAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { T } from '../../constants/theme';   // ← fixed from ../../utils/theme
 
 const TYPE_META = {
@@ -24,6 +25,7 @@ function timeAgo(dateStr) {
 }
 
 export default function NotificationsScreen({ navigation }) {
+  const { userInfo } = useAuth();
   const [notifs,     setNotifs]     = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,6 +50,10 @@ export default function NotificationsScreen({ navigation }) {
   };
 
   useEffect(() => { load(); }, [filter, statusFilter]);
+  const goBack = () => {
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.navigate(userInfo?.role === 'worker' ? 'Dashboard' : 'Home');
+  };
 
   const filtered = notifs;
 
@@ -88,7 +94,7 @@ export default function NotificationsScreen({ navigation }) {
 
       {/* ── Header ── */}
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+        <TouchableOpacity onPress={goBack} style={s.backBtn}>
           <Text style={s.backTxt}>←</Text>
         </TouchableOpacity>
         <Text style={s.headerTitle}>🔔 Notifications</Text>
@@ -110,7 +116,7 @@ export default function NotificationsScreen({ navigation }) {
       </LinearGradient>
 
       {/* ── Filter ── */}
-      <View style={s.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterScroll} contentContainerStyle={s.filterRow}>
         {FILTERS.map(f => (
           <TouchableOpacity
             key={f}
@@ -124,10 +130,10 @@ export default function NotificationsScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* ── Status Filter ── */}
-      <View style={s.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterScroll} contentContainerStyle={s.filterRow}>
         {STATUS_FILTERS.map(s_f => (
           <TouchableOpacity
             key={s_f}
@@ -140,7 +146,7 @@ export default function NotificationsScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* ── List ── */}
       <FlatList
@@ -175,7 +181,8 @@ const s = StyleSheet.create({
   statNum:     { fontSize: 20, fontWeight: '900', color: '#fff' },
   statLabel:   { fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 2, fontWeight: '600' },
 
-  filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterScroll:{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   chip:        { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
   chipActive:  { backgroundColor: T.maroon, borderColor: T.maroon },
   chipTxt:     { fontSize: 12, fontWeight: '600', color: T.textL },

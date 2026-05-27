@@ -101,7 +101,7 @@ export default function ForgotPasswordScreen({ navigation }) {
                     <Text style={{ fontWeight: '800', color: T.text }}>{email}</Text>
                   </Text>
                   <Text style={s.successNote}>
-                    Didn't receive the email? Check your spam folder or try again.
+                    {"Didn't receive the email? Check your spam folder or try again."}
                   </Text>
                 </View>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  RefreshControl, ActivityIndicator, Platform, StatusBar,
+  RefreshControl, ActivityIndicator, Platform, StatusBar, ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { newsAPI } from '../../services/api';
@@ -110,7 +110,7 @@ export default function NewsScreen({ navigation }) {
       </LinearGradient>
 
       {/* ── Filter tabs ── */}
-      <View style={s.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterScroll} contentContainerStyle={s.filterRow}>
         {FILTERS.map((f) => (
           <TouchableOpacity
             key={f}
@@ -122,7 +122,7 @@ export default function NewsScreen({ navigation }) {
             <Text style={[s.filterTxt, filter === f && { color: '#fff', fontWeight: '700' }]}>{f}</Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* ── List ── */}
       <FlatList
@@ -158,7 +158,8 @@ const s = StyleSheet.create({
   countNum:    { fontSize: 20, fontWeight: '900' },
   countLabel:  { fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 2, fontWeight: '600' },
 
-  filterRow:        { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterScroll:     { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterRow:        { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   filterChip:       { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
   filterChipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
   filterTxt:        { fontSize: 13, fontWeight: '600', color: T.textL },

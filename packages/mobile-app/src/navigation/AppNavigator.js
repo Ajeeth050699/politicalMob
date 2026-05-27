@@ -207,6 +207,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
           <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
+          <Stack.Screen name="Education" component={EducationScreen} />
           <Stack.Screen name="Exam" component={ExamScreen} />
           <Stack.Screen name="Camps" component={CampsScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />

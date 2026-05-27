@@ -30,7 +30,7 @@ const PRIORITY_COLORS = {
   'low':    '#22c55e',
 };
 
-export default function AdminComplaints({ navigation }) {
+export default function AdminComplaints({ route, navigation }) {
   const { t }                    = useTranslation();
   const { userInfo }             = useAuth();
   const [complaints,    setComplaints]    = useState([]);
@@ -39,10 +39,14 @@ export default function AdminComplaints({ navigation }) {
   const [refreshing,    setRefreshing]    = useState(false);
   const [selectedThokuthi, setSelectedThokuthi] = useState(() => userInfo?.thokuthi || userInfo?.ward || 'ALL');
   const [searchQuery,   setSearchQuery]   = useState('');
-  const [filterStatus,  setFilterStatus]  = useState('ALL');
+  const [filterStatus,  setFilterStatus]  = useState(route?.params?.status || 'ALL');
   const [toast,         setToast]         = useState({ visible:false, message:'', type:'error' });
 
   const showToast = (msg, type='error') => setToast({ visible:true, message:msg, type });
+  const goBack = () => {
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.navigate('Dashboard');
+  };
 
   const load = async () => {
     try {
@@ -67,6 +71,9 @@ export default function AdminComplaints({ navigation }) {
     }
   };
 
+  useEffect(() => {
+    if (route?.params?.status) setFilterStatus(route.params.status);
+  }, [route?.params?.status]);
   useEffect(() => { load(); }, [selectedThokuthi, filterStatus]);
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
@@ -161,6 +168,9 @@ export default function AdminComplaints({ navigation }) {
 
       {/* Header */}
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
+        <TouchableOpacity onPress={goBack} style={s.backBtn}>
+          <Text style={s.backTxt}>←</Text>
+        </TouchableOpacity>
         <Text style={s.headerTitle}>📋 All Complaints</Text>
         <Text style={s.headerSub}>Admin View - View Only</Text>
       </LinearGradient>
@@ -199,6 +209,7 @@ export default function AdminComplaints({ navigation }) {
               selectedValue={selectedThokuthi}
               onValueChange={(value) => setSelectedThokuthi(value)}
               style={s.picker}
+              dropdownIconColor={T.maroon}
             >
               {thokuthis.map((thok) => (
                 <Picker.Item key={thok} label={thok} value={thok} />
@@ -215,6 +226,7 @@ export default function AdminComplaints({ navigation }) {
               selectedValue={filterStatus}
               onValueChange={(value) => setFilterStatus(value)}
               style={s.picker}
+              dropdownIconColor={T.maroon}
             >
               {['ALL', 'NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED'].map((status) => (
                 <Picker.Item key={status} label={status} value={status} />
@@ -223,6 +235,11 @@ export default function AdminComplaints({ navigation }) {
           </View>
         </View>
       </ScrollView>
+
+      <View style={s.activeFilters}>
+        <Text style={s.activeFilterText}>Thokuthi: {selectedThokuthi === 'ALL' ? 'All' : selectedThokuthi}</Text>
+        <Text style={s.activeFilterText}>Status: {filterStatus === 'ALL' ? 'All' : filterStatus}</Text>
+      </View>
 
       {/* Search Bar */}
       <View style={s.searchContainer}>
@@ -275,9 +292,11 @@ const s = StyleSheet.create({
   root:    { flex: 1, backgroundColor: T.bg },
   center:  { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  header:     { paddingTop: 20, paddingBottom: 16, paddingHorizontal: 16, marginBottom: 12 },
-  headerTitle:{ fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 4 },
-  headerSub:  { fontSize: 12, color: 'rgba(255,255,255,0.8)' },
+  header:     { paddingTop: Platform.OS === 'ios' ? 58 : 46, paddingBottom: 16, paddingHorizontal: 16, marginBottom: 12 },
+  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 54 : 42, left: 16, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' },
+  backTxt:    { color: '#fff', fontSize: 20, fontWeight: '800' },
+  headerTitle:{ fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 4, textAlign: 'center' },
+  headerSub:  { fontSize: 12, color: 'rgba(255,255,255,0.8)', textAlign: 'center' },
 
   statsBar:  { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 12, gap: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
   statItem:  { flex: 1, paddingVertical: 10, borderRadius: 12, borderWidth: 2, alignItems: 'center', backgroundColor: T.bg },
@@ -289,7 +308,9 @@ const s = StyleSheet.create({
   filterItem:    { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: T.bg, borderRadius: 10 },
   filterLabel:   { fontSize: 12, fontWeight: '700', color: T.text, minWidth: 60 },
   pickerContainer:{ borderWidth: 1, borderColor: T.border, borderRadius: 8, overflow: 'hidden', minWidth: 120 },
-  picker:        { height: 40, paddingHorizontal: 8 },
+  picker:        { height: 40, paddingHorizontal: 8, color: T.text, backgroundColor: '#fff' },
+  activeFilters: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  activeFilterText: { fontSize: 11, fontWeight: '700', color: T.maroon, backgroundColor: T.maroon + '12', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
 
   searchContainer:{ paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fff' },
   searchInput:   { backgroundColor: T.bg, borderWidth: 1, borderColor: T.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 13, color: T.text },

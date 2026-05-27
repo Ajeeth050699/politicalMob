@@ -32,6 +32,10 @@ export default function AdminNotifications({ navigation }) {
 
   const FILTERS = ['ALL', 'complaint', 'worker', 'announcement', 'news'];
   const STATUS_FILTERS = ['unread', 'read', 'ALL'];
+  const goBack = () => {
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.navigate('Dashboard');
+  };
 
   const load = async (refresh = false) => {
     if (refresh) setRefreshing(true);
@@ -92,7 +96,7 @@ export default function AdminNotifications({ navigation }) {
 
       {/* Header */}
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+        <TouchableOpacity onPress={goBack} style={s.backBtn}>
           <Text style={s.backTxt}>←</Text>
         </TouchableOpacity>
         <Text style={s.headerTitle}>🔔 Activity Log</Text>
