@@ -1,3 +1,5 @@
+import { useColorScheme } from 'react-native';
+
 export const T = {
   maroon:  '#7B1C1C',
   maroonD: '#5A1010',
@@ -16,6 +18,20 @@ export const T = {
   blue:    '#3b82f6',
   border:  'rgba(0,0,0,0.07)',
 };
+
+export const DARK_T = {
+  ...T,
+  bg: '#0f1115',
+  bgCard: '#181b22',
+  text: '#f7f7f8',
+  textL: '#c7c9d1',
+  textM: '#8c919f',
+  border: 'rgba(255,255,255,0.10)',
+};
+
+export function useAppTheme() {
+  return useColorScheme() === 'dark' ? DARK_T : T;
+}
 
 export const STATUS_COLORS = {
   'NEW':         { bg: '#fef3c720', color: '#f59e0b' },

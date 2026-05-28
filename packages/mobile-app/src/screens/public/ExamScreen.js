@@ -1,14 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  ScrollView, Alert, ActivityIndicator, BackHandler, Platform, StatusBar,
+  ScrollView, Alert, ActivityIndicator, BackHandler, Platform, StatusBar, AppState,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { educationAPI } from '../../services/api';
-import { T } from '../../constants/theme';
+import { T, useAppTheme } from '../../constants/theme';
 
 export default function ExamScreen({ route, navigation }) {
   const { examId, title } = route.params;
+  const theme = useAppTheme();
 
   const [exam,       setExam]       = useState(null);
   const [answers,    setAnswers]    = useState({});
@@ -17,29 +19,60 @@ export default function ExamScreen({ route, navigation }) {
   const [result,     setResult]     = useState(null);
   const [timeLeft,   setTimeLeft]   = useState(0);
   const [currentQ,   setCurrentQ]   = useState(0);
+  const [expiresAt,  setExpiresAt]  = useState(null);
   const timerRef = useRef(null);
+  const storageKey = `mock-test-progress:${examId}`;
 
   useEffect(() => {
     educationAPI.getExamById(examId)
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         setExam(data);
-        const mins = parseInt(data.duration) || 30;
-        setTimeLeft(mins * 60);
+        const mins = data.durationMinutes || parseInt(data.duration) || 30;
+        const totalSec = mins * 60;
+        const raw = await AsyncStorage.getItem(storageKey);
+        const saved = raw ? JSON.parse(raw) : null;
+        if (saved?.expiresAt && saved.expiresAt > Date.now()) {
+          setAnswers(saved.answers || {});
+          setCurrentQ(saved.currentQ || 0);
+          setExpiresAt(saved.expiresAt);
+          setTimeLeft(Math.max(0, Math.floor((saved.expiresAt - Date.now()) / 1000)));
+        } else {
+          const endAt = Date.now() + totalSec * 1000;
+          setExpiresAt(endAt);
+          setTimeLeft(totalSec);
+          await AsyncStorage.setItem(storageKey, JSON.stringify({ answers: {}, currentQ: 0, expiresAt: endAt }));
+        }
       })
       .catch(() => { Alert.alert('Error', 'Could not load exam'); navigation.goBack(); })
       .finally(() => setLoading(false));
   }, [examId]);
 
   useEffect(() => {
-    if (!exam || result) return;
+    if (!exam || result || !expiresAt) return;
     timerRef.current = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(timerRef.current); submitExam(true); return 0; }
-        return t - 1;
-      });
+      const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(timerRef.current);
+        submitExam(true);
+      }
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [exam, result]);
+  }, [exam, result, expiresAt]);
+
+  useEffect(() => {
+    if (!exam || result || !expiresAt) return;
+    AsyncStorage.setItem(storageKey, JSON.stringify({ answers, currentQ, expiresAt })).catch(() => {});
+  }, [answers, currentQ, expiresAt, exam, result]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && expiresAt && !result) {
+        setTimeLeft(Math.max(0, Math.floor((expiresAt - Date.now()) / 1000)));
+      }
+    });
+    return () => sub.remove();
+  }, [expiresAt, result]);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -75,7 +108,9 @@ export default function ExamScreen({ route, navigation }) {
     clearInterval(timerRef.current);
     setSubmitting(true);
     try {
-      const { data } = await educationAPI.submitExam(examId, { answers });
+      const totalSec = (exam.durationMinutes || parseInt(exam.duration) || 30) * 60;
+      const { data } = await educationAPI.submitExam(examId, { answers, timeTakenSec: Math.max(0, totalSec - timeLeft) });
+      await AsyncStorage.removeItem(storageKey);
       setResult(data);
     } catch {
       Alert.alert('Error', 'Failed to submit exam. Please try again.');
@@ -111,7 +146,7 @@ export default function ExamScreen({ route, navigation }) {
     const gradeColor = pct >= 60 ? '#16a34a' : '#dc2626';
 
     return (
-      <View style={{ flex: 1, backgroundColor: T.bg }}>
+      <View style={{ flex: 1, backgroundColor: theme.bg }}>
         <StatusBar backgroundColor={passed ? '#16a34a' : T.maroon} barStyle="light-content" />
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Result hero */}
@@ -199,6 +234,8 @@ export default function ExamScreen({ route, navigation }) {
                   setAnswers({});
                   setCurrentQ(0);
                   const mins = parseInt(exam.duration) || 30;
+                  const endAt = Date.now() + mins * 60 * 1000;
+                  setExpiresAt(endAt);
                   setTimeLeft(mins * 60);
                 }}
                 activeOpacity={0.85}
@@ -218,7 +255,7 @@ export default function ExamScreen({ route, navigation }) {
   const q = exam.questions[currentQ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: T.bg }}>
+    <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <StatusBar backgroundColor={isUrgent ? '#dc2626' : T.maroon} barStyle="light-content" />
 
       {/* ── Header ── */}
@@ -254,32 +291,36 @@ export default function ExamScreen({ route, navigation }) {
       </LinearGradient>
 
       {/* ── Question + Options ── */}
+      <View style={[s.floatingTimer, isUrgent && { backgroundColor: '#dc2626' }]}>
+        <Text style={s.floatingTimerTxt}>{fmt(timeLeft)}</Text>
+      </View>
+
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }} showsVerticalScrollIndicator={false}>
 
         {/* Question card */}
-        <View style={s.qCard}>
+        <View style={[s.qCard, { backgroundColor: theme.bgCard, borderColor: theme.border }]}>
           <View style={s.qNumBadge}>
             <Text style={s.qNumTxt}>Q{currentQ + 1}</Text>
           </View>
-          <Text style={s.qText}>{q.question}</Text>
+          <Text style={[s.qText, { color: theme.text }]}>{q.question}</Text>
         </View>
 
         {/* Options */}
-        <Text style={s.chooseLabel}>Choose your answer:</Text>
+        <Text style={[s.chooseLabel, { color: theme.textL }]}>Choose your answer:</Text>
         {q.options.map((opt, idx) => {
           const sel    = answers[q._id?.toString()] === idx;
           const letter = ['A', 'B', 'C', 'D'][idx];
           return (
             <TouchableOpacity
               key={idx}
-              style={[s.optCard, sel && s.optCardSel]}
+              style={[s.optCard, { backgroundColor: theme.bgCard, borderColor: theme.border }, sel && s.optCardSel]}
               onPress={() => setAnswers(a => ({ ...a, [q._id?.toString()]: idx }))}
               activeOpacity={0.8}
             >
               <View style={[s.optLetter, sel && s.optLetterSel]}>
                 <Text style={[s.optLetterTxt, sel && { color: '#fff' }]}>{letter}</Text>
               </View>
-              <Text style={[s.optTxt, sel && { color: T.maroon, fontWeight: '700' }]}>{opt}</Text>
+              <Text style={[s.optTxt, { color: theme.text }, sel && { color: T.maroon, fontWeight: '700' }]}>{opt}</Text>
               {sel && <Text style={s.optCheck}>✓</Text>}
             </TouchableOpacity>
           );
@@ -323,18 +364,20 @@ export default function ExamScreen({ route, navigation }) {
       </View>
 
       {/* ── Dot navigation ── */}
-      <View style={s.dotsBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 4 }}>
+      <View style={[s.dotsBar, { backgroundColor: theme.bgCard, borderTopColor: theme.border }]}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.palette}>
           {exam.questions.map((_, i) => {
             const isAnswered = answers[exam.questions[i]._id?.toString()] !== undefined;
             const isCurrent  = i === currentQ;
             return (
               <TouchableOpacity key={i} onPress={() => setCurrentQ(i)} style={{ padding: 4 }}>
                 <View style={[
-                  s.dot,
+                  s.paletteDot,
                   isCurrent  && s.dotCurrent,
                   isAnswered && !isCurrent && s.dotAnswered,
-                ]} />
+                ]}>
+                  <Text style={[s.paletteNum, (isCurrent || isAnswered) && { color: '#fff' }]}>{i + 1}</Text>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -357,6 +400,8 @@ const s = StyleSheet.create({
   timerUrgent: { backgroundColor: 'rgba(255,255,255,0.25)' },
   timerIcon:   { fontSize: 14 },
   timerTxt:    { color: '#fff', fontWeight: '900', fontSize: 16 },
+  floatingTimer: { position: 'absolute', top: Platform.OS === 'ios' ? 122 : 110, right: 18, zIndex: 20, backgroundColor: T.maroon, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8, elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 10 },
+  floatingTimerTxt: { color: '#fff', fontSize: 14, fontWeight: '900' },
   progressBg:  { height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' },
   progressFill:{ height: '100%', backgroundColor: T.gold, borderRadius: 3 },
   stepRow:     { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
@@ -388,8 +433,10 @@ const s = StyleSheet.create({
 
   // ── Dots ──
   dotsBar:     { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: T.border },
-  dot:         { width: 10, height: 10, borderRadius: 5, backgroundColor: '#e5e7eb' },
-  dotCurrent:  { backgroundColor: T.maroon, width: 22, borderRadius: 5 },
+  palette:     { paddingHorizontal: 4, gap: 2 },
+  paletteDot:  { width: 32, height: 32, borderRadius: 10, backgroundColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center' },
+  paletteNum:  { fontSize: 11, fontWeight: '900', color: T.textL },
+  dotCurrent:  { backgroundColor: T.maroon, borderRadius: 10 },
   dotAnswered: { backgroundColor: '#16a34a' },
   dotLegend:   { fontSize: 12, color: T.textM, fontWeight: '700', marginLeft: 8, flexShrink: 0 },
 

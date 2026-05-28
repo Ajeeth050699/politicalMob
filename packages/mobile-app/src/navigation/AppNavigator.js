@@ -41,6 +41,7 @@ import AdminComplaints from "../screens/admin/AdminComplaints";
 import AdminWorkers from "../screens/admin/AdminWorkers";
 import AdminNotifications from "../screens/admin/AdminNotifications";
 import ComplaintDetailAdmin from "../screens/admin/ComplaintDetailAdmin";
+import AdminEducation from "../screens/admin/AdminEducation";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -144,6 +145,7 @@ const AdminTabs = () => (
           Dashboard: "view-dashboard",
           Complaints: "clipboard-list",
           Notifications: "bell",
+          Education: "school",
           Workers: "account-multiple",
           Profile: "account",
         };
@@ -160,8 +162,8 @@ const AdminTabs = () => (
     <Tab.Screen name="Dashboard" component={AdminDashboard} />
     <Tab.Screen name="Complaints" component={AdminComplaints} />
     <Tab.Screen name="Notifications" component={AdminNotifications} />
+    <Tab.Screen name="Education" component={AdminEducation} />
     <Tab.Screen name="Workers" component={AdminWorkers} />
-    <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
 
@@ -221,6 +223,7 @@ export default function AppNavigator() {
           <Stack.Screen name="AdminComplaints" component={AdminComplaints} />
           <Stack.Screen name="AdminWorkers" component={AdminWorkers} />
           <Stack.Screen name="AdminNotifications" component={AdminNotifications} />
+          <Stack.Screen name="AdminEducation" component={AdminEducation} />
           <Stack.Screen name="ComplaintDetailAdmin" component={ComplaintDetailAdmin} />
           <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
