@@ -192,9 +192,9 @@ const ot = StyleSheet.create({
 
 const s = StyleSheet.create({
   root:       { flex: 1, backgroundColor: T.maroon },
-  topBg:      { alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 28 },
-  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 20 },
-  backTxt:    { color: 'rgba(255,255,255,0.85)', fontSize: 15, fontWeight: '600' },
+  topBg:      { alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 28, zIndex: 1 },
+  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', zIndex: 10, elevation: 10 },
+  backTxt:    { color: '#fff', fontSize: 20, fontWeight: '800' },
   logoCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   appName:    { fontSize: 21, fontWeight: '900', color: '#fff' },
   tagline:    { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, textAlign: 'center', paddingHorizontal: 20 },

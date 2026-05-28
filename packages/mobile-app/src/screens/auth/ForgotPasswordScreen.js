@@ -141,9 +141,9 @@ export default function ForgotPasswordScreen({ navigation }) {
 const s = StyleSheet.create({
   root:       { flex: 1, backgroundColor: T.maroon },
 
-  topBg:      { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 36, alignItems: 'center', paddingHorizontal: 24 },
-  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 20 },
-  backTxt:    { color: 'rgba(255,255,255,0.85)', fontSize: 15, fontWeight: '600' },
+  topBg:      { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 36, alignItems: 'center', paddingHorizontal: 24, zIndex: 1 },
+  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', zIndex: 10, elevation: 10 },
+  backTxt:    { color: '#fff', fontSize: 20, fontWeight: '800' },
   iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 14, marginTop: 8 },
   topTitle:   { fontSize: 24, fontWeight: '900', color: '#fff' },
   topSub:     { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 8, textAlign: 'center', lineHeight: 20 },

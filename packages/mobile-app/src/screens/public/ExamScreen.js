@@ -424,7 +424,7 @@ const s = StyleSheet.create({
   certTitle:       { fontSize: 16, fontWeight: '800', color: T.maroonD },
   certSub:         { fontSize: 12, color: '#92400e', marginTop: 4, lineHeight: 17 },
 
-  backBtn:         { borderRadius: 50, overflow: 'hidden', marginBottom: 12, elevation: 4, shadowColor: T.maroon, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
+  backBtn:         { borderRadius: 50, overflow: 'hidden', marginBottom: 12, elevation: 10, shadowColor: T.maroon, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, zIndex: 10 },
   backBtnGrad:     { paddingVertical: 18, alignItems: 'center' },
   backBtnTxt:      { fontSize: 16, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
   retryBtn:        { borderWidth: 2, borderColor: T.maroon, borderRadius: 50, paddingVertical: 16, alignItems: 'center' },
