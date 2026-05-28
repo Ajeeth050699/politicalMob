@@ -8,6 +8,9 @@
     "scheme": "mobileapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "updates": {
+      "enabled": false
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -33,11 +36,9 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
       [
         "expo-location",
         {
@@ -58,11 +59,9 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
       "eas": {
         "projectId": "cb86888d-9b21-4046-94e1-788a903137d2"
       },

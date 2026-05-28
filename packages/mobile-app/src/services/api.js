@@ -10,9 +10,15 @@ import Constants from "expo-constants";
 // Physical device   →  http://YOUR_PC_IP:5003  (run `ipconfig` on Windows)
 // ─────────────────────────────────────────────────────────────────
 // export const BASE_URL = 'http://192.168.0.103:5003';
+const extra =
+  Constants.expoConfig?.extra ||
+  Constants.manifest?.extra ||
+  Constants.manifest2?.extra?.expoClient?.extra ||
+  {};
+
 const BASE_URL = __DEV__
-  ? Constants.expoConfig.extra.API_URL_DEV
-  : Constants.expoConfig.extra.API_URL_PROD;
+  ? extra.API_URL_DEV || 'http://192.168.0.104:5003'
+  : extra.API_URL_PROD || 'https://politicalmob.onrender.com';
 // export const BASE_URL = 'http://localhost:5003';
 // export const BASE_URL = 'http://192.168.0.102:5003'; // ← your PC IP
 

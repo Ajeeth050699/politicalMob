@@ -1,6 +1,7 @@
 import React, { useEffect,useState } from 'react';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { AuthProvider } from './context/AuthContext';
@@ -43,7 +44,9 @@ export default function App() {
         <LanguageProvider>
           <AuthProvider>
             <StatusBar backgroundColor={T.maroon} barStyle="light-content" />
-            <AppNavigator />
+            <NavigationContainer>
+              <AppNavigator />
+            </NavigationContainer>
             <Toast />
           </AuthProvider>
         </LanguageProvider>
