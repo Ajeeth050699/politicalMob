@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
@@ -6,11 +5,13 @@ import {
   TextInput, ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Picker } from '@react-native-picker/picker';
 import { complaintAPI, systemAPI } from '../../services/api';
-import { T } from '../../constants/theme';
+import { T, TN_DISTRICTS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import PopupToast from '../../components/PopupToast';
+import CompactSelect from '../../components/CompactSelect';
+import { exportRows } from '../../utils/exportData';
+import { goBackOrHome } from '../../utils/navigation';
 
 const CATEGORY_ICONS = {
   'Street Light Problem':'💡', 'Road Damage':'🛣️', 'Garbage Issue':'🗑️',
@@ -24,34 +25,27 @@ const STATUS_COLORS = {
   'COMPLETED':   { color:'#22c55e', bg:'#dcfce7', icon:'🎉', label:'Completed'    },
 };
 
-const PRIORITY_COLORS = {
-  'high':   '#ef4444',
-  'medium': '#f59e0b',
-  'low':    '#22c55e',
-};
-
 export default function AdminComplaints({ route, navigation }) {
-  const { t }                    = useTranslation();
   const { userInfo }             = useAuth();
   const [complaints,    setComplaints]    = useState([]);
   const [thokuthis,     setThokuthis]     = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [refreshing,    setRefreshing]    = useState(false);
   const [selectedThokuthi, setSelectedThokuthi] = useState(() => userInfo?.thokuthi || userInfo?.ward || 'ALL');
+  const [filterDistrict, setFilterDistrict] = useState(() => userInfo?.district || 'ALL');
   const [searchQuery,   setSearchQuery]   = useState('');
   const [filterStatus,  setFilterStatus]  = useState(route?.params?.status || 'ALL');
+  const [exportOpen,    setExportOpen]    = useState(false);
   const [toast,         setToast]         = useState({ visible:false, message:'', type:'error' });
 
   const showToast = (msg, type='error') => setToast({ visible:true, message:msg, type });
-  const goBack = () => {
-    if (navigation.canGoBack()) navigation.goBack();
-    else navigation.navigate('Dashboard');
-  };
+  const goBack = () => goBackOrHome(navigation, 'Dashboard');
 
   const load = async () => {
     try {
       const [complaintRes, thokuthisRes] = await Promise.all([
         complaintAPI.getAll({ 
+          ...(filterDistrict !== 'ALL' && { district: filterDistrict }),
           ...(selectedThokuthi !== 'ALL' && { thokuthi: selectedThokuthi }),
           ...(filterStatus !== 'ALL' && { status: filterStatus })
         }),
@@ -74,7 +68,7 @@ export default function AdminComplaints({ route, navigation }) {
   useEffect(() => {
     if (route?.params?.status) setFilterStatus(route.params.status);
   }, [route?.params?.status]);
-  useEffect(() => { load(); }, [selectedThokuthi, filterStatus]);
+  useEffect(() => { load(); }, [filterDistrict, selectedThokuthi, filterStatus]);
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
   // Filter complaints based on search
@@ -97,10 +91,39 @@ export default function AdminComplaints({ route, navigation }) {
     COMPLETED:   complaints.filter(c => c.status === 'COMPLETED').length,
   };
 
+  const complaintExportData = () => ({
+    headers: ['Category', 'User', 'Phone', 'Thokuthi', 'District', 'Status', 'Worker', 'Date', 'Description'],
+    rows: filtered.map(c => [
+      c.category || 'N/A',
+      c.user || 'N/A',
+      c.userPhone || 'N/A',
+      c.thokuthi || c.ward || 'N/A',
+      c.district || 'N/A',
+      c.status || 'N/A',
+      c.assignedWorker || 'Unassigned',
+      c.time ? new Date(c.time).toLocaleDateString('en-IN') : 'N/A',
+      c.description || '',
+    ]),
+  });
+
+  const handleExport = async (format) => {
+    try {
+      await exportRows({
+        format,
+        title: 'Complaints List',
+        fileName: `complaints_${filterDistrict === 'ALL' ? 'all_districts' : filterDistrict}_${filterStatus.toLowerCase().replace(/\s+/g, '_')}`,
+        ...complaintExportData(),
+      });
+      setExportOpen(false);
+      showToast(`${format.toUpperCase()} export ready`, 'success');
+    } catch (err) {
+      showToast(err?.message || 'Failed to export', 'error');
+    }
+  };
+
   const renderItem = ({ item: c }) => {
     const sm = STATUS_COLORS[c.status] || STATUS_COLORS['NEW'];
     const catIcon = CATEGORY_ICONS[c.category] || '📝';
-    const workerAcceptedStatus = c.assignedWorker ? 'Accepted' : 'Pending';
     const workerBadgeColor = c.assignedWorker ? '#dcfce7' : '#fee2e2';
     const workerTextColor = c.assignedWorker ? '#166534' : '#991b1b';
 
@@ -201,42 +224,29 @@ export default function AdminComplaints({ route, navigation }) {
         style={s.filtersContainer}
         contentContainerStyle={s.filtersContent}
       >
-        {/* Thokuthi Filter */}
-        <View style={s.filterItem}>
-          <Text style={s.filterLabel}>Thokuthi:</Text>
-          <View style={s.pickerContainer}>
-            <Picker
-              selectedValue={selectedThokuthi}
-              onValueChange={(value) => setSelectedThokuthi(value)}
-              style={s.picker}
-              dropdownIconColor={T.maroon}
-            >
-              {thokuthis.map((thok) => (
-                <Picker.Item key={thok} label={thok} value={thok} />
-              ))}
-            </Picker>
-          </View>
-        </View>
-
-        {/* Status Filter */}
-        <View style={s.filterItem}>
-          <Text style={s.filterLabel}>Status:</Text>
-          <View style={s.pickerContainer}>
-            <Picker
-              selectedValue={filterStatus}
-              onValueChange={(value) => setFilterStatus(value)}
-              style={s.picker}
-              dropdownIconColor={T.maroon}
-            >
-              {['ALL', 'NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED'].map((status) => (
-                <Picker.Item key={status} label={status} value={status} />
-              ))}
-            </Picker>
-          </View>
-        </View>
+        <CompactSelect
+          label="District"
+          value={filterDistrict}
+          options={['ALL', ...TN_DISTRICTS]}
+          onChange={setFilterDistrict}
+        />
+        <CompactSelect
+          label="Thokuthi"
+          value={selectedThokuthi}
+          options={thokuthis.length ? thokuthis : ['ALL']}
+          onChange={setSelectedThokuthi}
+        />
+        <CompactSelect
+          label="Status"
+          value={filterStatus}
+          options={['ALL', 'NEW', 'ACCEPTED', 'IN PROGRESS', 'COMPLETED']}
+          onChange={setFilterStatus}
+          searchable={false}
+        />
       </ScrollView>
 
       <View style={s.activeFilters}>
+        <Text style={s.activeFilterText}>District: {filterDistrict === 'ALL' ? 'All' : filterDistrict}</Text>
         <Text style={s.activeFilterText}>Thokuthi: {selectedThokuthi === 'ALL' ? 'All' : selectedThokuthi}</Text>
         <Text style={s.activeFilterText}>Status: {filterStatus === 'ALL' ? 'All' : filterStatus}</Text>
       </View>
@@ -257,6 +267,9 @@ export default function AdminComplaints({ route, navigation }) {
         <Text style={s.resultsText}>
           Showing {filtered.length} complaint{filtered.length !== 1 ? 's' : ''}
         </Text>
+        <TouchableOpacity style={s.downloadBtn} onPress={() => setExportOpen(true)}>
+          <Text style={s.downloadBtnText}>Download</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Complaints List */}
@@ -275,6 +288,32 @@ export default function AdminComplaints({ route, navigation }) {
         contentContainerStyle={s.listContent}
         scrollEnabled={true}
       />
+
+      <Modal visible={exportOpen} transparent animationType="fade" onRequestClose={() => setExportOpen(false)}>
+        <View style={s.exportOverlay}>
+          <View style={s.exportSheet}>
+            <View style={s.exportHeader}>
+              <Text style={s.exportTitle}>Download complaints</Text>
+              <TouchableOpacity onPress={() => setExportOpen(false)} style={s.exportClose}>
+                <Text style={s.exportCloseTxt}>x</Text>
+              </TouchableOpacity>
+            </View>
+            {[
+              { key: 'csv', title: 'CSV file', sub: 'For simple data import' },
+              { key: 'excel', title: 'Excel sheet', sub: 'Opens in Microsoft Excel' },
+              { key: 'pdf', title: 'PDF report', sub: 'Printable complaint summary' },
+            ].map((item) => (
+              <TouchableOpacity key={item.key} style={s.exportOption} onPress={() => handleExport(item.key)}>
+                <View>
+                  <Text style={s.exportOptionTitle}>{item.title}</Text>
+                  <Text style={s.exportOptionSub}>{item.sub}</Text>
+                </View>
+                <Text style={s.exportArrow}>›</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
 
       {/* Toast */}
       {toast.visible && (
@@ -303,20 +342,18 @@ const s = StyleSheet.create({
   statCount: { fontSize: 18, fontWeight: '900' },
   statLabel: { fontSize: 9, color: T.textM, marginTop: 2, fontWeight: '600' },
 
-  filtersContainer:{ backgroundColor: '#fff', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: T.border },
-  filtersContent: { paddingHorizontal: 12, gap: 12 },
-  filterItem:    { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: T.bg, borderRadius: 10 },
-  filterLabel:   { fontSize: 12, fontWeight: '700', color: T.text, minWidth: 60 },
-  pickerContainer:{ borderWidth: 1, borderColor: T.border, borderRadius: 8, overflow: 'hidden', minWidth: 120 },
-  picker:        { height: 40, paddingHorizontal: 8, color: T.text, backgroundColor: '#fff' },
+  filtersContainer:{ backgroundColor: '#fff', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: T.border, maxHeight: 62 },
+  filtersContent: { paddingHorizontal: 12, gap: 8, alignItems: 'center' },
   activeFilters: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
   activeFilterText: { fontSize: 11, fontWeight: '700', color: T.maroon, backgroundColor: T.maroon + '12', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
 
   searchContainer:{ paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fff' },
   searchInput:   { backgroundColor: T.bg, borderWidth: 1, borderColor: T.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 13, color: T.text },
 
-  resultsInfo:{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: T.bg, borderBottomWidth: 1, borderBottomColor: T.border },
+  resultsInfo:{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: T.bg, borderBottomWidth: 1, borderBottomColor: T.border, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   resultsText:{ fontSize: 12, color: T.textL, fontWeight: '600' },
+  downloadBtn:   { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: T.maroon, borderRadius: 8 },
+  downloadBtnText:{ fontSize: 11, color: '#fff', fontWeight: '700' },
 
   listContent:{ paddingHorizontal: 12, paddingVertical: 12 },
   card:           { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: T.border, elevation: 2 },
@@ -341,4 +378,15 @@ const s = StyleSheet.create({
   empty:     { alignItems: 'center', justifyContent: 'center', paddingVertical: 80 },
   emptyTxt:  { fontSize: 16, fontWeight: '700', color: T.text, marginBottom: 4 },
   emptySubTxt:{ fontSize: 12, color: T.textM },
+
+  exportOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  exportSheet: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, paddingBottom: Platform.OS === 'ios' ? 28 : 18 },
+  exportHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  exportTitle: { fontSize: 16, fontWeight: '900', color: T.text },
+  exportClose: { width: 32, height: 32, borderRadius: 16, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center' },
+  exportCloseTxt: { fontSize: 15, fontWeight: '900', color: T.textL },
+  exportOption: { minHeight: 58, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  exportOptionTitle: { fontSize: 14, fontWeight: '900', color: T.text },
+  exportOptionSub: { fontSize: 11, color: T.textM, marginTop: 2, fontWeight: '600' },
+  exportArrow: { fontSize: 22, color: T.maroon, fontWeight: '900' },
 });

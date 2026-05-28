@@ -35,9 +35,19 @@ export default function WorkerDashboard({ navigation }) {
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
   const newCnt      = complaints.filter(c => c.status === 'NEW').length;
+  const acceptedCnt = complaints.filter(c => c.status === 'ACCEPTED').length;
   const progressCnt = complaints.filter(c => c.status === 'IN PROGRESS').length;
   const doneCnt     = complaints.filter(c => c.status === 'COMPLETED').length;
+  const openCnt     = complaints.length - doneCnt;
   const rate        = complaints.length > 0 ? Math.round((doneCnt / complaints.length) * 100) : 0;
+  const nextComplaint = complaints.find(c => c.status === 'NEW') || complaints.find(c => c.status === 'ACCEPTED') || complaints.find(c => c.status === 'IN PROGRESS');
+  const categoryStats = Object.entries(
+    complaints.reduce((acc, c) => {
+      const key = c.category || 'Others';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {})
+  ).sort((a, b) => b[1] - a[1]).slice(0, 4);
 
   const hour     = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
@@ -79,9 +89,9 @@ export default function WorkerDashboard({ navigation }) {
           <View style={s.statsGrid}>
             {[
               { label: 'New',       count: newCnt,      color: '#fca5a5', icon: '🆕' },
+              { label: 'Accepted',  count: acceptedCnt, color: '#fde68a', icon: '✓' },
               { label: 'Progress',  count: progressCnt, color: '#93c5fd', icon: '⚙️' },
-              { label: 'Completed', count: doneCnt,     color: '#86efac', icon: '✅' },
-              { label: 'Total',     count: complaints.length, color: '#fff', icon: '📋' },
+              { label: 'Done',      count: doneCnt,     color: '#86efac', icon: '✅' },
             ].map(({ label, count, color, icon }) => (
               <View key={label} style={s.statCard}>
                 <Text style={{ fontSize: 18, marginBottom: 4 }}>{icon}</Text>
@@ -118,12 +128,51 @@ export default function WorkerDashboard({ navigation }) {
           </TouchableOpacity>
         )}
 
+        <View style={s.section}>
+          <View style={s.focusCard}>
+            <View style={s.focusTop}>
+              <View>
+                <Text style={s.focusKicker}>Today focus</Text>
+                <Text style={s.focusTitle}>{openCnt} open task{openCnt === 1 ? '' : 's'}</Text>
+              </View>
+              <View style={s.focusPill}>
+                <Text style={s.focusPillTxt}>{rate}% resolved</Text>
+              </View>
+            </View>
+            {nextComplaint ? (
+              <TouchableOpacity
+                style={s.nextTask}
+                onPress={() => navigation.navigate('ComplaintDetail', { id: nextComplaint._id || nextComplaint.id })}
+                activeOpacity={0.86}
+              >
+                <View style={s.nextIcon}>
+                  <Text style={{ fontSize: 20 }}>{CATEGORY_ICONS[nextComplaint.category] || '📝'}</Text>
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={s.nextTitle} numberOfLines={1}>{nextComplaint.category || 'Complaint'}</Text>
+                  <Text style={s.nextMeta} numberOfLines={1}>{nextComplaint.status} · {nextComplaint.thokuthi || 'Thokuthi'} · {nextComplaint.district || 'District'}</Text>
+                </View>
+                <Text style={s.nextArrow}>›</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={s.nextTask}>
+                <View style={s.nextIcon}><Text style={{ fontSize: 20 }}>✓</Text></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.nextTitle}>No pending field work</Text>
+                  <Text style={s.nextMeta}>New assignments will appear here.</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+
         {/* ── Quick actions ── */}
         <View style={s.section}>
           <Text style={s.sectionTitle}>Quick Actions</Text>
           <View style={s.qGrid}>
             {[
               { icon: '📋', label: 'All Complaints', color: T.maroon, onPress: () => navigation.navigate('Complaints') },
+              { icon: '⚡', label: 'Start Work', color: '#8b5cf6', onPress: () => navigation.navigate('Complaints') },
               { icon: '👤', label: 'My Profile',     color: T.blue,   onPress: () => navigation.navigate('Profile')    },
             ].map(({ icon, label, color, onPress }) => (
               <TouchableOpacity key={label} style={s.qCard} onPress={onPress} activeOpacity={0.8}>
@@ -134,6 +183,29 @@ export default function WorkerDashboard({ navigation }) {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+
+        <View style={s.section}>
+          <View style={s.sectionRow}>
+            <Text style={s.sectionTitle}>Work Mix</Text>
+            <Text style={s.sectionHint}>{complaints.length} total</Text>
+          </View>
+          {categoryStats.length === 0 ? (
+            <View style={s.mixEmpty}>
+              <Text style={s.mixEmptyTitle}>No category data yet</Text>
+              <Text style={s.mixEmptySub}>Accepted complaints will build your work mix.</Text>
+            </View>
+          ) : (
+            <View style={s.mixGrid}>
+              {categoryStats.map(([category, count]) => (
+                <View key={category} style={s.mixCard}>
+                  <Text style={s.mixIcon}>{CATEGORY_ICONS[category] || '📝'}</Text>
+                  <Text style={s.mixName} numberOfLines={2}>{category}</Text>
+                  <Text style={s.mixCount}>{count}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* ── Recent complaints ── */}
@@ -207,12 +279,34 @@ const s = StyleSheet.create({
   section:      { paddingHorizontal: 16, paddingTop: 20 },
   sectionRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
   sectionTitle: { fontSize: 17, fontWeight: '800', color: T.text },
+  sectionHint:  { fontSize: 12, color: T.textM, fontWeight: '700' },
   seeAll:       { fontSize: 13, color: T.maroon, fontWeight: '700' },
 
-  qGrid:  { flexDirection: 'row', gap: 12, marginBottom: 4 },
-  qCard:  { flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: T.border, elevation: 2 },
-  qIcon:  { width: 50, height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  qLabel: { fontSize: 13, fontWeight: '700', color: T.text },
+  focusCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8 },
+  focusTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  focusKicker: { fontSize: 11, color: T.textM, fontWeight: '800', textTransform: 'uppercase' },
+  focusTitle: { fontSize: 20, color: T.text, fontWeight: '900', marginTop: 2 },
+  focusPill: { backgroundColor: T.green + '18', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 50 },
+  focusPillTxt: { color: '#15803d', fontSize: 11, fontWeight: '900' },
+  nextTask: { minHeight: 58, backgroundColor: T.bg, borderRadius: 14, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  nextIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border },
+  nextTitle: { fontSize: 13, fontWeight: '900', color: T.text },
+  nextMeta: { fontSize: 11, color: T.textM, marginTop: 2, fontWeight: '600' },
+  nextArrow: { fontSize: 22, color: T.maroon, fontWeight: '900' },
+
+  qGrid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
+  qCard:  { width: '31.5%', minHeight: 106, backgroundColor: '#fff', borderRadius: 16, padding: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border, elevation: 2 },
+  qIcon:  { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  qLabel: { fontSize: 12, fontWeight: '800', color: T.text, textAlign: 'center' },
+
+  mixGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  mixCard: { width: '48.5%', minHeight: 104, backgroundColor: '#fff', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: T.border },
+  mixIcon: { fontSize: 22, marginBottom: 8 },
+  mixName: { color: T.text, fontSize: 12, fontWeight: '800', lineHeight: 16, minHeight: 32 },
+  mixCount: { marginTop: 8, color: T.maroon, fontSize: 18, fontWeight: '900' },
+  mixEmpty: { backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.border },
+  mixEmptyTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
+  mixEmptySub: { color: T.textM, fontSize: 12, marginTop: 4, fontWeight: '600' },
 
   complaintCard:    { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
   complaintIcon:    { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

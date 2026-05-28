@@ -10,6 +10,7 @@ import * as Location from 'expo-location';
 import { complaintAPI } from '../../services/api';
 import { T, PRIORITY_COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { goBackOrHome } from '../../utils/navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -53,9 +54,9 @@ export default function ComplaintDetail({ route, navigation }) {
   useEffect(() => {
     complaintAPI.getById(id)
       .then(({ data }) => setComplaint(data))
-      .catch(() => navigation.goBack())
+      .catch(() => goBackOrHome(navigation, userInfo?.role === 'worker' ? 'Complaints' : 'Home'))
       .finally(() => setLoading(false));
-  }, [id, navigation]);
+  }, [id, navigation, userInfo?.role]);
 
   const handleReject = async () => {
     if (!reasonText.trim()) return;
@@ -195,7 +196,7 @@ export default function ComplaintDetail({ route, navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Header ── */}
         <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+          <TouchableOpacity onPress={() => goBackOrHome(navigation, userInfo?.role === 'worker' ? 'Complaints' : 'Home')} style={s.backBtn}>
             <Text style={s.backTxt}>← Back</Text>
           </TouchableOpacity>
           <View style={s.catIconBox}>

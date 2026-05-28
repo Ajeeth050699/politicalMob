@@ -1,50 +1,36 @@
-import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   RefreshControl, ActivityIndicator, Platform, StatusBar, TextInput,
-  ScrollView, Modal, Share,
+  ScrollView, Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Picker } from '@react-native-picker/picker';
-import { workerAPI, systemAPI } from '../../services/api';
-import { T } from '../../constants/theme';
-import { useAuth } from '../../context/AuthContext';
+import { workerAPI } from '../../services/api';
+import { T, TN_DISTRICTS } from '../../constants/theme';
 import PopupToast from '../../components/PopupToast';
+import CompactSelect from '../../components/CompactSelect';
+import { exportRows } from '../../utils/exportData';
+import { goBackOrHome } from '../../utils/navigation';
 
 export default function AdminWorkers({ navigation }) {
-  const { t }                    = useTranslation();
-  const { userInfo }             = useAuth();
   const [workers,       setWorkers]       = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [refreshing,    setRefreshing]    = useState(false);
   const [searchQuery,   setSearchQuery]   = useState('');
   const [filterDistrict,setFilterDistrict]= useState('ALL');
-  const [districts,     setDistricts]     = useState([]);
+  const [exportOpen,    setExportOpen]    = useState(false);
   const [selectedWorker,setSelectedWorker]= useState(null);
   const [toast,         setToast]         = useState({ visible:false, message:'', type:'error' });
 
   const showToast = (msg, type='error') => setToast({ visible:true, message:msg, type });
-  const goBack = () => {
-    if (navigation.canGoBack()) navigation.goBack();
-    else navigation.navigate('Dashboard');
-  };
+  const goBack = () => goBackOrHome(navigation, 'Dashboard');
 
   const load = async () => {
     try {
-      const [workersRes, districtsRes] = await Promise.all([
-        workerAPI.getAll({ 
-          ...(filterDistrict !== 'ALL' && { district: filterDistrict })
-        }),
-        systemAPI.getWards().catch(() => ({ data: { wards: [] } }))
-      ]);
+      const workersRes = await workerAPI.getAll({ 
+        ...(filterDistrict !== 'ALL' && { district: filterDistrict })
+      });
       setWorkers(workersRes.data || []);
-      
-      // Extract unique districts
-      if (districtsRes.data?.wards) {
-        const uniqueDistricts = [...new Set(districtsRes.data.wards.map(w => w.district).filter(Boolean))];
-        setDistricts(['ALL', ...uniqueDistricts]);
-      }
     } catch (err) {
       console.error('Error loading workers:', err);
       showToast('Failed to load workers', 'error');
@@ -68,10 +54,9 @@ export default function AdminWorkers({ navigation }) {
     );
   });
 
-  // Generate CSV data
-  const generateCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Work Category', 'Thokuthi', 'District', 'Resolved', 'Pending', 'Status'];
-    const rows = filtered.map(w => [
+  const workerExportData = () => ({
+    headers: ['Name', 'Email', 'Phone', 'Work Category', 'Thokuthi', 'District', 'Resolved', 'Pending', 'Status'],
+    rows: filtered.map(w => [
       w.name,
       w.email,
       w.phone,
@@ -81,24 +66,21 @@ export default function AdminWorkers({ navigation }) {
       w.resolved || 0,
       w.pending || 0,
       w.status,
-    ]);
-    
-    const csv = [headers, ...rows].map(row => row.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
-    return csv;
-  };
+    ]),
+  });
 
-  // Share CSV
-  const handleDownloadCSV = async () => {
+  const handleExport = async (format) => {
     try {
-      const csv = generateCSV();
-      await Share.share({
-        message: csv,
+      await exportRows({
+        format,
         title: 'Workers List',
-        url: undefined,
+        fileName: `workers_${filterDistrict === 'ALL' ? 'all_districts' : filterDistrict}`,
+        ...workerExportData(),
       });
-      showToast('Workers list shared', 'success');
+      setExportOpen(false);
+      showToast(`${format.toUpperCase()} export ready`, 'success');
     } catch (err) {
-      showToast('Failed to share', 'error');
+      showToast(err?.message || 'Failed to export', 'error');
     }
   };
 
@@ -205,21 +187,12 @@ export default function AdminWorkers({ navigation }) {
 
       {/* Filters */}
       <View style={s.filtersContainer}>
-        <View style={s.filterItem}>
-          <Text style={s.filterLabel}>District:</Text>
-          <View style={s.pickerContainer}>
-            <Picker
-              selectedValue={filterDistrict}
-              onValueChange={(value) => setFilterDistrict(value)}
-              style={s.picker}
-              dropdownIconColor={T.maroon}
-            >
-              {districts.map((dist) => (
-                <Picker.Item key={dist} label={dist} value={dist} />
-              ))}
-            </Picker>
-          </View>
-        </View>
+        <CompactSelect
+          label="District"
+          value={filterDistrict}
+          options={['ALL', ...TN_DISTRICTS]}
+          onChange={setFilterDistrict}
+        />
       </View>
 
       <View style={s.activeFilters}>
@@ -242,8 +215,8 @@ export default function AdminWorkers({ navigation }) {
         <Text style={s.resultsText}>
           Showing {filtered.length} worker{filtered.length !== 1 ? 's' : ''}
         </Text>
-        <TouchableOpacity style={s.downloadBtn} onPress={handleDownloadCSV}>
-          <Text style={s.downloadBtnText}>📥 Download CSV</Text>
+        <TouchableOpacity style={s.downloadBtn} onPress={() => setExportOpen(true)}>
+          <Text style={s.downloadBtnText}>Download</Text>
         </TouchableOpacity>
       </View>
 
@@ -360,6 +333,32 @@ export default function AdminWorkers({ navigation }) {
         </Modal>
       )}
 
+      <Modal visible={exportOpen} transparent animationType="fade" onRequestClose={() => setExportOpen(false)}>
+        <View style={s.exportOverlay}>
+          <View style={s.exportSheet}>
+            <View style={s.exportHeader}>
+              <Text style={s.exportTitle}>Download workers</Text>
+              <TouchableOpacity onPress={() => setExportOpen(false)} style={s.exportClose}>
+                <Text style={s.exportCloseTxt}>x</Text>
+              </TouchableOpacity>
+            </View>
+            {[
+              { key: 'csv', title: 'CSV file', sub: 'For simple data import' },
+              { key: 'excel', title: 'Excel sheet', sub: 'Opens in Microsoft Excel' },
+              { key: 'pdf', title: 'PDF report', sub: 'Printable worker summary' },
+            ].map((item) => (
+              <TouchableOpacity key={item.key} style={s.exportOption} onPress={() => handleExport(item.key)}>
+                <View>
+                  <Text style={s.exportOptionTitle}>{item.title}</Text>
+                  <Text style={s.exportOptionSub}>{item.sub}</Text>
+                </View>
+                <Text style={s.exportArrow}>›</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
+
       {/* Toast */}
       {toast.visible && (
         <PopupToast
@@ -387,11 +386,7 @@ const s = StyleSheet.create({
   statQuickNumber:{ fontSize: 16, fontWeight: '900', color: T.maroon },
   statQuickLabel: { fontSize: 9, color: T.textM, marginTop: 2, fontWeight: '600' },
 
-  filtersContainer:{ backgroundColor: '#fff', paddingVertical: 12, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: T.border },
-  filterItem:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  filterLabel:    { fontSize: 12, fontWeight: '700', color: T.text, minWidth: 70 },
-  pickerContainer:{ flex: 1, borderWidth: 1, borderColor: T.border, borderRadius: 8, overflow: 'hidden' },
-  picker:         { height: 40, paddingHorizontal: 8, color: T.text, backgroundColor: '#fff' },
+  filtersContainer:{ backgroundColor: '#fff', paddingVertical: 10, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: T.border, flexDirection: 'row' },
   activeFilters:  { flexDirection: 'row', gap: 8, flexWrap: 'wrap', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
   activeFilterText: { fontSize: 11, fontWeight: '700', color: T.maroon, backgroundColor: T.maroon + '12', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
 
@@ -454,4 +449,15 @@ const s = StyleSheet.create({
   performanceBox: { flex: 1, backgroundColor: T.bg, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   performanceNumber:{ fontSize: 16, fontWeight: '900' },
   performanceLabel:{ fontSize: 10, color: T.textM, marginTop: 4, fontWeight: '600' },
+
+  exportOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  exportSheet: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, paddingBottom: Platform.OS === 'ios' ? 28 : 18 },
+  exportHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  exportTitle: { fontSize: 16, fontWeight: '900', color: T.text },
+  exportClose: { width: 32, height: 32, borderRadius: 16, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center' },
+  exportCloseTxt: { fontSize: 15, fontWeight: '900', color: T.textL },
+  exportOption: { minHeight: 58, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  exportOptionTitle: { fontSize: 14, fontWeight: '900', color: T.text },
+  exportOptionSub: { fontSize: 11, color: T.textM, marginTop: 2, fontWeight: '600' },
+  exportArrow: { fontSize: 22, color: T.maroon, fontWeight: '900' },
 });

@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 import { complaintAPI, workerAPI } from '../../services/api';
 import { T } from '../../constants/theme';
+import { goBackOrHome } from '../../utils/navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -61,7 +62,7 @@ export default function ComplaintDetailAdmin({ route, navigation }) {
         setWorkers((workersRes.data || []).filter((w) => w.status === 'active'));
       })
       .catch(() => {
-        navigation.goBack();
+        goBackOrHome(navigation, 'Complaints');
       })
       .finally(() => setLoading(false));
   }, [id, navigation]);
@@ -122,7 +123,7 @@ export default function ComplaintDetailAdmin({ route, navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Header ── */}
         <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+          <TouchableOpacity onPress={() => goBackOrHome(navigation, 'Complaints')} style={s.backBtn}>
             <Text style={s.backTxt}>← Back</Text>
           </TouchableOpacity>
           <View style={s.catIconBox}>
