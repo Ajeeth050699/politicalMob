@@ -331,8 +331,8 @@ const s = StyleSheet.create({
   root:    { flex: 1, backgroundColor: T.bg },
   center:  { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  header:     { paddingTop: Platform.OS === 'ios' ? 58 : 46, paddingBottom: 16, paddingHorizontal: 16, marginBottom: 12 },
-  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 54 : 42, left: 16, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' },
+  header:     { paddingTop: Platform.OS === 'ios' ? 58 : 46, paddingBottom: 16, paddingHorizontal: 16, marginBottom: 12, zIndex: 1 },
+  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 54 : 42, left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', zIndex: 10, elevation: 10 },
   backTxt:    { color: '#fff', fontSize: 20, fontWeight: '800' },
   headerTitle:{ fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 4, textAlign: 'center' },
   headerSub:  { fontSize: 12, color: 'rgba(255,255,255,0.8)', textAlign: 'center' },

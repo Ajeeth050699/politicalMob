@@ -119,7 +119,7 @@ export default function AdminNotifications({ navigation }) {
               activeOpacity={0.8}
             >
               {f !== 'ALL' && <Text style={{ fontSize: 11, marginRight: 3 }}>{TYPE_META[f]?.icon}</Text>}
-              <Text style={[s.chipTxt, filter === f && { color: '#fff' }]}>
+              <Text style={[s.chipTxt, filter === f && { color: '#fff', fontWeight: '700' }]}>
                 {f === 'ALL' ? 'All' : TYPE_META[f]?.label}
               </Text>
             </TouchableOpacity>
@@ -167,19 +167,19 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: T.bg },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 16, paddingHorizontal: 16 },
-  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, padding: 4 },
-  backTxt: { color: 'rgba(255,255,255,0.85)', fontSize: 18, fontWeight: '600' },
-  headerTitle: { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 2 },
-  headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.75)' },
-  unreadBadge: { marginTop: 8, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, alignSelf: 'flex-start' },
+  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 16, paddingHorizontal: 16, zIndex: 1 },
+  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, padding: 8, zIndex: 10, elevation: 10, width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  backTxt: { color: 'rgba(255,255,255,0.85)', fontSize: 24, fontWeight: '600', marginTop: -4 },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 2, textAlign: 'center' },
+  headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },
+  unreadBadge: { marginTop: 8, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, alignSelf: 'center' },
   unreadBadgeText: { fontSize: 11, fontWeight: '700', color: '#fff' },
 
   filterScroll: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
-  filterRow: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
-  chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
+  filterRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+  chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
   chipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
-  chipTxt: { fontSize: 11, fontWeight: '600', color: T.textL },
+  chipTxt: { fontSize: 13, fontWeight: '600', color: T.textL },
 
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 8, flexDirection: 'row', gap: 10, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
   iconBox: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },

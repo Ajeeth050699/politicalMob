@@ -1,5 +1,5 @@
-import { Share } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 
 const clean = (value) => String(value ?? '').replace(/\s+/g, ' ').trim();
 const fileSafe = (value) => clean(value).replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '') || 'export';
@@ -57,10 +57,16 @@ async function writeAndShare({ fileName, extension, contents, message }) {
   if (!dir) throw new Error('File storage is not available on this device.');
   const uri = `${dir}${fileSafe(fileName)}.${extension}`;
   await FileSystem.writeAsStringAsync(uri, contents);
-  const shareUri = uri.startsWith('file://') && FileSystem.getContentUriAsync
-    ? await FileSystem.getContentUriAsync(uri).catch(() => uri)
-    : uri;
-  await Share.share({ title: fileName, message: `${message}\n${shareUri}`, url: shareUri });
+  
+  if (await Sharing.isAvailableAsync()) {
+    await Sharing.shareAsync(uri, {
+      dialogTitle: fileName,
+      mimeType: extension === 'csv' ? 'text/csv' : extension === 'xls' ? 'application/vnd.ms-excel' : 'application/pdf',
+      UTI: extension === 'csv' ? 'public.comma-separated-values-text' : extension === 'xls' ? 'com.microsoft.excel.xls' : 'com.adobe.pdf',
+    });
+  } else {
+    throw new Error('Sharing is not available on this device');
+  }
   return uri;
 }
 

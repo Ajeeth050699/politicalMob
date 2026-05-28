@@ -208,9 +208,9 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: T.bg },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 16, paddingHorizontal: 20 },
-  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 20, padding: 4 },
-  backTxt: { color: 'rgba(255,255,255,0.85)', fontSize: 20, fontWeight: '600' },
+  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 16, paddingHorizontal: 20, zIndex: 1 },
+  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, padding: 8, zIndex: 10, elevation: 10, width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  backTxt: { color: 'rgba(255,255,255,0.85)', fontSize: 24, fontWeight: '600', marginTop: -4 },
   headerTitle: { fontSize: 20, fontWeight: '900', color: '#fff', textAlign: 'center' },
 
   content: { flex: 1, padding: 16 },

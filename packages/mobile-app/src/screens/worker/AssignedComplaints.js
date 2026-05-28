@@ -271,7 +271,7 @@ export default function AssignedComplaints({ navigation }) {
       </LinearGradient>
 
       {/* Filter */}
-      <View style={s.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterScroll} contentContainerStyle={s.filterRow}>
         {['ALL','NEW','ACCEPTED','IN PROGRESS','COMPLETED'].map(f => (
           <TouchableOpacity
             key={f}
@@ -279,12 +279,12 @@ export default function AssignedComplaints({ navigation }) {
             onPress={() => setFilter(f)}
             activeOpacity={0.8}
           >
-            <Text style={[s.chipTxt, filter===f && { color:'#fff' }]}>
+            <Text style={[s.chipTxt, filter===f && { color:'#fff', fontWeight: '700' }]}>
               {f==='ALL'?'All':f==='IN PROGRESS'?'Working':f.charAt(0)+f.slice(1).toLowerCase()}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* List */}
       <FlatList
@@ -343,13 +343,14 @@ const s = StyleSheet.create({
   statNum:     { fontSize:18, fontWeight:'900' },
   statLabel:   { fontSize:10, color:'rgba(255,255,255,0.7)', marginTop:2, fontWeight:'600' },
 
-  filterRow:  { flexDirection:'row', paddingHorizontal:12, paddingVertical:10, gap:6, backgroundColor:'#fff', borderBottomWidth:1, borderBottomColor:T.border },
+  filterScroll:{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
+  filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   pickerContainer: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 5 },
   pickerLabel: { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 4 },
   pickerWrap: { borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, overflow: 'hidden', height: 50, justifyContent: 'center' },
-  chip:       { paddingHorizontal:12, paddingVertical:6, borderRadius:50, borderWidth:1.5, borderColor:T.border, backgroundColor:T.bg },
+  chip:       { paddingHorizontal:14, paddingVertical:8, borderRadius:50, borderWidth:1.5, borderColor:T.border, backgroundColor:T.bg },
   chipActive: { backgroundColor:T.maroon, borderColor:T.maroon },
-  chipTxt:    { fontSize:11, fontWeight:'700', color:T.textL },
+  chipTxt:    { fontSize:13, fontWeight:'600', color:T.textL },
 
   card:        { backgroundColor:'#fff', borderRadius:18, padding:16, marginBottom:12, borderWidth:1, borderColor:T.border, elevation:3, shadowColor:'#000', shadowOpacity:0.06, shadowRadius:10 },
   cardLocked:  { opacity:0.7, borderStyle:'dashed' },

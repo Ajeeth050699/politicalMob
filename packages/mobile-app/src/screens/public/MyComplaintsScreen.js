@@ -231,9 +231,9 @@ const s = StyleSheet.create({
   // filter
   filterScroll:{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
   filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  filterChip:  { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
+  filterChip:  { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
   filterChipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
-  filterText:  { fontSize: 12, fontWeight: '600', color: T.textL },
+  filterText:  { fontSize: 13, fontWeight: '600', color: T.textL },
 
   // card
   card:        { backgroundColor: '#fff', borderRadius: 18, marginBottom: 12, flexDirection: 'row', overflow: 'hidden', borderWidth: 1, borderColor: T.border, elevation: 3, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10 },
