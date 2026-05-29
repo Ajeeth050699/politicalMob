@@ -2,6 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const path = require('path');
+
+const envName = process.env.NODE_ENV || 'development';
+dotenv.config({ path: path.resolve(__dirname, '..', `.env.${envName}`) });
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 const authRoutes         = require('./routes/authRoutes');
 const userRoutes         = require('./routes/userRoutes');
@@ -16,8 +21,6 @@ const emergencyRoutes    = require('./routes/emergencyRoutes');
 const systemRoutes       = require('./routes/systemRoutes');
 const billingRoutes      = require('./routes/billingRoutes');
 const realtimeRoutes     = require('./routes/realtimeRoutes');
-
-dotenv.config();
 
 const app = express();
 
