@@ -31,7 +31,9 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "predictiveBackGestureEnabled": false
     },
@@ -63,10 +65,11 @@
     },
     "extra": {
       "eas": {
-        "projectId": "cb86888d-9b21-4046-94e1-788a903137d2"
+        "projectId": "4eaf8e3d-c327-4d6e-a463-c3b583088a89"
       },
       "API_URL_DEV": "http://192.168.0.104:5003",
       "API_URL_PROD": "https://politicalmob.onrender.com"
-    }
+    },
+    "owner": "ajeethrs-organization"
   }
 }
