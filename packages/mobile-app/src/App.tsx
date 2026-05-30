@@ -20,7 +20,7 @@ import { LanguageProvider } from './context/LanguageContext';
 //       await SplashScreen.hideAsync();
 //     }, 3000);
 //   }, []);
-ExpoSplash.preventAutoHideAsync();
+ExpoSplash.preventAutoHideAsync().catch(() => {});
 
 export default function App() {
   const [showCustomSplash, setShowCustomSplash] = useState(true);
@@ -28,7 +28,7 @@ export default function App() {
   useEffect(() => {
     // Hide the native expo splash immediately
     // Our custom animated splash takes over
-    ExpoSplash.hideAsync();
+    ExpoSplash.hideAsync().catch(() => {});
   }, []);
 
   // While custom splash is showing, render it fullscreen
