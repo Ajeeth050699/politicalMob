@@ -34,8 +34,7 @@
                                                      "android.permission.ACCESS_COARSE_LOCATION",
                                                      "android.permission.ACCESS_FINE_LOCATION"
                                                  ],
-                                 "predictiveBackGestureEnabled":  false,
-                                 "networkSecurityConfig":  "android/network_security_config.xml"
+                                 "predictiveBackGestureEnabled":  false
                              },
                  "web":  {
                              "favicon":  "./assets/images/favicon.png"
@@ -76,4 +75,3 @@
                  "owner":  "ajeethrs-organization"
              }
 }
-
