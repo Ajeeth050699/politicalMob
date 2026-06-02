@@ -229,9 +229,9 @@ const s = StyleSheet.create({
   statLabel:   { fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 2, fontWeight: '600' },
 
   // filter
-  filterScroll:{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border },
-  filterRow:   { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  filterChip:  { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
+  filterScroll:{ flexGrow: 0, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: T.border, maxHeight: 54 },
+  filterRow:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
+  filterChip:  { flexDirection: 'row', alignItems: 'center', alignSelf: 'center', minHeight: 34, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
   filterChipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
   filterText:  { fontSize: 13, fontWeight: '600', color: T.textL },
 

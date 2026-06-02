@@ -104,9 +104,18 @@ export const AuthProvider = ({ children }) => {
 
   // ── Auth actions ───────────────────────────────────────────────
   const performLogout = async () => {
-    await AsyncStorage.multiRemove(['userInfo', 'bgTime']);
     bgTimeRef.current = null;
+    userInfoRef.current = null;
     dispatch({ type: 'LOGOUT' });
+
+    try {
+      await AsyncStorage.multiRemove(['userInfo', 'bgTime']);
+    } catch {
+      try {
+        await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('bgTime');
+      } catch {}
+    }
   };
 
   const login = async (email, password) => {

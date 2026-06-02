@@ -67,6 +67,7 @@ const PublicTabs = () => (
           Notifications: "bell",
           News: "newspaper",
           Emergency: "phone-alert",
+          Profile: "account",
         };
         return (
           <Icon
@@ -83,6 +84,7 @@ const PublicTabs = () => (
     <Tab.Screen name="Notifications" component={NotificationScreen} />
     <Tab.Screen name="News" component={NewsScreen} />
     <Tab.Screen name="Emergency" component={EmergencyScreen} />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
 
@@ -188,6 +190,7 @@ export default function AppNavigator() {
 
   return (
     <Stack.Navigator
+      key={userInfo ? `app-${userInfo.role || "user"}` : "auth"}
       screenOptions={{ headerShown: false, animation: "slide_from_right" }}
     >
       {!userInfo ? (

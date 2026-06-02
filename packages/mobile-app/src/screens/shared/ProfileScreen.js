@@ -30,6 +30,7 @@ export default function ProfileScreen({ navigation }) {
   const [address,setAddress]= useState(userInfo?.address || '');
   const [workCategory,setWorkCategory]= useState(userInfo?.workCategory || '');
   const [saving, setSaving] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const { lang, changeLang } = useLang();
   const role = ROLE_META[userInfo?.role] || ROLE_META.public;
@@ -56,15 +57,10 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      '🚪 Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: logout },
-      ]
-    );
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    await logout();
   };
 
   return (
@@ -233,8 +229,13 @@ export default function ProfileScreen({ navigation }) {
           </TouchableOpacity>
 
           {/* ── Logout ── */}
-          <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
-            <Text style={s.logoutTxt}>🚪 Logout</Text>
+          <TouchableOpacity
+            style={[s.logoutBtn, loggingOut && { opacity: 0.6 }]}
+            onPress={handleLogout}
+            disabled={loggingOut}
+            activeOpacity={0.85}
+          >
+            <Text style={s.logoutTxt}>{loggingOut ? 'Logging out...' : '🚪 Logout'}</Text>
           </TouchableOpacity>
 
           <Text style={s.version}>People Connect v1.0 · Tamil Nadu</Text>
