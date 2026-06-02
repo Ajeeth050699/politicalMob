@@ -154,10 +154,10 @@ export default function ComplaintDetailAdmin({ route, navigation }) {
                     <Text style={{ fontSize: 10, color: isActive || isDone ? '#fff' : T.textM }}>{isDone ? '✓' : i + 1}</Text>
                   </View>
                   <Text style={[s.timelineLabel, (isActive || isDone) && { color: T.text, fontWeight: '700' }]}>
-                    {step === 'IN PROGRESS' ? 'Progress' : step.charAt(0) + step.slice(1).toLowerCase()}
+                    {step === 'IN PROGRESS' ? 'In Progress' : step === 'ACCEPTED' ? 'Accepted' : step.charAt(0) + step.slice(1).toLowerCase()}
                   </Text>
                 </View>
-                {i < 2 && <View style={[s.timelineLine, isDone && { backgroundColor: T.green }]} />}
+                {i < 3 && <View style={[s.timelineLine, isDone && { backgroundColor: T.green }]} />}
               </React.Fragment>);
 
           })}
@@ -193,7 +193,7 @@ export default function ComplaintDetailAdmin({ route, navigation }) {
             }
           </View>
 
-          {!isResolved &&
+          {!isResolved && !workerAccepted &&
           <View style={s.assignBox}>
               <Text style={s.assignLabel}>{literalT("Assign active worker")}</Text>
               <View style={s.assignPickerWrap}>
