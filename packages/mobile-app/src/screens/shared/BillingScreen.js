@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { literalT } from "../../i18n/runtimeTamil";import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  ActivityIndicator, Platform, StatusBar, Alert
-} from 'react-native';
+  ActivityIndicator, Platform, StatusBar, Alert } from
+'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { T } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
@@ -23,9 +23,9 @@ export default function BillingScreen({ navigation }) {
     setLoading(true);
     try {
       const [plansRes, histRes] = await Promise.all([
-        billingAPI.getPlans(),
-        billingAPI.getHistory()
-      ]);
+      billingAPI.getPlans(),
+      billingAPI.getHistory()]
+      );
       setPlans(plansRes.data?.plans || {});
       setHistory(histRes.data?.history || []);
     } catch (e) {
@@ -58,151 +58,151 @@ export default function BillingScreen({ navigation }) {
       'Cancel Subscription',
       'Are you sure you want to cancel your current subscription?',
       [
-        { text: 'No, Keep it', style: 'cancel' },
-        { 
-          text: 'Yes, Cancel', 
-          style: 'destructive', 
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const res = await billingAPI.cancel();
-              await updateProfile({ ...userInfo, role: 'public', subscription: res.data.subscription });
-              showToast('Subscription cancelled successfully', 'success');
-              fetchBillingData();
-            } catch (e) {
-              showToast('Failed to cancel subscription');
-            } finally {
-              setLoading(false);
-            }
+      { text: 'No, Keep it', style: 'cancel' },
+      {
+        text: 'Yes, Cancel',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setLoading(true);
+            const res = await billingAPI.cancel();
+            await updateProfile({ ...userInfo, role: 'public', subscription: res.data.subscription });
+            showToast('Subscription cancelled successfully', 'success');
+            fetchBillingData();
+          } catch (e) {
+            showToast('Failed to cancel subscription');
+          } finally {
+            setLoading(false);
           }
         }
-      ]
+      }]
+
     );
   };
 
   const currentSub = userInfo?.subscription;
   const isSubscribed = currentSub && currentSub.status !== 'cancelled' && currentSub.status !== 'pending';
-  
+
   // Available plans for the user based on their current role, or if they are public
   // We can just show the plans they are eligible for. Let's just list Worker and Agent plans, and Citizen if public.
-  const displayPlans = ['citizen', 'worker', 'agent'].filter(p => p !== userInfo?.role);
+  const displayPlans = ['citizen', 'worker', 'agent'].filter((p) => p !== userInfo?.role);
 
   return (
     <View style={s.root}>
       <StatusBar backgroundColor={T.maroon} barStyle="light-content" />
-      <PopupToast message={toast.message} type={toast.type} visible={toast.visible} onHide={() => setToast(t => ({ ...t, visible: false }))} />
+      <PopupToast message={toast.message} type={toast.type} visible={toast.visible} onHide={() => setToast((t) => ({ ...t, visible: false }))} />
 
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-        {navigation.canGoBack() && (
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-            <Text style={s.backTxt}>← Back</Text>
+        {navigation.canGoBack() &&
+        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+            <Text style={s.backTxt}>{literalT("← Back")}</Text>
           </TouchableOpacity>
-        )}
+        }
         <View style={s.headerIcon}>
           <Text style={{ fontSize: 28 }}>💳</Text>
         </View>
-        <Text style={s.headerTitle}>Pricing & Billing</Text>
-        <Text style={s.headerSub}>Manage your subscriptions & invoices</Text>
+        <Text style={s.headerTitle}>{literalT("Pricing & Billing")}</Text>
+        <Text style={s.headerSub}>{literalT("Manage your subscriptions & invoices")}</Text>
       </LinearGradient>
 
       <View style={s.tabRow}>
         <TouchableOpacity style={[s.tabBtn, tab === 'plan' && s.tabActive]} onPress={() => setTab('plan')}>
-          <Text style={[s.tabTxt, tab === 'plan' && s.tabTxtActive]}>My Plan</Text>
+          <Text style={[s.tabTxt, tab === 'plan' && s.tabTxtActive]}>{literalT("My Plan")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[s.tabBtn, tab === 'history' && s.tabActive]} onPress={() => setTab('history')}>
-          <Text style={[s.tabTxt, tab === 'history' && s.tabTxtActive]}>Billing History</Text>
+          <Text style={[s.tabTxt, tab === 'history' && s.tabTxtActive]}>{literalT("Billing History")}</Text>
         </TouchableOpacity>
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={T.maroon} style={{ marginTop: 40 }} />
-      ) : (
-        <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      {loading ?
+      <ActivityIndicator size="large" color={T.maroon} style={{ marginTop: 40 }} /> :
+
+      <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           
-          {tab === 'plan' && (
-            <>
-              {isSubscribed ? (
-                <View style={s.card}>
-                  <Text style={s.cardTitle}>Current Subscription</Text>
+          {tab === 'plan' &&
+        <>
+              {isSubscribed ?
+          <View style={s.card}>
+                  <Text style={s.cardTitle}>{literalT("Current Subscription")}</Text>
                   <View style={s.planHeader}>
                     <View style={s.planIcon}><Text style={{ fontSize: 24 }}>{currentSub.planRole === 'agent' ? '🎭' : '👷'}</Text></View>
                     <View style={{ flex: 1 }}>
-                      <Text style={s.planName}>{currentSub.planRole.toUpperCase()} PLAN</Text>
-                      <Text style={s.planStatus}>Active ✅</Text>
+                      <Text style={s.planName}>{currentSub.planRole.toUpperCase()}{literalT("PLAN")}</Text>
+                      <Text style={s.planStatus}>{literalT("Active ✅")}</Text>
                     </View>
                   </View>
                   <View style={s.row}>
-                    <Text style={s.label}>Amount:</Text>
+                    <Text style={s.label}>{literalT("Amount:")}</Text>
                     <Text style={s.val}>₹ {currentSub.amount} / {currentSub.interval}</Text>
                   </View>
                   <View style={s.row}>
-                    <Text style={s.label}>Started On:</Text>
+                    <Text style={s.label}>{literalT("Started On:")}</Text>
                     <Text style={s.val}>{new Date(currentSub.currentPeriodStart).toLocaleDateString()}</Text>
                   </View>
                   <View style={s.row}>
-                    <Text style={s.label}>Next Billing:</Text>
+                    <Text style={s.label}>{literalT("Next Billing:")}</Text>
                     <Text style={s.val}>{new Date(currentSub.currentPeriodEnd).toLocaleDateString()}</Text>
                   </View>
                   <TouchableOpacity style={s.cancelBtn} onPress={handleCancel}>
-                    <Text style={s.cancelTxt}>Cancel Subscription</Text>
+                    <Text style={s.cancelTxt}>{literalT("Cancel Subscription")}</Text>
                   </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={s.alertBox}>
-                  <Text style={{ fontSize: 24, marginBottom: 8 }}>⚠️</Text>
-                  <Text style={s.alertTitle}>No Active Subscription</Text>
-                  <Text style={s.alertSub}>You are currently on the free Public plan. Upgrade to unlock more features.</Text>
-                </View>
-              )}
+                </View> :
 
-              <Text style={s.sectionTitle}>Available Upgrades</Text>
-              {displayPlans.map(role => {
-                const p = plans[role];
-                if (!p) return null;
-                return (
-                  <View key={role} style={s.upgradeCard}>
-                    <Text style={s.upgTitle}>{p.label} Plan</Text>
+          <View style={s.alertBox}>
+                  <Text style={{ fontSize: 24, marginBottom: 8 }}>⚠️</Text>
+                  <Text style={s.alertTitle}>{literalT("No Active Subscription")}</Text>
+                  <Text style={s.alertSub}>{literalT("You are currently on the free Public plan. Upgrade to unlock more features.")}</Text>
+                </View>
+          }
+
+              <Text style={s.sectionTitle}>{literalT("Available Upgrades")}</Text>
+              {displayPlans.map((role) => {
+            const p = plans[role];
+            if (!p) return null;
+            return (
+              <View key={role} style={s.upgradeCard}>
+                    <Text style={s.upgTitle}>{p.label}{literalT("Plan")}</Text>
                     <Text style={s.upgPrice}>₹ {p.amount} <Text style={{ fontSize: 14, color: T.textM }}>/ {p.interval}</Text></Text>
                     <Text style={s.upgDesc}>
                       {role === 'worker' ? 'Access worker dashboard, manage complaints, and update statuses.' :
-                       role === 'agent' ? 'Manage workers, view district analytics, and handle escalations.' :
-                       'Basic citizen features for reporting and tracking issues.'}
+                  role === 'agent' ? 'Manage workers, view district analytics, and handle escalations.' :
+                  'Basic citizen features for reporting and tracking issues.'}
                     </Text>
                     <TouchableOpacity style={s.subBtn} onPress={() => handleSubscribe(role)}>
-                      <Text style={s.subTxt}>Subscribe to {p.label}</Text>
+                      <Text style={s.subTxt}>{literalT("Subscribe to")}{p.label}</Text>
                     </TouchableOpacity>
-                  </View>
-                );
-              })}
-            </>
-          )}
+                  </View>);
 
-          {tab === 'history' && (
-            <View style={s.card}>
-              <Text style={s.cardTitle}>Invoices</Text>
-              {history.length === 0 ? (
-                <Text style={s.emptyTxt}>No billing history available.</Text>
-              ) : (
-                history.map((inv, idx) => (
-                  <View key={idx} style={s.invRow}>
+          })}
+            </>
+        }
+
+          {tab === 'history' &&
+        <View style={s.card}>
+              <Text style={s.cardTitle}>{literalT("Invoices")}</Text>
+              {history.length === 0 ?
+          <Text style={s.emptyTxt}>{literalT("No billing history available.")}</Text> :
+
+          history.map((inv, idx) =>
+          <View key={idx} style={s.invRow}>
                     <View style={{ flex: 1 }}>
                       <Text style={s.invId}>{inv.id}</Text>
-                      <Text style={s.invDate}>{new Date(inv.date).toLocaleDateString()} - {inv.plan.toUpperCase()} Plan</Text>
+                      <Text style={s.invDate}>{new Date(inv.date).toLocaleDateString()} - {inv.plan.toUpperCase()}{literalT("Plan")}</Text>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={s.invAmt}>₹ {inv.amount}</Text>
                       <Text style={s.invStatus}>{inv.status}</Text>
                     </View>
                   </View>
-                ))
-              )}
+          )
+          }
             </View>
-          )}
+        }
           
         </ScrollView>
-      )}
-    </View>
-  );
+      }
+    </View>);
+
 }
 
 const s = StyleSheet.create({
@@ -245,5 +245,5 @@ const s = StyleSheet.create({
   invId: { fontSize: 14, fontWeight: '700', color: T.text, marginBottom: 4 },
   invDate: { fontSize: 12, color: T.textM },
   invAmt: { fontSize: 15, fontWeight: '800', color: T.text, marginBottom: 4 },
-  invStatus: { fontSize: 12, color: T.green, fontWeight: '700' },
+  invStatus: { fontSize: 12, color: T.green, fontWeight: '700' }
 });

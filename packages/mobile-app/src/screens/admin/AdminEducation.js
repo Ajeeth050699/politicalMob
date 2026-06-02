@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  TextInput, ActivityIndicator, Alert, Platform, StatusBar,
-} from 'react-native';
+  TextInput, ActivityIndicator, Alert, Platform, StatusBar } from
+'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { educationAPI } from '../../services/api';
 import { T } from '../../constants/theme';
@@ -16,7 +16,7 @@ const initialForm = {
   vacancies: '0',
   status: 'upcoming',
   year: String(new Date().getFullYear()),
-  applicationUrl: '',
+  applicationUrl: ''
 };
 
 function Field({ label, value, onChangeText, keyboardType = 'default', multiline = false }) {
@@ -29,10 +29,10 @@ function Field({ label, value, onChangeText, keyboardType = 'default', multiline
         keyboardType={keyboardType}
         multiline={multiline}
         style={[s.input, multiline && { minHeight: 68, textAlignVertical: 'top' }]}
-        placeholderTextColor={T.textM}
-      />
-    </View>
-  );
+        placeholderTextColor={T.textM} />
+      
+    </View>);
+
 }
 
 export default function AdminEducation() {
@@ -44,9 +44,9 @@ export default function AdminEducation() {
 
   const load = async () => {
     const [summaryRes, jobsRes] = await Promise.all([
-      educationAPI.getGovernmentJobSummary().catch(() => ({ data: summary })),
-      educationAPI.getGovernmentJobs({ limit: 20 }).catch(() => ({ data: { data: [] } })),
-    ]);
+    educationAPI.getGovernmentJobSummary().catch(() => ({ data: summary })),
+    educationAPI.getGovernmentJobs({ limit: 20 }).catch(() => ({ data: { data: [] } }))]
+    );
     setSummary(summaryRes.data || summary);
     setJobs(Array.isArray(jobsRes.data?.data) ? jobsRes.data.data : []);
   };
@@ -67,7 +67,7 @@ export default function AdminEducation() {
       await educationAPI.createGovernmentJob({
         ...form,
         vacancies: Number(form.vacancies) || 0,
-        year: Number(form.year) || new Date().getFullYear(),
+        year: Number(form.year) || new Date().getFullYear()
       });
       setForm(initialForm);
       await load();
@@ -83,9 +83,9 @@ export default function AdminEducation() {
     return (
       <View style={s.center}>
         <ActivityIndicator color={T.maroon} size="large" />
-        <Text style={s.loading}>Loading education admin...</Text>
-      </View>
-    );
+        <Text style={s.loading}>{literalT("Loading education admin...")}</Text>
+      </View>);
+
   }
 
   return (
@@ -93,55 +93,55 @@ export default function AdminEducation() {
       <StatusBar backgroundColor={T.maroonD} barStyle="light-content" />
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={[T.maroonD, T.maroon, T.maroonL]} style={s.header}>
-          <Text style={s.headerTitle}>Education Admin</Text>
-          <Text style={s.headerSub}>Government jobs, mock tests, analytics, and recruitment updates</Text>
+          <Text style={s.headerTitle}>{literalT("Education Admin")}</Text>
+          <Text style={s.headerSub}>{literalT("Government jobs, mock tests, analytics, and recruitment updates")}</Text>
           <View style={s.statsRow}>
-            <View style={s.stat}><Text style={s.statNum}>{summary.live}</Text><Text style={s.statLabel}>Live</Text></View>
+            <View style={s.stat}><Text style={s.statNum}>{summary.live}</Text><Text style={s.statLabel}>{literalT("Live")}</Text></View>
             <View style={s.divider} />
-            <View style={s.stat}><Text style={s.statNum}>{summary.upcoming}</Text><Text style={s.statLabel}>Upcoming</Text></View>
+            <View style={s.stat}><Text style={s.statNum}>{summary.upcoming}</Text><Text style={s.statLabel}>{literalT("Upcoming")}</Text></View>
             <View style={s.divider} />
-            <View style={s.stat}><Text style={s.statNum}>{summary.applications}</Text><Text style={s.statLabel}>Applications</Text></View>
+            <View style={s.stat}><Text style={s.statNum}>{summary.applications}</Text><Text style={s.statLabel}>{literalT("Applications")}</Text></View>
           </View>
         </LinearGradient>
 
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Create Government Job</Text>
+          <Text style={s.sectionTitle}>{literalT("Create Government Job")}</Text>
           <View style={s.formCard}>
-            <Field label="Job title" value={form.title} onChangeText={(v) => set('title', v)} />
-            <Field label="Department" value={form.department} onChangeText={(v) => set('department', v)} />
+            <Field label={literalT("Job title")} value={form.title} onChangeText={(v) => set('title', v)} />
+            <Field label={literalT("Department")} value={form.department} onChangeText={(v) => set('department', v)} />
             <View style={s.row}>
-              <View style={{ flex: 1 }}><Field label="Category" value={form.category} onChangeText={(v) => set('category', v)} /></View>
-              <View style={{ flex: 1 }}><Field label="Status" value={form.status} onChangeText={(v) => set('status', v.toLowerCase())} /></View>
+              <View style={{ flex: 1 }}><Field label={literalT("Category")} value={form.category} onChangeText={(v) => set('category', v)} /></View>
+              <View style={{ flex: 1 }}><Field label={literalT("Status")} value={form.status} onChangeText={(v) => set('status', v.toLowerCase())} /></View>
             </View>
             <View style={s.row}>
-              <View style={{ flex: 1 }}><Field label="Vacancies" value={form.vacancies} onChangeText={(v) => set('vacancies', v)} keyboardType="number-pad" /></View>
-              <View style={{ flex: 1 }}><Field label="Year" value={form.year} onChangeText={(v) => set('year', v)} keyboardType="number-pad" /></View>
+              <View style={{ flex: 1 }}><Field label={literalT("Vacancies")} value={form.vacancies} onChangeText={(v) => set('vacancies', v)} keyboardType="number-pad" /></View>
+              <View style={{ flex: 1 }}><Field label={literalT("Year")} value={form.year} onChangeText={(v) => set('year', v)} keyboardType="number-pad" /></View>
             </View>
-            <Field label="Qualification" value={form.qualification} onChangeText={(v) => set('qualification', v)} />
-            <Field label="Apply URL" value={form.applicationUrl} onChangeText={(v) => set('applicationUrl', v)} />
+            <Field label={literalT("Qualification")} value={form.qualification} onChangeText={(v) => set('qualification', v)} />
+            <Field label={literalT("Apply URL")} value={form.applicationUrl} onChangeText={(v) => set('applicationUrl', v)} />
             <TouchableOpacity style={[s.saveBtn, saving && { opacity: 0.65 }]} onPress={save} disabled={saving}>
-              {saving ? <ActivityIndicator color="#fff" /> : <Text style={s.saveTxt}>Publish Job</Text>}
+              {saving ? <ActivityIndicator color="#fff" /> : <Text style={s.saveTxt}>{literalT("Publish Job")}</Text>}
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Recent Jobs</Text>
-          {jobs.length === 0 ? (
-            <View style={s.empty}><Text style={s.emptyTxt}>No government jobs created yet.</Text></View>
-          ) : jobs.map((job) => (
-            <View key={job.id} style={s.jobCard}>
+          <Text style={s.sectionTitle}>{literalT("Recent Jobs")}</Text>
+          {jobs.length === 0 ?
+          <View style={s.empty}><Text style={s.emptyTxt}>{literalT("No government jobs created yet.")}</Text></View> :
+          jobs.map((job) =>
+          <View key={job.id} style={s.jobCard}>
               <View style={{ flex: 1 }}>
                 <Text style={s.jobTitle}>{job.title}</Text>
-                <Text style={s.jobMeta}>{job.department} · {job.status} · {job.applications} applications</Text>
+                <Text style={s.jobMeta}>{job.department} · {job.status} · {job.applications}{literalT("applications")}</Text>
               </View>
               <Text style={s.jobYear}>{job.year || 'Now'}</Text>
             </View>
-          ))}
+          )}
         </View>
       </ScrollView>
-    </View>
-  );
+    </View>);
+
 }
 
 const s = StyleSheet.create({
@@ -171,5 +171,5 @@ const s = StyleSheet.create({
   jobCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: T.border, flexDirection: 'row', alignItems: 'center', gap: 10 },
   jobTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
   jobMeta: { color: T.textM, fontSize: 12, marginTop: 3 },
-  jobYear: { color: T.maroon, fontSize: 13, fontWeight: '900' },
+  jobYear: { color: T.maroon, fontSize: 13, fontWeight: '900' }
 });

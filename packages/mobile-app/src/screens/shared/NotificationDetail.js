@@ -1,24 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ActivityIndicator, ScrollView,
-  TouchableOpacity, Platform, StatusBar, Linking
-} from 'react-native';
+  TouchableOpacity, Platform, StatusBar, Linking } from
+'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { notificationAPI, complaintAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 
 const TYPE_META = {
-  complaint:    { icon: '📋', color: '#3b82f6', bg: '#dbeafe', label: 'Complaint'    },
-  worker:       { icon: '👷', color: '#8b5cf6', bg: '#ede9fe', label: 'Worker'       },
-  camp:         { icon: '🏕️', color: '#16a34a', bg: '#dcfce7', label: 'Camp'         },
-  news:         { icon: '📰', color: '#f59e0b', bg: '#fef3c7', label: 'News'         },
-  announcement: { icon: '📢', color: T.maroon,  bg: '#fee2e2', label: 'Announcement' },
+  complaint: { icon: '📋', color: '#3b82f6', bg: '#dbeafe', label: 'Complaint' },
+  worker: { icon: '👷', color: '#8b5cf6', bg: '#ede9fe', label: 'Worker' },
+  camp: { icon: '🏕️', color: '#16a34a', bg: '#dcfce7', label: 'Camp' },
+  news: { icon: '📰', color: '#f59e0b', bg: '#fef3c7', label: 'News' },
+  announcement: { icon: '📢', color: T.maroon, bg: '#fee2e2', label: 'Announcement' }
 };
 
 function timeAgo(dateStr) {
   const s = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-  if (s < 60)    return `${s}s ago`;
-  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return `${Math.floor(s / 86400)}d ago`;
 }
@@ -41,9 +41,9 @@ export default function NotificationDetail({ route, navigation }) {
             const { data: complaintData } = await complaintAPI.getById(data.relatedComplaintId);
             setComplaint(complaintData);
           } catch (err) {
+
             // Complaint might be deleted
-          }
-        }
+          }}
       } catch (err) {
         console.error('Error loading notification:', err);
       } finally {
@@ -73,17 +73,17 @@ export default function NotificationDetail({ route, navigation }) {
     return (
       <View style={s.center}>
         <ActivityIndicator color={T.maroon} size="large" />
-        <Text style={{ color: T.textM, marginTop: 10 }}>Loading...</Text>
-      </View>
-    );
+        <Text style={{ color: T.textM, marginTop: 10 }}>{literalT("Loading...")}</Text>
+      </View>);
+
   }
 
   if (!notification) {
     return (
       <View style={s.center}>
-        <Text style={{ color: T.textM, fontSize: 16 }}>Notification not found</Text>
-      </View>
-    );
+        <Text style={{ color: T.textM, fontSize: 16 }}>{literalT("Notification not found")}</Text>
+      </View>);
+
   }
 
   const meta = TYPE_META[notification.type] || TYPE_META.announcement;
@@ -97,7 +97,7 @@ export default function NotificationDetail({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
           <Text style={s.backTxt}>←</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Notification Details</Text>
+        <Text style={s.headerTitle}>{literalT("Notification Details")}</Text>
       </LinearGradient>
 
       {/* Content */}
@@ -113,80 +113,80 @@ export default function NotificationDetail({ route, navigation }) {
 
         {/* Message */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Message</Text>
+          <Text style={s.sectionTitle}>{literalT("Message")}</Text>
           <Text style={s.message}>{notification.msg}</Text>
         </View>
 
         {/* Complaint Details (if related) */}
-        {complaint && (
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>Related Complaint</Text>
+        {complaint &&
+        <View style={s.section}>
+            <Text style={s.sectionTitle}>{literalT("Related Complaint")}</Text>
             <View style={s.complaintBox}>
               <View style={s.complaintRow}>
-                <Text style={s.label}>Category:</Text>
-                <Text style={s.value}>{complaint.category}</Text>
+                <Text style={s.label}>{literalT("Category:")}</Text>
+                <Text style={s.value}>{complaintCategoryT(complaint.category, complaint.customCategory)}</Text>
               </View>
               <View style={s.complaintRow}>
-                <Text style={s.label}>Status:</Text>
+                <Text style={s.label}>{literalT("Status:")}</Text>
                 <Text style={[s.value, { color: getStatusColor(complaint.status) }]}>
                   {complaint.status}
                 </Text>
               </View>
               <View style={s.complaintRow}>
-                <Text style={s.label}>Ward:</Text>
+                <Text style={s.label}>{literalT("Ward:")}</Text>
                 <Text style={s.value}>{complaint.ward}</Text>
               </View>
-              {complaint.assignedWorker && (
-                <View style={s.complaintRow}>
-                  <Text style={s.label}>Assigned Worker:</Text>
+              {complaint.assignedWorker &&
+            <View style={s.complaintRow}>
+                  <Text style={s.label}>{literalT("Assigned Worker:")}</Text>
                   <Text style={s.value}>{complaint.assignedWorker}</Text>
                 </View>
-              )}
+            }
               <TouchableOpacity
-                style={s.viewComplaintBtn}
-                onPress={handleOpenComplaint}
-              >
-                <Text style={s.viewComplaintBtnText}>View Full Complaint →</Text>
+              style={s.viewComplaintBtn}
+              onPress={handleOpenComplaint}>
+              
+                <Text style={s.viewComplaintBtnText}>{literalT("View Full Complaint →")}</Text>
               </TouchableOpacity>
             </View>
           </View>
-        )}
+        }
 
         {/* Metadata */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Details</Text>
+          <Text style={s.sectionTitle}>{literalT("Details")}</Text>
           <View style={s.metaRow}>
-            <Text style={s.label}>Status:</Text>
+            <Text style={s.label}>{literalT("Status:")}</Text>
             <Text style={[s.value, { color: notification.status === 'read' ? T.green : T.maroon }]}>
               {notification.status === 'read' ? '✓ Read' : '○ Unread'}
             </Text>
           </View>
           <View style={s.metaRow}>
-            <Text style={s.label}>Date:</Text>
+            <Text style={s.label}>{literalT("Date:")}</Text>
             <Text style={s.value}>{new Date(notification.time).toLocaleString('en-IN')}</Text>
           </View>
-          {notification.createdBy && (
-            <View style={s.metaRow}>
-              <Text style={s.label}>From:</Text>
+          {notification.createdBy &&
+          <View style={s.metaRow}>
+              <Text style={s.label}>{literalT("From:")}</Text>
               <Text style={s.value}>{notification.createdBy}</Text>
             </View>
-          )}
+          }
         </View>
 
         {/* Actions */}
         <View style={s.actions}>
           <TouchableOpacity
             style={[s.actionBtn, s.archiveBtn]}
-            onPress={handleArchive}
-          >
-            <Text style={s.actionBtnText}>📦 Archive</Text>
+            onPress={handleArchive}>
+            
+            <Text style={s.actionBtnText}>{literalT("📦 Archive")}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </View>
-  );
+    </View>);
+
 }
 
 function getStatusColor(status) {
@@ -222,7 +222,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: 'rgba(0,0,0,0.05)'
   },
   typeIcon: { fontSize: 36, marginRight: 8 },
   typeLabel: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
@@ -235,7 +235,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     color: T.text,
     lineHeight: 24,
-    fontFamily: "'Source Sans 3',sans-serif",
+    fontFamily: "'Source Sans 3',sans-serif"
   },
 
   complaintBox: { backgroundColor: '#f8fafc', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: T.border },
@@ -250,7 +250,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: T.maroon,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: 'center'
   },
   viewComplaintBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
 
@@ -259,5 +259,5 @@ const s = StyleSheet.create({
   actions: { paddingHorizontal: 16, marginBottom: 20, flexDirection: 'row', gap: 10 },
   actionBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: T.border },
   archiveBtn: { backgroundColor: '#f3f4f6', borderColor: T.border },
-  actionBtnText: { fontSize: 14, fontWeight: '700', color: T.text },
+  actionBtnText: { fontSize: 14, fontWeight: '700', color: T.text }
 });

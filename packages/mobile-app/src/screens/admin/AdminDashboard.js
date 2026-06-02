@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
-  TouchableOpacity, ActivityIndicator, Platform, StatusBar,
-} from 'react-native';
+  TouchableOpacity, ActivityIndicator, Platform, StatusBar } from
+'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { complaintAPI, dashboardAPI, notificationAPI, workerAPI } from '../../services/api';
 import { T } from '../../constants/theme';
@@ -12,7 +12,7 @@ const STATUS_META = {
   NEW: { label: 'New', color: T.amber, bg: '#FEF3C7' },
   ACCEPTED: { label: 'Accepted', color: T.blue, bg: '#DBEAFE' },
   'IN PROGRESS': { label: 'In Progress', color: '#8b5cf6', bg: '#EDE9FE' },
-  COMPLETED: { label: 'Completed', color: T.green, bg: '#DCFCE7' },
+  COMPLETED: { label: 'Completed', color: T.green, bg: '#DCFCE7' }
 };
 
 const CATEGORY_ICONS = {
@@ -22,7 +22,7 @@ const CATEGORY_ICONS = {
   'Water Supply Problem': '💧',
   'Drainage Issue': '🚰',
   'Public Safety Issue': '🚨',
-  Others: '📝',
+  Others: '📝'
 };
 
 function StatTile({ label, value, sub, color, icon, onPress }) {
@@ -31,29 +31,29 @@ function StatTile({ label, value, sub, color, icon, onPress }) {
       style={s.statTile}
       onPress={onPress}
       activeOpacity={onPress ? 0.82 : 1}
-      disabled={!onPress}
-    >
+      disabled={!onPress}>
+      
       <View style={[s.statIconBox, { backgroundColor: color + '18' }]}>
         <Text style={s.statIcon}>{icon}</Text>
       </View>
       <Text style={s.statValue}>{value}</Text>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
       {!!sub && <Text style={s.statSub} numberOfLines={1}>{sub}</Text>}
-    </TouchableOpacity>
-  );
+    </TouchableOpacity>);
+
 }
 
 function SectionHeader({ title, action, onPress }) {
   return (
     <View style={s.sectionHeader}>
       <Text style={s.sectionTitle}>{title}</Text>
-      {!!action && (
-        <TouchableOpacity onPress={onPress} activeOpacity={0.75}>
+      {!!action &&
+      <TouchableOpacity onPress={onPress} activeOpacity={0.75}>
           <Text style={s.sectionAction}>{action}</Text>
         </TouchableOpacity>
-      )}
-    </View>
-  );
+      }
+    </View>);
+
 }
 
 export default function AdminDashboard({ navigation }) {
@@ -65,7 +65,7 @@ export default function AdminDashboard({ navigation }) {
     inProgressComplaints: 0,
     completedComplaints: 0,
     totalWorkers: 0,
-    activeWorkers: 0,
+    activeWorkers: 0
   });
   const [recentComplaints, setRecentComplaints] = useState([]);
   const [recentNotifications, setRecentNotifications] = useState([]);
@@ -78,22 +78,22 @@ export default function AdminDashboard({ navigation }) {
   const load = async () => {
     try {
       const [
-        statRes,
-        weeklyRes,
-        categoryRes,
-        districtRes,
-        recentRes,
-        workerRes,
-        notifRes,
-      ] = await Promise.all([
-        dashboardAPI.getStats().catch(() => null),
-        dashboardAPI.getWeekly().catch(() => null),
-        dashboardAPI.getByCategory().catch(() => null),
-        dashboardAPI.getDistrictPerf().catch(() => null),
-        dashboardAPI.getRecentComplaints().catch(() => null),
-        workerAPI.getAll().catch(() => ({ data: [] })),
-        notificationAPI.getAll({ limit: 5, status: 'ALL' }).catch(() => ({ data: { data: [] } })),
-      ]);
+      statRes,
+      weeklyRes,
+      categoryRes,
+      districtRes,
+      recentRes,
+      workerRes,
+      notifRes] =
+      await Promise.all([
+      dashboardAPI.getStats().catch(() => null),
+      dashboardAPI.getWeekly().catch(() => null),
+      dashboardAPI.getByCategory().catch(() => null),
+      dashboardAPI.getDistrictPerf().catch(() => null),
+      dashboardAPI.getRecentComplaints().catch(() => null),
+      workerAPI.getAll().catch(() => ({ data: [] })),
+      notificationAPI.getAll({ limit: 5, status: 'ALL' }).catch(() => ({ data: { data: [] } }))]
+      );
 
       let complaints = Array.isArray(recentRes?.data) ? recentRes.data : [];
       let computedStats = {
@@ -103,7 +103,7 @@ export default function AdminDashboard({ navigation }) {
         inProgressComplaints: statRes?.data?.inProgress || 0,
         completedComplaints: statRes?.data?.completed || 0,
         totalWorkers: workerRes.data?.length || 0,
-        activeWorkers: statRes?.data?.activeWorkers || workerRes.data?.filter(w => w.status === 'active').length || 0,
+        activeWorkers: statRes?.data?.activeWorkers || workerRes.data?.filter((w) => w.status === 'active').length || 0
       };
 
       if (!statRes || !recentRes) {
@@ -113,10 +113,10 @@ export default function AdminDashboard({ navigation }) {
         computedStats = {
           ...computedStats,
           totalComplaints: allComplaints.length,
-          newComplaints: allComplaints.filter(c => c.status === 'NEW').length,
-          acceptedComplaints: allComplaints.filter(c => c.status === 'ACCEPTED').length,
-          inProgressComplaints: allComplaints.filter(c => c.status === 'IN PROGRESS').length,
-          completedComplaints: allComplaints.filter(c => c.status === 'COMPLETED').length,
+          newComplaints: allComplaints.filter((c) => c.status === 'NEW').length,
+          acceptedComplaints: allComplaints.filter((c) => c.status === 'ACCEPTED').length,
+          inProgressComplaints: allComplaints.filter((c) => c.status === 'IN PROGRESS').length,
+          completedComplaints: allComplaints.filter((c) => c.status === 'COMPLETED').length
         };
       }
 
@@ -133,7 +133,7 @@ export default function AdminDashboard({ navigation }) {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {load();}, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -141,14 +141,14 @@ export default function AdminDashboard({ navigation }) {
     setRefreshing(false);
   };
 
-  const completionRate = stats.totalComplaints > 0
-    ? Math.round((stats.completedComplaints / stats.totalComplaints) * 100)
-    : 0;
+  const completionRate = stats.totalComplaints > 0 ?
+  Math.round(stats.completedComplaints / stats.totalComplaints * 100) :
+  0;
   const attentionCount = stats.newComplaints + stats.acceptedComplaints + stats.inProgressComplaints;
-  const activeWorkerRate = stats.totalWorkers > 0
-    ? Math.round((stats.activeWorkers / stats.totalWorkers) * 100)
-    : 0;
-  const maxWeekly = Math.max(1, ...weekly.map(w => Math.max(w.complaints || 0, w.resolved || 0)));
+  const activeWorkerRate = stats.totalWorkers > 0 ?
+  Math.round(stats.activeWorkers / stats.totalWorkers * 100) :
+  0;
+  const maxWeekly = Math.max(1, ...weekly.map((w) => Math.max(w.complaints || 0, w.resolved || 0)));
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -161,9 +161,9 @@ export default function AdminDashboard({ navigation }) {
     return (
       <View style={s.center}>
         <ActivityIndicator color={T.maroon} size="large" />
-        <Text style={s.loadingText}>Loading admin dashboard...</Text>
-      </View>
-    );
+        <Text style={s.loadingText}>{literalT("Loading admin dashboard...")}</Text>
+      </View>);
+
   }
 
   return (
@@ -172,8 +172,8 @@ export default function AdminDashboard({ navigation }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={s.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} colors={[T.maroon]} />}
-      >
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} colors={[T.maroon]} />}>
+        
         <LinearGradient colors={[T.maroonD, T.maroon, '#B23A2F']} style={s.header}>
           <View style={s.headerTop}>
             <View style={s.avatar}>
@@ -182,7 +182,7 @@ export default function AdminDashboard({ navigation }) {
             <View style={s.headerCopy}>
               <Text style={s.greeting}>{greeting}</Text>
               <Text style={s.adminName} numberOfLines={1}>{userInfo?.name || 'Admin'}</Text>
-              <Text style={s.adminMeta} numberOfLines={1}>{userInfo?.district || 'Tamil Nadu'} administration</Text>
+              <Text style={s.adminMeta} numberOfLines={1}>{userInfo?.district || 'Tamil Nadu'}{literalT("administration")}</Text>
             </View>
             <TouchableOpacity onPress={logout} style={s.headerButton} activeOpacity={0.75}>
               <Text style={s.headerButtonTxt}>⎋</Text>
@@ -191,11 +191,11 @@ export default function AdminDashboard({ navigation }) {
 
           <View style={s.healthPanel}>
             <View>
-              <Text style={s.healthLabel}>Resolution rate</Text>
+              <Text style={s.healthLabel}>{literalT("Resolution rate")}</Text>
               <Text style={s.healthValue}>{completionRate}%</Text>
             </View>
             <View style={s.healthRight}>
-              <Text style={s.healthNote}>{attentionCount} need attention</Text>
+              <Text style={s.healthNote}>{attentionCount}{literalT("need attention")}</Text>
               <View style={s.progressTrack}>
                 <View style={[s.progressFill, { width: `${completionRate}%` }]} />
               </View>
@@ -204,36 +204,36 @@ export default function AdminDashboard({ navigation }) {
         </LinearGradient>
 
         <View style={s.statGrid}>
-          <StatTile label="Total" value={stats.totalComplaints} sub="Complaints" color={T.maroon} icon="📋" onPress={() => navigation.navigate('AdminComplaints')} />
-          <StatTile label="New" value={stats.newComplaints} sub="Unassigned" color={T.amber} icon="🆕" onPress={() => navigation.navigate('AdminComplaints', { status: 'NEW' })} />
-          <StatTile label="Progress" value={stats.inProgressComplaints} sub="Active work" color="#8b5cf6" icon="⚙️" onPress={() => navigation.navigate('AdminComplaints', { status: 'IN PROGRESS' })} />
-          <StatTile label="Done" value={stats.completedComplaints} sub="Resolved" color={T.green} icon="✓" onPress={() => navigation.navigate('AdminComplaints', { status: 'COMPLETED' })} />
+          <StatTile label={literalT("Total")} value={stats.totalComplaints} sub={literalT("Complaints")} color={T.maroon} icon="📋" onPress={() => navigation.navigate('AdminComplaints')} />
+          <StatTile label={literalT("New")} value={stats.newComplaints} sub={literalT("Unassigned")} color={T.amber} icon="🆕" onPress={() => navigation.navigate('AdminComplaints', { status: 'NEW' })} />
+          <StatTile label={literalT("Progress")} value={stats.inProgressComplaints} sub={literalT("Active work")} color="#8b5cf6" icon="⚙️" onPress={() => navigation.navigate('AdminComplaints', { status: 'IN PROGRESS' })} />
+          <StatTile label={literalT("Done")} value={stats.completedComplaints} sub={literalT("Resolved")} color={T.green} icon="✓" onPress={() => navigation.navigate('AdminComplaints', { status: 'COMPLETED' })} />
         </View>
 
         <View style={s.section}>
-          <SectionHeader title="Operations" />
+          <SectionHeader title={literalT("Operations")} />
           <View style={s.opsGrid}>
             <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminComplaints')} activeOpacity={0.82}>
               <Text style={s.opsIcon}>🔎</Text>
-              <Text style={s.opsTitle}>Review Complaints</Text>
-              <Text style={s.opsSub}>Filter by thokuthi, status, and search.</Text>
+              <Text style={s.opsTitle}>{literalT("Review Complaints")}</Text>
+              <Text style={s.opsSub}>{literalT("Filter by thokuthi, status, and search.")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminWorkers')} activeOpacity={0.82}>
               <Text style={s.opsIcon}>👷</Text>
-              <Text style={s.opsTitle}>Worker Coverage</Text>
-              <Text style={s.opsSub}>{stats.activeWorkers}/{stats.totalWorkers} active, {activeWorkerRate}% coverage.</Text>
+              <Text style={s.opsTitle}>{literalT("Worker Coverage")}</Text>
+              <Text style={s.opsSub}>{stats.activeWorkers}/{stats.totalWorkers}{literalT("active,")}{activeWorkerRate}{literalT("% coverage.")}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={s.section}>
-          <SectionHeader title="7-Day Trend" />
+          <SectionHeader title={literalT("7-Day Trend")} />
           <View style={s.trendCard}>
-            {weekly.length === 0 ? (
-              <Text style={s.emptyText}>Weekly trend data will appear here.</Text>
-            ) : weekly.map((item) => {
-              const complaintHeight = Math.max(6, Math.round(((item.complaints || 0) / maxWeekly) * 82));
-              const resolvedHeight = Math.max(6, Math.round(((item.resolved || 0) / maxWeekly) * 82));
+            {weekly.length === 0 ?
+            <Text style={s.emptyText}>{literalT("Weekly trend data will appear here.")}</Text> :
+            weekly.map((item) => {
+              const complaintHeight = Math.max(6, Math.round((item.complaints || 0) / maxWeekly * 82));
+              const resolvedHeight = Math.max(6, Math.round((item.resolved || 0) / maxWeekly * 82));
               return (
                 <View key={item.day} style={s.trendColumn}>
                   <View style={s.barPair}>
@@ -241,104 +241,104 @@ export default function AdminDashboard({ navigation }) {
                     <View style={[s.bar, s.barResolved, { height: resolvedHeight }]} />
                   </View>
                   <Text style={s.trendLabel}>{item.day}</Text>
-                </View>
-              );
+                </View>);
+
             })}
           </View>
           <View style={s.legendRow}>
-            <Text style={s.legendText}>● Complaints</Text>
-            <Text style={[s.legendText, { color: T.green }]}>● Resolved</Text>
+            <Text style={s.legendText}>{literalT("● Complaints")}</Text>
+            <Text style={[s.legendText, { color: T.green }]}>{literalT("● Resolved")}</Text>
           </View>
         </View>
 
         <View style={s.section}>
-          <SectionHeader title="Category Mix" />
+          <SectionHeader title={literalT("Category Mix")} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryRow}>
-            {categories.length === 0 ? (
-              <View style={s.inlineEmpty}><Text style={s.emptyText}>No category data.</Text></View>
-            ) : categories.map((cat) => (
-              <View key={cat.name} style={s.categoryCard}>
+            {categories.length === 0 ?
+            <View style={s.inlineEmpty}><Text style={s.emptyText}>{literalT("No category data.")}</Text></View> :
+            categories.map((cat) =>
+            <View key={cat.name} style={s.categoryCard}>
                 <Text style={s.categoryIcon}>{CATEGORY_ICONS[cat.name] || '📝'}</Text>
-                <Text style={s.categoryName} numberOfLines={2}>{cat.name}</Text>
+                <Text style={s.categoryName} numberOfLines={2}>{complaintCategoryT(cat.name)}</Text>
                 <Text style={s.categoryValue}>{cat.value}%</Text>
               </View>
-            ))}
+            )}
           </ScrollView>
         </View>
 
         <View style={s.section}>
-          <SectionHeader title="District Performance" />
+          <SectionHeader title={literalT("District Performance")} />
           <View style={s.tableCard}>
-            {districts.length === 0 ? (
-              <Text style={s.emptyText}>District performance data will appear after complaints are filed.</Text>
-            ) : districts.slice(0, 5).map((district) => {
-              const rate = district.total > 0 ? Math.round((district.resolved / district.total) * 100) : 0;
+            {districts.length === 0 ?
+            <Text style={s.emptyText}>{literalT("District performance data will appear after complaints are filed.")}</Text> :
+            districts.slice(0, 5).map((district) => {
+              const rate = district.total > 0 ? Math.round(district.resolved / district.total * 100) : 0;
               return (
                 <View key={district.district} style={s.districtRow}>
                   <View style={s.districtNameWrap}>
                     <Text style={s.districtName} numberOfLines={1}>{district.district}</Text>
-                    <Text style={s.districtMeta}>{district.pending} pending</Text>
+                    <Text style={s.districtMeta}>{district.pending}{literalT("pending")}</Text>
                   </View>
                   <View style={s.districtTrack}>
                     <View style={[s.districtFill, { width: `${rate}%` }]} />
                   </View>
                   <Text style={s.districtRate}>{rate}%</Text>
-                </View>
-              );
+                </View>);
+
             })}
           </View>
         </View>
 
         <View style={s.section}>
-          <SectionHeader title="Recent Complaints" action="See all →" onPress={() => navigation.navigate('AdminComplaints')} />
-          {recentComplaints.length === 0 ? (
-            <View style={s.emptyCard}><Text style={s.emptyText}>No complaints yet.</Text></View>
-          ) : recentComplaints.map((item) => {
+          <SectionHeader title={literalT("Recent Complaints")} action={literalT("See all →")} onPress={() => navigation.navigate('AdminComplaints')} />
+          {recentComplaints.length === 0 ?
+          <View style={s.emptyCard}><Text style={s.emptyText}>{literalT("No complaints yet.")}</Text></View> :
+          recentComplaints.map((item) => {
             const meta = STATUS_META[item.status] || STATUS_META.NEW;
             return (
               <TouchableOpacity
                 key={String(item.id || item._id)}
                 style={s.complaintCard}
                 onPress={() => navigation.navigate('ComplaintDetailAdmin', { id: item.id || item._id })}
-                activeOpacity={0.84}
-              >
+                activeOpacity={0.84}>
+                
                 <View style={[s.complaintIconBox, { backgroundColor: meta.bg }]}>
                   <Text style={s.complaintIcon}>{CATEGORY_ICONS[item.category] || '📝'}</Text>
                 </View>
                 <View style={s.complaintInfo}>
-                  <Text style={s.complaintTitle} numberOfLines={1}>{item.category || 'Complaint'}</Text>
+                  <Text style={s.complaintTitle} numberOfLines={1}>{complaintCategoryT(item.category, item.customCategory)}</Text>
                   <Text style={s.complaintMeta} numberOfLines={1}>{item.thokuthi || item.ward || 'Thokuthi'} · {item.district || 'District'}</Text>
                 </View>
                 <View style={[s.statusBadge, { backgroundColor: meta.bg }]}>
                   <Text style={[s.statusText, { color: meta.color }]}>{meta.label}</Text>
                 </View>
-              </TouchableOpacity>
-            );
+              </TouchableOpacity>);
+
           })}
         </View>
 
         <View style={s.section}>
-          <SectionHeader title="Notifications" action="See all →" onPress={() => navigation.navigate('AdminNotifications')} />
-          {recentNotifications.length === 0 ? (
-            <View style={s.emptyCard}><Text style={s.emptyText}>No recent notifications.</Text></View>
-          ) : recentNotifications.map((notif) => (
-            <TouchableOpacity
-              key={String(notif.id)}
-              style={s.notificationCard}
-              onPress={() => navigation.navigate('NotificationDetail', { id: notif.id })}
-              activeOpacity={0.84}
-            >
+          <SectionHeader title={literalT("Notifications")} action={literalT("See all →")} onPress={() => navigation.navigate('AdminNotifications')} />
+          {recentNotifications.length === 0 ?
+          <View style={s.emptyCard}><Text style={s.emptyText}>{literalT("No recent notifications.")}</Text></View> :
+          recentNotifications.map((notif) =>
+          <TouchableOpacity
+            key={String(notif.id)}
+            style={s.notificationCard}
+            onPress={() => navigation.navigate('NotificationDetail', { id: notif.id })}
+            activeOpacity={0.84}>
+            
               <View style={s.notificationDot} />
               <View style={s.notificationBody}>
                 <Text style={s.notificationMsg} numberOfLines={2}>{notif.msg}</Text>
                 <Text style={s.notificationTime}>{notif.time ? new Date(notif.time).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent'}</Text>
               </View>
             </TouchableOpacity>
-          ))}
+          )}
         </View>
       </ScrollView>
-    </View>
-  );
+    </View>);
+
 }
 
 const s = StyleSheet.create({
@@ -427,5 +427,5 @@ const s = StyleSheet.create({
   notificationTime: { color: T.textM, fontSize: 10, marginTop: 4 },
 
   emptyCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.border },
-  emptyText: { color: T.textM, fontSize: 12, textAlign: 'center' },
+  emptyText: { color: T.textM, fontSize: 12, textAlign: 'center' }
 });

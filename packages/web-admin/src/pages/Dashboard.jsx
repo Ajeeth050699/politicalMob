@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { literalT } from "../i18n/runtimeTamil";import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,8 +13,8 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
-} from "recharts";
+  Cell } from
+"recharts";
 import { API_URL } from "../config";
 
 const API = API_URL;
@@ -24,45 +24,45 @@ const getConfig = () => {
 };
 
 const TN_DISTRICTS = [
-  "Ariyalur",
-  "Chengalpattu",
-  "Chennai",
-  "Coimbatore",
-  "Cuddalore",
-  "Dharmapuri",
-  "Dindigul",
-  "Erode",
-  "Kallakurichi",
-  "Kancheepuram",
-  "Kanyakumari",
-  "Karur",
-  "Krishnagiri",
-  "Madurai",
-  "Mayiladuthurai",
-  "Nagapattinam",
-  "Namakkal",
-  "Nilgiris",
-  "Perambalur",
-  "Pudukkottai",
-  "Ramanathapuram",
-  "Ranipet",
-  "Salem",
-  "Sivaganga",
-  "Tenkasi",
-  "Thanjavur",
-  "Theni",
-  "Thoothukudi",
-  "Tiruchirappalli",
-  "Tirunelveli",
-  "Tirupathur",
-  "Tiruppur",
-  "Tiruvallur",
-  "Tiruvannamalai",
-  "Tiruvarur",
-  "Vellore",
-  "Viluppuram",
-  "Virudhunagar",
-];
+"Ariyalur",
+"Chengalpattu",
+"Chennai",
+"Coimbatore",
+"Cuddalore",
+"Dharmapuri",
+"Dindigul",
+"Erode",
+"Kallakurichi",
+"Kancheepuram",
+"Kanyakumari",
+"Karur",
+"Krishnagiri",
+"Madurai",
+"Mayiladuthurai",
+"Nagapattinam",
+"Namakkal",
+"Nilgiris",
+"Perambalur",
+"Pudukkottai",
+"Ramanathapuram",
+"Ranipet",
+"Salem",
+"Sivaganga",
+"Tenkasi",
+"Thanjavur",
+"Theni",
+"Thoothukudi",
+"Tiruchirappalli",
+"Tirunelveli",
+"Tirupathur",
+"Tiruppur",
+"Tiruvallur",
+"Tiruvannamalai",
+"Tiruvarur",
+"Vellore",
+"Viluppuram",
+"Virudhunagar"];
+
 
 const T = {
   maroon: "#7B1C1C",
@@ -81,7 +81,7 @@ const T = {
   amber: "#f59e0b",
   red: "#ef4444",
   blue: "#3b82f6",
-  border: "rgba(0,0,0,0.08)",
+  border: "rgba(0,0,0,0.08)"
 };
 
 // ── RESPONSIVE HOOK ──────────────────────────────────────────────────
@@ -97,11 +97,11 @@ function useBreakpoint() {
   useEffect(() => {
     const fn = () => {
       const w = window.innerWidth;
-      if (w < 480) setBp("xs");
-      else if (w < 768) setBp("sm");
-      else if (w < 1024) setBp("md");
-      else if (w < 1280) setBp("lg");
-      else setBp("xl");
+      if (w < 480) setBp("xs");else
+      if (w < 768) setBp("sm");else
+      if (w < 1024) setBp("md");else
+      if (w < 1280) setBp("lg");else
+      setBp("xl");
     };
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
@@ -116,13 +116,13 @@ function useBreakpoint() {
 const exportToCSV = (data, filename, headers) => {
   const headerRow = headers.join(",");
   const rows = data.map((row) =>
-    headers
-      .map((h) => {
-        const key = h.toLowerCase().replace(/ /g, "_");
-        const val = row[key] || row[h] || row[h.toLowerCase()] || "";
-        return `"${String(val).replace(/"/g, '""')}"`;
-      })
-      .join(","),
+  headers.
+  map((h) => {
+    const key = h.toLowerCase().replace(/ /g, "_");
+    const val = row[key] || row[h] || row[h.toLowerCase()] || "";
+    return `"${String(val).replace(/"/g, '""')}"`;
+  }).
+  join(",")
   );
   const csv = [headerRow, ...rows].join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -154,7 +154,7 @@ const exportToHTML = (content, filename) => {
 const generateComplaintsReport = (complaints, stats) => {
   const total = complaints.length;
   const completed = complaints.filter((c) => c.status === "COMPLETED").length;
-  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const pct = total > 0 ? Math.round(completed / total * 100) : 0;
   return `<h1>People Connect – Complaints Report</h1>
   <p>${total} Records · ${pct}% Completion Rate</p>
   <table><thead><tr>${["#", "Category", "User", "Thokuthi", "District", "Priority", "Status", "Date"].map((h) => `<th>${h}</th>`).join("")}</tr></thead>
@@ -168,14 +168,14 @@ const generateWorkersReport = (workers) => {
 };
 
 const generateAnalyticsReport = (
-  stats,
-  analyticsStats,
-  districtData,
-  weeklyData,
-) => {
+stats,
+analyticsStats,
+districtData,
+weeklyData) =>
+{
   const total = stats.totalComplaints || 0;
   const completed = stats.completed || 0;
-  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const pct = total > 0 ? Math.round(completed / total * 100) : 0;
   return `<h1>People Connect – Analytics Report</h1>
   <p>Overall: ${pct}% Complete · ${total} Total · ${completed} Resolved</p>
   <table><thead><tr><th>District</th><th>Total</th><th>Resolved</th><th>Pending</th></tr></thead>
@@ -196,21 +196,21 @@ const Modal = ({ title, onClose, children, wide }) => {
         alignItems: "center",
         justifyContent: "center",
         backdropFilter: "blur(4px)",
-        padding: isMobile ? 8 : 20,
+        padding: isMobile ? 8 : 20
       }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+      onClick={(e) => e.target === e.currentTarget && onClose()}>
+      
       <div
         style={{
           background: "#fff",
           borderRadius: isMobile ? 16 : 20,
           width: "100%",
-          maxWidth: wide ? (isMobile ? "100%" : 680) : isMobile ? "100%" : 520,
+          maxWidth: wide ? isMobile ? "100%" : 680 : isMobile ? "100%" : 520,
           maxHeight: isMobile ? "95vh" : "90vh",
           overflowY: "auto",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.25)",
-        }}
-      >
+          boxShadow: "0 24px 64px rgba(0,0,0,0.25)"
+        }}>
+        
         <div
           style={{
             padding: isMobile ? "16px 16px 12px" : "20px 24px 16px",
@@ -222,9 +222,9 @@ const Modal = ({ title, onClose, children, wide }) => {
             top: 0,
             background: "#fff",
             zIndex: 10,
-            borderRadius: isMobile ? "16px 16px 0 0" : "20px 20px 0 0",
-          }}
-        >
+            borderRadius: isMobile ? "16px 16px 0 0" : "20px 20px 0 0"
+          }}>
+          
           <div
             style={{
               background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
@@ -232,9 +232,9 @@ const Modal = ({ title, onClose, children, wide }) => {
               WebkitTextFillColor: "transparent",
               fontFamily: "'Playfair Display',serif",
               fontWeight: 700,
-              fontSize: isMobile ? 16 : 20,
-            }}
-          >
+              fontSize: isMobile ? 16 : 20
+            }}>
+            
             {title}
           </div>
           <button
@@ -249,39 +249,39 @@ const Modal = ({ title, onClose, children, wide }) => {
               fontSize: 16,
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+              justifyContent: "center"
+            }}>
+            
             ×
           </button>
         </div>
         <div
-          style={{ padding: isMobile ? "16px 16px 20px" : "20px 24px 24px" }}
-        >
+          style={{ padding: isMobile ? "16px 16px 20px" : "20px 24px 24px" }}>
+          
           {children}
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
-const Field = ({ label, icon, children }) => (
-  <div style={{ marginBottom: 15 }}>
+const Field = ({ label, icon, children }) =>
+<div style={{ marginBottom: 15 }}>
     <label
-      style={{
-        display: "block",
-        marginBottom: 7,
-        fontFamily: "'Source Sans 3',sans-serif",
-        fontSize: 13,
-        fontWeight: 700,
-        color: T.textL,
-      }}
-    >
+    style={{
+      display: "block",
+      marginBottom: 7,
+      fontFamily: "'Source Sans 3',sans-serif",
+      fontSize: 13,
+      fontWeight: 700,
+      color: T.textL
+    }}>
+    
       {icon} {label}
     </label>
     {children}
-  </div>
-);
+  </div>;
+
 
 const iSx = {
   width: "100%",
@@ -293,43 +293,43 @@ const iSx = {
   fontSize: 14,
   color: T.text,
   outline: "none",
-  boxSizing: "border-box",
+  boxSizing: "border-box"
 };
 const sSx = { ...iSx, cursor: "pointer" };
 
-const SubmitBtn = ({ loading, label }) => (
-  <button
-    type="submit"
-    disabled={loading}
-    style={{
-      width: "100%",
-      padding: "13px",
-      borderRadius: 50,
-      border: "none",
-      background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
-      color: "#fff",
-      fontFamily: "'Source Sans 3',sans-serif",
-      fontWeight: 700,
-      fontSize: 15,
-      cursor: "pointer",
-      boxShadow: `0 4px 16px rgba(123,28,28,0.3)`,
-      opacity: loading ? 0.7 : 1,
-      marginTop: 8,
-    }}
-  >
+const SubmitBtn = ({ loading, label }) =>
+<button
+  type="submit"
+  disabled={loading}
+  style={{
+    width: "100%",
+    padding: "13px",
+    borderRadius: 50,
+    border: "none",
+    background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
+    color: "#fff",
+    fontFamily: "'Source Sans 3',sans-serif",
+    fontWeight: 700,
+    fontSize: 15,
+    cursor: "pointer",
+    boxShadow: `0 4px 16px rgba(123,28,28,0.3)`,
+    opacity: loading ? 0.7 : 1,
+    marginTop: 8
+  }}>
+  
     {loading ? "⏳ Saving..." : label}
-  </button>
-);
+  </button>;
 
-const DistrictSelect = ({ value, onChange, style }) => (
-  <select value={value} onChange={onChange} style={style || sSx}>
-    {TN_DISTRICTS.map((d) => (
-      <option key={d} value={d}>
+
+const DistrictSelect = ({ value, onChange, style }) =>
+<select value={value} onChange={onChange} style={style || sSx}>
+    {TN_DISTRICTS.map((d) =>
+  <option key={d} value={d}>
         {d}
       </option>
-    ))}
-  </select>
-);
+  )}
+  </select>;
+
 
 const Toast = ({ msg, onDone }) => {
   const { isMobile } = useBreakpoint();
@@ -354,12 +354,12 @@ const Toast = ({ msg, onDone }) => {
         fontWeight: 600,
         boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
         animation: "slideIn 0.3s ease",
-        textAlign: isMobile ? "center" : "left",
-      }}
-    >
+        textAlign: isMobile ? "center" : "left"
+      }}>
+      
       ✅ {msg}
-    </div>
-  );
+    </div>);
+
 };
 
 const ExportMenu = ({ onCSV, onHTML, onWord }) => {
@@ -389,64 +389,64 @@ const ExportMenu = ({ onCSV, onHTML, onWord }) => {
           display: "flex",
           alignItems: "center",
           gap: 6,
-          whiteSpace: "nowrap",
-        }}
-      >
-        📥 Export {open ? "▲" : "▼"}
+          whiteSpace: "nowrap"
+        }}>{literalT("📥 Export")}
+
+        {open ? "▲" : "▼"}
       </button>
-      {open && (
-        <div
-          style={{
-            position: "absolute",
-            top: "110%",
-            right: 0,
-            background: "#fff",
-            borderRadius: 12,
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
-            zIndex: 200,
-            minWidth: 180,
-            padding: 6,
-          }}
-        >
+      {open &&
+      <div
+        style={{
+          position: "absolute",
+          top: "110%",
+          right: 0,
+          background: "#fff",
+          borderRadius: 12,
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+          zIndex: 200,
+          minWidth: 180,
+          padding: 6
+        }}>
+        
           {[
-            ["📊 Export CSV", onCSV, T.green],
-            ["🌐 Export HTML", onHTML, T.blue],
-            ["📄 Export Report", onWord, T.maroon],
-          ].map(([lbl, fn, color]) => (
-            <button
-              key={lbl}
-              onClick={() => {
-                fn();
-                setOpen(false);
-              }}
-              style={{
-                width: "100%",
-                background: "transparent",
-                border: "none",
-                padding: "10px 14px",
-                fontSize: 13,
-                textAlign: "left",
-                cursor: "pointer",
-                borderRadius: 8,
-                color: T.text,
-                fontFamily: "'Source Sans 3',sans-serif",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = T.bg)}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "transparent")
-              }
-            >
+        ["📊 Export CSV", onCSV, T.green],
+        ["🌐 Export HTML", onHTML, T.blue],
+        ["📄 Export Report", onWord, T.maroon]].
+        map(([lbl, fn, color]) =>
+        <button
+          key={lbl}
+          onClick={() => {
+            fn();
+            setOpen(false);
+          }}
+          style={{
+            width: "100%",
+            background: "transparent",
+            border: "none",
+            padding: "10px 14px",
+            fontSize: 13,
+            textAlign: "left",
+            cursor: "pointer",
+            borderRadius: 8,
+            color: T.text,
+            fontFamily: "'Source Sans 3',sans-serif",
+            display: "flex",
+            alignItems: "center",
+            gap: 8
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = T.bg}
+          onMouseLeave={(e) =>
+          e.currentTarget.style.background = "transparent"
+          }>
+          
               <span style={{ color, fontWeight: 700 }}>{lbl}</span>
             </button>
-          ))}
+        )}
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 // ════════════════════════════════════════════════════════════════════════
@@ -470,7 +470,7 @@ export default function AdminDashboard() {
     totalComplaints: 0,
     pending: 0,
     completed: 0,
-    activeWorkers: 0,
+    activeWorkers: 0
   });
   const [weeklyData, setWeeklyData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
@@ -487,14 +487,14 @@ export default function AdminDashboard() {
     live: 0,
     upcoming: 0,
     previous: 0,
-    applications: 0,
+    applications: 0
   });
   const [mockAggregate, setMockAggregate] = useState({
     attempts: 0,
     avgAccuracy: 0,
     passRate: 0,
     categories: [],
-    recent: [],
+    recent: []
   });
   const [notifications, setNotifications] = useState([]);
   const [analyticsStats, setAnalyticsStats] = useState({});
@@ -512,34 +512,34 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (isMobile) setSideOpen(false);
-    else if (isTablet) setSideOpen(false);
-    else setSideOpen(true);
+    if (isMobile) setSideOpen(false);else
+    if (isTablet) setSideOpen(false);else
+    setSideOpen(true);
   }, [isMobile, isTablet]);
 
   const fetchAll = async () => {
     const cfg = getConfig();
     const results = await Promise.allSettled([
-      axios.get(`${API}/api/dashboard/stats`, cfg),
-      axios.get(`${API}/api/dashboard/complaints/weekly`, cfg),
-      axios.get(`${API}/api/dashboard/complaints/by-category`, cfg),
-      axios.get(`${API}/api/dashboard/districts/performance`, cfg),
-      axios.get(`${API}/api/complaints`, cfg),
-      axios.get(`${API}/api/workers`, cfg),
-      axios.get(`${API}/api/news`, cfg),
-      axios.get(`${API}/api/news/camps`, cfg),
-      axios.get(`${API}/api/education/videos`, cfg),
-      axios.get(`${API}/api/education/mock-tests`, cfg),
-      axios.get(`${API}/api/notifications`, cfg),
-      axios.get(`${API}/api/analytics/stats`, cfg),
-      axios.get(`${API}/api/education/certificates/count`, cfg),
-      axios.get(`${API}/api/users`, cfg),
-      axios.get(`${API}/api/education/government-jobs`, cfg),
-      axios.get(`${API}/api/education/government-jobs/summary`, cfg),
-      axios.get(`${API}/api/education/mock-test-analytics/aggregate`, cfg),
-    ]);
+    axios.get(`${API}/api/dashboard/stats`, cfg),
+    axios.get(`${API}/api/dashboard/complaints/weekly`, cfg),
+    axios.get(`${API}/api/dashboard/complaints/by-category`, cfg),
+    axios.get(`${API}/api/dashboard/districts/performance`, cfg),
+    axios.get(`${API}/api/complaints`, cfg),
+    axios.get(`${API}/api/workers`, cfg),
+    axios.get(`${API}/api/news`, cfg),
+    axios.get(`${API}/api/news/camps`, cfg),
+    axios.get(`${API}/api/education/videos`, cfg),
+    axios.get(`${API}/api/education/mock-tests`, cfg),
+    axios.get(`${API}/api/notifications`, cfg),
+    axios.get(`${API}/api/analytics/stats`, cfg),
+    axios.get(`${API}/api/education/certificates/count`, cfg),
+    axios.get(`${API}/api/users`, cfg),
+    axios.get(`${API}/api/education/government-jobs`, cfg),
+    axios.get(`${API}/api/education/government-jobs/summary`, cfg),
+    axios.get(`${API}/api/education/mock-test-analytics/aggregate`, cfg)]
+    );
     const ok = (i) =>
-      results[i].status === "fulfilled" ? results[i].value.data : null;
+    results[i].status === "fulfilled" ? results[i].value.data : null;
     if (ok(0)) setStats(ok(0));
     if (ok(1)) setWeeklyData(ok(1));
     if (ok(2)) setCategoryData(ok(2));
@@ -563,18 +563,18 @@ export default function AdminDashboard() {
   }, []);
 
   const completionRate =
-    stats.totalComplaints > 0
-      ? Math.round((stats.completed / stats.totalComplaints) * 100)
-      : 0;
+  stats.totalComplaints > 0 ?
+  Math.round(stats.completed / stats.totalComplaints * 100) :
+  0;
 
   const updateComplaintStatus = async (id, status) => {
     try {
       await axios.put(
         `${API}/api/complaints/${id}/status`,
         { status },
-        getConfig(),
+        getConfig()
       );
-      setComplaints((p) => p.map((c) => (c.id === id ? { ...c, status } : c)));
+      setComplaints((p) => p.map((c) => c.id === id ? { ...c, status } : c));
       setActiveRow(null);
       showToast("Status updated");
     } catch {
@@ -605,23 +605,23 @@ export default function AdminDashboard() {
   };
 
   const ss = (s) =>
-    ({
-      NEW: { bg: T.amber + "22", color: T.amber },
-      "IN PROGRESS": { bg: T.blue + "22", color: T.blue },
-      COMPLETED: { bg: T.green + "22", color: T.green },
-    })[s] || { bg: T.bg, color: T.textL };
+  ({
+    NEW: { bg: T.amber + "22", color: T.amber },
+    "IN PROGRESS": { bg: T.blue + "22", color: T.blue },
+    COMPLETED: { bg: T.green + "22", color: T.green }
+  })[s] || { bg: T.bg, color: T.textL };
   const pc = (p) =>
-    ({ high: T.red, medium: T.amber, low: T.green })[p] || T.textM;
+  ({ high: T.red, medium: T.amber, low: T.green })[p] || T.textM;
 
   const filteredComplaints = complaints.filter(
     (c) =>
-      (filterStatus === "ALL" || c.status === filterStatus) &&
-      (filterDistrict === "ALL" || c.district === filterDistrict),
+    (filterStatus === "ALL" || c.status === filterStatus) && (
+    filterDistrict === "ALL" || c.district === filterDistrict)
   );
   const filteredWorkers = workers.filter((w) =>
-    [w.name || "", w.thokuthi || "", w.district || ""].some((v) =>
-      v.toLowerCase().includes(searchWorker.toLowerCase()),
-    ),
+  [w.name || "", w.thokuthi || "", w.district || ""].some((v) =>
+  v.toLowerCase().includes(searchWorker.toLowerCase())
+  )
   );
 
   // ── MODALS ──────────────────────────────────────────────────────────
@@ -632,7 +632,7 @@ export default function AdminDashboard() {
       phone: "",
       password: "",
       thokuthi: "",
-      district: "Chennai",
+      district: "Chennai"
     });
     const [loading, setLoading] = useState(false);
     const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
@@ -651,70 +651,70 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="👷 Add New Worker" onClose={() => setModal(null)} wide>
+      <Modal title={literalT("👷 Add New Worker")} onClose={() => setModal(null)} wide>
         <form onSubmit={submit}>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <Field label="Full Name" icon="👤">
+              gap: 12
+            }}>
+            
+            <Field label={literalT("Full Name")} icon="👤">
               <input
                 style={iSx}
                 required
                 value={f.name}
                 onChange={set("name")}
-                placeholder="Worker name"
-              />
+                placeholder={literalT("Worker name")} />
+              
             </Field>
-            <Field label="Email" icon="✉️">
+            <Field label={literalT("Email")} icon="✉️">
               <input
                 style={iSx}
                 required
                 type="email"
                 value={f.email}
                 onChange={set("email")}
-                placeholder="Email address"
-              />
+                placeholder={literalT("Email address")} />
+              
             </Field>
-            <Field label="Phone" icon="📱">
+            <Field label={literalT("Phone")} icon="📱">
               <input
                 style={iSx}
                 required
                 value={f.phone}
                 onChange={set("phone")}
-                placeholder="10-digit number"
-              />
+                placeholder={literalT("10-digit number")} />
+              
             </Field>
-            <Field label="Password" icon="🔒">
+            <Field label={literalT("Password")} icon="🔒">
               <input
                 style={iSx}
                 required
                 type="password"
                 value={f.password}
                 onChange={set("password")}
-                placeholder="Min 6 chars"
-              />
+                placeholder={literalT("Min 6 chars")} />
+              
             </Field>
-            <Field label="Thokuthi No." icon="🏠">
+            <Field label={literalT("Thokuthi No.")} icon="🏠">
               <input
                 style={iSx}
                 required
                 value={f.thokuthi}
                 onChange={set("thokuthi")}
-                placeholder="e.g. Thokuthi 12"
-              />
+                placeholder={literalT("e.g. Thokuthi 12")} />
+              
             </Field>
-            <Field label="District" icon="📍">
+            <Field label={literalT("District")} icon="📍">
               <DistrictSelect value={f.district} onChange={set("district")} />
             </Field>
           </div>
-          <SubmitBtn loading={loading} label="✅ Create Worker Account" />
+          <SubmitBtn loading={loading} label={literalT("✅ Create Worker Account")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
   const AddComplaintModal = () => {
@@ -722,7 +722,7 @@ export default function AdminDashboard() {
       category: "Street Light Problem",
       description: "",
       thokuthi: "",
-      district: "Chennai",
+      district: "Chennai"
     });
     const [loading, setLoading] = useState(false);
     const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
@@ -733,7 +733,7 @@ export default function AdminDashboard() {
         const { data } = await axios.post(
           `${API}/api/complaints`,
           f,
-          getConfig(),
+          getConfig()
         );
         setComplaints((p) => [data, ...p]);
         setModal(null);
@@ -745,56 +745,56 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="📝 File Complaint" onClose={() => setModal(null)}>
+      <Modal title={literalT("📝 File Complaint")} onClose={() => setModal(null)}>
         <form onSubmit={submit}>
-          <Field label="Category" icon="🏷️">
+          <Field label={literalT("Category")} icon="🏷️">
             <select style={sSx} value={f.category} onChange={set("category")}>
               {[
-                "Street Light Problem",
-                "Road Damage",
-                "Garbage Issue",
-                "Water Supply Problem",
-                "Drainage Issue",
-                "Public Safety Issue",
-                "Others",
-              ].map((c) => (
-                <option key={c}>{c}</option>
-              ))}
+              "Street Light Problem",
+              "Road Damage",
+              "Garbage Issue",
+              "Water Supply Problem",
+              "Drainage Issue",
+              "Public Safety Issue",
+              "Others"].
+              map((c) =>
+              <option key={c}>{c}</option>
+              )}
             </select>
           </Field>
-          <Field label="Description" icon="📋">
+          <Field label={literalT("Description")} icon="📋">
             <textarea
               style={{ ...iSx, minHeight: 90, resize: "vertical" }}
               required
               value={f.description}
               onChange={set("description")}
-              placeholder="Describe the issue..."
-            />
+              placeholder={literalT("Describe the issue...")} />
+            
           </Field>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <Field label="Thokuthi" icon="🏠">
+              gap: 12
+            }}>
+            
+            <Field label={literalT("Thokuthi")} icon="🏠">
               <input
                 style={iSx}
                 required
                 value={f.thokuthi}
                 onChange={set("thokuthi")}
-                placeholder="Thokuthi number"
-              />
+                placeholder={literalT("Thokuthi number")} />
+              
             </Field>
-            <Field label="District" icon="📍">
+            <Field label={literalT("District")} icon="📍">
               <DistrictSelect value={f.district} onChange={set("district")} />
             </Field>
           </div>
-          <SubmitBtn loading={loading} label="🚀 Submit Complaint" />
+          <SubmitBtn loading={loading} label={literalT("🚀 Submit Complaint")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
   const AddNewsModal = () => {
@@ -804,7 +804,7 @@ export default function AdminDashboard() {
       level: "State",
       district: "",
       thokuthi: "",
-      status: "published",
+      status: "published"
     });
     const [loading, setLoading] = useState(false);
     const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
@@ -823,69 +823,69 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="📰 Publish News" onClose={() => setModal(null)} wide>
+      <Modal title={literalT("📰 Publish News")} onClose={() => setModal(null)} wide>
         <form onSubmit={submit}>
-          <Field label="Headline" icon="📌">
+          <Field label={literalT("Headline")} icon="📌">
             <input
               style={iSx}
               required
               value={f.title}
               onChange={set("title")}
-              placeholder="News headline"
-            />
+              placeholder={literalT("News headline")} />
+            
           </Field>
-          <Field label="Content" icon="📋">
+          <Field label={literalT("Content")} icon="📋">
             <textarea
               style={{ ...iSx, minHeight: 90, resize: "vertical" }}
               required
               value={f.description}
               onChange={set("description")}
-              placeholder="Full news content..."
-            />
+              placeholder={literalT("Full news content...")} />
+            
           </Field>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <Field label="Level" icon="🏛️">
+              gap: 12
+            }}>
+            
+            <Field label={literalT("Level")} icon="🏛️">
               <select style={sSx} value={f.level} onChange={set("level")}>
-                {["State", "District", "Thokuthi"].map((l) => (
-                  <option key={l}>{l}</option>
-                ))}
+                {["State", "District", "Thokuthi"].map((l) =>
+                <option key={l}>{l}</option>
+                )}
               </select>
             </Field>
-            <Field label="Status" icon="✅">
+            <Field label={literalT("Status")} icon="✅">
               <select style={sSx} value={f.status} onChange={set("status")}>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
+                <option value="published">{literalT("Published")}</option>
+                <option value="draft">{literalT("Draft")}</option>
               </select>
             </Field>
-            {f.level !== "State" && (
-              <Field label="District" icon="📍">
+            {f.level !== "State" &&
+            <Field label={literalT("District")} icon="📍">
                 <DistrictSelect
-                  value={f.district || "Chennai"}
-                  onChange={set("district")}
-                />
+                value={f.district || "Chennai"}
+                onChange={set("district")} />
+              
               </Field>
-            )}
-            {f.level === "Thokuthi" && (
-              <Field label="Thokuthi" icon="🏠">
+            }
+            {f.level === "Thokuthi" &&
+            <Field label={literalT("Thokuthi")} icon="🏠">
                 <input
-                  style={iSx}
-                  value={f.thokuthi}
-                  onChange={set("thokuthi")}
-                  placeholder="Thokuthi number"
-                />
+                style={iSx}
+                value={f.thokuthi}
+                onChange={set("thokuthi")}
+                placeholder={literalT("Thokuthi number")} />
+              
               </Field>
-            )}
+            }
           </div>
-          <SubmitBtn loading={loading} label="📢 Publish" />
+          <SubmitBtn loading={loading} label={literalT("📢 Publish")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
   const AddCampModal = () => {
@@ -896,7 +896,7 @@ export default function AdminDashboard() {
       district: "Chennai",
       date: "",
       slots: 100,
-      status: "upcoming",
+      status: "upcoming"
     });
     const [loading, setLoading] = useState(false);
     const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
@@ -907,7 +907,7 @@ export default function AdminDashboard() {
         const { data } = await axios.post(
           `${API}/api/news/camps`,
           f,
-          getConfig(),
+          getConfig()
         );
         setCamps((p) => [...p, data]);
         setModal(null);
@@ -919,76 +919,76 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="⛺ Create Welfare Camp" onClose={() => setModal(null)} wide>
+      <Modal title={literalT("⛺ Create Welfare Camp")} onClose={() => setModal(null)} wide>
         <form onSubmit={submit}>
-          <Field label="Camp Name" icon="⛺">
+          <Field label={literalT("Camp Name")} icon="⛺">
             <input
               style={iSx}
               required
               value={f.name}
               onChange={set("name")}
-              placeholder="e.g. Free Medical Camp"
-            />
+              placeholder={literalT("e.g. Free Medical Camp")} />
+            
           </Field>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <Field label="Type" icon="🏷️">
+              gap: 12
+            }}>
+            
+            <Field label={literalT("Type")} icon="🏷️">
               <select style={sSx} value={f.type} onChange={set("type")}>
                 {["medical", "blood", "women", "employment", "education"].map(
-                  (t) => (
-                    <option key={t}>{t}</option>
-                  ),
+                  (t) =>
+                  <option key={t}>{t}</option>
+
                 )}
               </select>
             </Field>
-            <Field label="Status" icon="📊">
+            <Field label={literalT("Status")} icon="📊">
               <select style={sSx} value={f.status} onChange={set("status")}>
-                {["upcoming", "active", "completed"].map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
+                {["upcoming", "active", "completed"].map((s) =>
+                <option key={s}>{s}</option>
+                )}
               </select>
             </Field>
-            <Field label="Location" icon="📍">
+            <Field label={literalT("Location")} icon="📍">
               <input
                 style={iSx}
                 required
                 value={f.location}
                 onChange={set("location")}
-                placeholder="Venue address"
-              />
+                placeholder={literalT("Venue address")} />
+              
             </Field>
-            <Field label="District" icon="🏙️">
+            <Field label={literalT("District")} icon="🏙️">
               <DistrictSelect value={f.district} onChange={set("district")} />
             </Field>
-            <Field label="Date" icon="📅">
+            <Field label={literalT("Date")} icon="📅">
               <input
                 style={iSx}
                 required
                 type="date"
                 value={f.date}
-                onChange={set("date")}
-              />
+                onChange={set("date")} />
+              
             </Field>
-            <Field label="Slots" icon="👥">
+            <Field label={literalT("Slots")} icon="👥">
               <input
                 style={iSx}
                 required
                 type="number"
                 value={f.slots}
                 onChange={set("slots")}
-                min={1}
-              />
+                min={1} />
+              
             </Field>
           </div>
-          <SubmitBtn loading={loading} label="⛺ Create Camp" />
+          <SubmitBtn loading={loading} label={literalT("⛺ Create Camp")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
   const UploadVideoModal = () => {
@@ -996,7 +996,7 @@ export default function AdminDashboard() {
       title: "",
       category: "Educational",
       videoUrl: "",
-      status: "published",
+      status: "published"
     });
     const [loading, setLoading] = useState(false);
     const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
@@ -1007,7 +1007,7 @@ export default function AdminDashboard() {
         const { data } = await axios.post(
           `${API}/api/education/videos`,
           f,
-          getConfig(),
+          getConfig()
         );
         setVideos((p) => [data, ...p]);
         setModal(null);
@@ -1019,57 +1019,57 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="🎥 Upload Video" onClose={() => setModal(null)}>
+      <Modal title={literalT("🎥 Upload Video")} onClose={() => setModal(null)}>
         <form onSubmit={submit}>
-          <Field label="Title" icon="📌">
+          <Field label={literalT("Title")} icon="📌">
             <input
               style={iSx}
               required
               value={f.title}
               onChange={set("title")}
-              placeholder="e.g. Voter ID Application Guide"
-            />
+              placeholder={literalT("e.g. Voter ID Application Guide")} />
+            
           </Field>
-          <Field label="Video URL" icon="🔗">
+          <Field label={literalT("Video URL")} icon="🔗">
             <input
               style={iSx}
               required
               value={f.videoUrl}
               onChange={set("videoUrl")}
-              placeholder="https://youtube.com/watch?v=..."
-            />
+              placeholder="https://youtube.com/watch?v=..." />
+            
           </Field>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <Field label="Category" icon="🏷️">
+              gap: 12
+            }}>
+            
+            <Field label={literalT("Category")} icon="🏷️">
               <select style={sSx} value={f.category} onChange={set("category")}>
                 {[
-                  "Educational",
-                  "General Knowledge",
-                  "Competitive Exam",
-                  "Women Skill",
-                  "Career Guidance",
-                ].map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
+                "Educational",
+                "General Knowledge",
+                "Competitive Exam",
+                "Women Skill",
+                "Career Guidance"].
+                map((c) =>
+                <option key={c}>{c}</option>
+                )}
               </select>
             </Field>
-            <Field label="Status" icon="✅">
+            <Field label={literalT("Status")} icon="✅">
               <select style={sSx} value={f.status} onChange={set("status")}>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
+                <option value="published">{literalT("Published")}</option>
+                <option value="draft">{literalT("Draft")}</option>
               </select>
             </Field>
           </div>
-          <SubmitBtn loading={loading} label="📤 Upload" />
+          <SubmitBtn loading={loading} label={literalT("📤 Upload")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
   const CreateExamModal = () => {
@@ -1078,21 +1078,21 @@ export default function AdminDashboard() {
       category: "",
       duration: "30 mins",
       totalMarks: 10,
-      questions: [],
+      questions: []
     });
     const [q, setQ] = useState({
       question: "",
       options: ["", "", "", ""],
-      answer: 0,
+      answer: 0
     });
     const [loading, setLoading] = useState(false);
     const setFk = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
     const setOpt = (i) => (e) =>
-      setQ((p) => {
-        const o = [...p.options];
-        o[i] = e.target.value;
-        return { ...p, options: o };
-      });
+    setQ((p) => {
+      const o = [...p.options];
+      o[i] = e.target.value;
+      return { ...p, options: o };
+    });
     const addQ = () => {
       if (!q.question || q.options.some((o) => !o)) {
         alert("Fill all fields");
@@ -1115,21 +1115,21 @@ export default function AdminDashboard() {
             ...f,
             durationMinutes: parseInt(f.duration) || 30,
             totalMarks: Number(f.totalMarks) || f.questions.length,
-            examType: "Government Jobs",
+            examType: "Government Jobs"
           },
-          getConfig(),
+          getConfig()
         );
         setExams((p) => [
-          ...p,
-          {
-            id: data.id || data._id,
-            title: data.title,
-            category: data.category,
-            questions: data.questions || f.questions.length,
-            duration: data.duration,
-            taken: 0,
-          },
-        ]);
+        ...p,
+        {
+          id: data.id || data._id,
+          title: data.title,
+          category: data.category,
+          questions: data.questions || f.questions.length,
+          duration: data.duration,
+          taken: 0
+        }]
+        );
         setModal(null);
         showToast("Exam created");
       } catch (err) {
@@ -1139,155 +1139,155 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="📝 Create Exam" onClose={() => setModal(null)} wide>
+      <Modal title={literalT("📝 Create Exam")} onClose={() => setModal(null)} wide>
         <form onSubmit={submit}>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <Field label="Title" icon="📌">
+              gap: 12
+            }}>
+            
+            <Field label={literalT("Title")} icon="📌">
               <input
                 style={iSx}
                 required
                 value={f.title}
                 onChange={setFk("title")}
-                placeholder="Exam title"
-              />
+                placeholder={literalT("Exam title")} />
+              
             </Field>
-            <Field label="Category" icon="🏷️">
+            <Field label={literalT("Category")} icon="🏷️">
               <input
                 style={iSx}
                 value={f.category}
                 onChange={setFk("category")}
-                placeholder="e.g. Civics"
-              />
+                placeholder={literalT("e.g. Civics")} />
+              
             </Field>
-            <Field label="Duration" icon="⏱">
+            <Field label={literalT("Duration")} icon="⏱">
               <input
                 style={iSx}
                 value={f.duration}
                 onChange={setFk("duration")}
-                placeholder="30 mins"
-              />
+                placeholder={literalT("30 mins")} />
+              
             </Field>
-            <Field label="Total Marks" icon="🎯">
+            <Field label={literalT("Total Marks")} icon="🎯">
               <input
                 style={iSx}
                 type="number"
                 value={f.totalMarks}
                 onChange={setFk("totalMarks")}
-                min={1}
-              />
+                min={1} />
+              
             </Field>
           </div>
-          {f.questions.length > 0 && (
-            <div
-              style={{
-                background: T.bg,
-                borderRadius: 10,
-                padding: 12,
-                marginBottom: 14,
-              }}
-            >
+          {f.questions.length > 0 &&
+          <div
+            style={{
+              background: T.bg,
+              borderRadius: 10,
+              padding: 12,
+              marginBottom: 14
+            }}>
+            
               <p
-                style={{
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: T.textM,
-                  marginBottom: 8,
-                }}
-              >
-                {f.questions.length} QUESTION(S) ADDED ✅
-              </p>
-              {f.questions.map((q, i) => (
-                <div
-                  key={i}
-                  style={{
-                    fontSize: 12,
-                    color: T.textL,
-                    padding: "3px 0",
-                    borderBottom: `1px solid ${T.border}`,
-                  }}
-                >
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.textM,
+                marginBottom: 8
+              }}>
+              
+                {f.questions.length}{literalT("QUESTION(S) ADDED ✅")}
+            </p>
+              {f.questions.map((q, i) =>
+            <div
+              key={i}
+              style={{
+                fontSize: 12,
+                color: T.textL,
+                padding: "3px 0",
+                borderBottom: `1px solid ${T.border}`
+              }}>
+              
                   {i + 1}. {q.question}
                 </div>
-              ))}
+            )}
             </div>
-          )}
+          }
           <div
             style={{
               background: `${T.maroon}08`,
               borderRadius: 14,
               padding: 16,
               marginBottom: 16,
-              border: `1px dashed ${T.maroon}40`,
-            }}
-          >
+              border: `1px dashed ${T.maroon}40`
+            }}>
+            
             <p
               style={{
                 fontFamily: "'Source Sans 3',sans-serif",
                 fontSize: 13,
                 fontWeight: 700,
                 color: T.maroon,
-                marginBottom: 12,
-              }}
-            >
-              ➕ Add Question
+                marginBottom: 12
+              }}>{literalT("➕ Add Question")}
+
+
             </p>
-            <Field label="Question" icon="❓">
+            <Field label={literalT("Question")} icon="❓">
               <input
                 style={iSx}
                 value={q.question}
                 onChange={(e) =>
-                  setQ((p) => ({ ...p, question: e.target.value }))
+                setQ((p) => ({ ...p, question: e.target.value }))
                 }
-                placeholder="Question text"
-              />
+                placeholder={literalT("Question text")} />
+              
             </Field>
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                gap: 10,
-              }}
-            >
-              {q.options.map((opt, i) => (
-                <Field
-                  key={i}
-                  label={`Option ${["A", "B", "C", "D"][i]}`}
-                  icon={["A", "B", "C", "D"][i]}
-                >
+                gap: 10
+              }}>
+              
+              {q.options.map((opt, i) =>
+              <Field
+                key={i}
+                label={`Option ${["A", "B", "C", "D"][i]}`}
+                icon={["A", "B", "C", "D"][i]}>
+                
                   <input
-                    style={iSx}
-                    value={opt}
-                    onChange={setOpt(i)}
-                    placeholder={`Option ${["A", "B", "C", "D"][i]}`}
-                  />
+                  style={iSx}
+                  value={opt}
+                  onChange={setOpt(i)}
+                  placeholder={`Option ${["A", "B", "C", "D"][i]}`} />
+                
                 </Field>
-              ))}
+              )}
             </div>
-            <Field label="Correct Answer" icon="✅">
+            <Field label={literalT("Correct Answer")} icon="✅">
               <select
                 style={sSx}
                 value={q.answer}
                 onChange={(e) =>
-                  setQ((p) => ({ ...p, answer: parseInt(e.target.value) }))
-                }
-              >
+                setQ((p) => ({ ...p, answer: parseInt(e.target.value) }))
+                }>
+                
                 {[
-                  "A – index 0",
-                  "B – index 1",
-                  "C – index 2",
-                  "D – index 3",
-                ].map((l, i) => (
-                  <option key={i} value={i}>
+                "A – index 0",
+                "B – index 1",
+                "C – index 2",
+                "D – index 3"].
+                map((l, i) =>
+                <option key={i} value={i}>
                     {l}
                   </option>
-                ))}
+                )}
               </select>
             </Field>
             <button
@@ -1302,16 +1302,16 @@ export default function AdminDashboard() {
                 fontFamily: "'Source Sans 3',sans-serif",
                 fontWeight: 600,
                 fontSize: 13,
-                cursor: "pointer",
-              }}
-            >
-              + Add This Question
+                cursor: "pointer"
+              }}>{literalT("+ Add This Question")}
+
+
             </button>
           </div>
-          <SubmitBtn loading={loading} label="📝 Create Exam" />
+          <SubmitBtn loading={loading} label={literalT("📝 Create Exam")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
   const CreateJobModal = () => {
@@ -1329,7 +1329,7 @@ export default function AdminDashboard() {
       examDate: "",
       year: new Date().getFullYear(),
       status: "upcoming",
-      tags: "",
+      tags: ""
     });
     const [loading, setLoading] = useState(false);
     const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
@@ -1341,22 +1341,22 @@ export default function AdminDashboard() {
           ...f,
           vacancies: Number(f.vacancies) || 0,
           year: Number(f.year) || new Date().getFullYear(),
-          tags: f.tags
-            .split(",")
-            .map((x) => x.trim())
-            .filter(Boolean),
+          tags: f.tags.
+          split(",").
+          map((x) => x.trim()).
+          filter(Boolean),
           applyBy: f.applyBy || undefined,
-          examDate: f.examDate || undefined,
+          examDate: f.examDate || undefined
         };
         const { data } = await axios.post(
           `${API}/api/education/government-jobs`,
           payload,
-          getConfig(),
+          getConfig()
         );
         setGovJobs((p) => [data, ...p]);
         setJobSummary((p) => ({
           ...p,
-          [data.status]: (p[data.status] || 0) + 1,
+          [data.status]: (p[data.status] || 0) + 1
         }));
         setModal(null);
         showToast("Government job created");
@@ -1367,121 +1367,121 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="Create Government Job" onClose={() => setModal(null)} wide>
+      <Modal title={literalT("Create Government Job")} onClose={() => setModal(null)} wide>
         <form onSubmit={submit}>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <Field label="Job Title" icon="">
+              gap: 12
+            }}>
+            
+            <Field label={literalT("Job Title")} icon="">
               <input
                 style={iSx}
                 required
                 value={f.title}
-                onChange={set("title")}
-              />
+                onChange={set("title")} />
+              
             </Field>
-            <Field label="Department" icon="">
+            <Field label={literalT("Department")} icon="">
               <input
                 style={iSx}
                 required
                 value={f.department}
-                onChange={set("department")}
-              />
+                onChange={set("department")} />
+              
             </Field>
-            <Field label="Category" icon="">
+            <Field label={literalT("Category")} icon="">
               <input
                 style={iSx}
                 value={f.category}
-                onChange={set("category")}
-              />
+                onChange={set("category")} />
+              
             </Field>
-            <Field label="Location" icon="">
+            <Field label={literalT("Location")} icon="">
               <input
                 style={iSx}
                 value={f.location}
-                onChange={set("location")}
-              />
+                onChange={set("location")} />
+              
             </Field>
-            <Field label="Qualification" icon="">
+            <Field label={literalT("Qualification")} icon="">
               <input
                 style={iSx}
                 value={f.qualification}
-                onChange={set("qualification")}
-              />
+                onChange={set("qualification")} />
+              
             </Field>
-            <Field label="Vacancies" icon="">
+            <Field label={literalT("Vacancies")} icon="">
               <input
                 style={iSx}
                 type="number"
                 value={f.vacancies}
-                onChange={set("vacancies")}
-              />
+                onChange={set("vacancies")} />
+              
             </Field>
-            <Field label="Salary" icon="">
+            <Field label={literalT("Salary")} icon="">
               <input style={iSx} value={f.salary} onChange={set("salary")} />
             </Field>
-            <Field label="Status" icon="">
+            <Field label={literalT("Status")} icon="">
               <select style={sSx} value={f.status} onChange={set("status")}>
-                <option value="live">Live</option>
-                <option value="upcoming">Upcoming</option>
-                <option value="previous">Previous Year</option>
+                <option value="live">{literalT("Live")}</option>
+                <option value="upcoming">{literalT("Upcoming")}</option>
+                <option value="previous">{literalT("Previous Year")}</option>
               </select>
             </Field>
-            <Field label="Apply By" icon="">
+            <Field label={literalT("Apply By")} icon="">
               <input
                 style={iSx}
                 type="date"
                 value={f.applyBy}
-                onChange={set("applyBy")}
-              />
+                onChange={set("applyBy")} />
+              
             </Field>
-            <Field label="Exam Date" icon="">
+            <Field label={literalT("Exam Date")} icon="">
               <input
                 style={iSx}
                 type="date"
                 value={f.examDate}
-                onChange={set("examDate")}
-              />
+                onChange={set("examDate")} />
+              
             </Field>
-            <Field label="Year" icon="">
+            <Field label={literalT("Year")} icon="">
               <input
                 style={iSx}
                 type="number"
                 value={f.year}
-                onChange={set("year")}
-              />
+                onChange={set("year")} />
+              
             </Field>
-            <Field label="Tags" icon="">
+            <Field label={literalT("Tags")} icon="">
               <input
                 style={iSx}
                 value={f.tags}
                 onChange={set("tags")}
-                placeholder="TNPSC, Police, Group IV"
-              />
+                placeholder={literalT("TNPSC, Police, Group IV")} />
+              
             </Field>
-            <Field label="Application URL" icon="">
+            <Field label={literalT("Application URL")} icon="">
               <input
                 style={iSx}
                 value={f.applicationUrl}
-                onChange={set("applicationUrl")}
-              />
+                onChange={set("applicationUrl")} />
+              
             </Field>
-            <Field label="Notification URL" icon="">
+            <Field label={literalT("Notification URL")} icon="">
               <input
                 style={iSx}
                 value={f.notificationUrl}
-                onChange={set("notificationUrl")}
-              />
+                onChange={set("notificationUrl")} />
+              
             </Field>
           </div>
-          <SubmitBtn loading={loading} label="Publish Job" />
+          <SubmitBtn loading={loading} label={literalT("Publish Job")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
   const SendNotifModal = () => {
@@ -1495,17 +1495,17 @@ export default function AdminDashboard() {
         const { data } = await axios.post(
           `${API}/api/notifications`,
           f,
-          getConfig(),
+          getConfig()
         );
         setNotifications((p) => [
-          {
-            id: data._id,
-            msg: data.msg,
-            type: data.type,
-            time: data.createdAt,
-          },
-          ...p,
-        ]);
+        {
+          id: data._id,
+          msg: data.msg,
+          type: data.type,
+          time: data.createdAt
+        },
+        ...p]
+        );
         setModal(null);
         showToast("Announcement sent");
       } catch (err) {
@@ -1515,92 +1515,92 @@ export default function AdminDashboard() {
       }
     };
     return (
-      <Modal title="📣 Send Announcement" onClose={() => setModal(null)}>
+      <Modal title={literalT("📣 Send Announcement")} onClose={() => setModal(null)}>
         <form onSubmit={submit}>
-          <Field label="Message" icon="💬">
+          <Field label={literalT("Message")} icon="💬">
             <textarea
               style={{ ...iSx, minHeight: 100, resize: "vertical" }}
               required
               value={f.msg}
               onChange={set("msg")}
-              placeholder="Write your announcement..."
-            />
+              placeholder={literalT("Write your announcement...")} />
+            
           </Field>
-          <Field label="Type" icon="🏷️">
+          <Field label={literalT("Type")} icon="🏷️">
             <select style={sSx} value={f.type} onChange={set("type")}>
               {["announcement", "complaint", "news", "camp", "worker"].map(
-                (t) => (
-                  <option key={t}>{t}</option>
-                ),
+                (t) =>
+                <option key={t}>{t}</option>
+
               )}
             </select>
           </Field>
-          <SubmitBtn loading={loading} label="📣 Send to All Users" />
+          <SubmitBtn loading={loading} label={literalT("📣 Send to All Users")} />
         </form>
-      </Modal>
-    );
+      </Modal>);
+
   };
 
-  const IssueCertModal = () => (
-    <Modal title="🏆 Certificates" onClose={() => setModal(null)}>
+  const IssueCertModal = () =>
+  <Modal title={literalT("🏆 Certificates")} onClose={() => setModal(null)}>
       <div style={{ textAlign: "center", padding: "16px 0" }}>
         <div
-          style={{
-            width: 90,
-            height: 90,
-            borderRadius: "50%",
-            margin: "0 auto 16px",
-            background: `linear-gradient(135deg,${T.gold},${T.goldL})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 44,
-          }}
-        >
+        style={{
+          width: 90,
+          height: 90,
+          borderRadius: "50%",
+          margin: "0 auto 16px",
+          background: `linear-gradient(135deg,${T.gold},${T.goldL})`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 44
+        }}>
+        
           🎓
         </div>
         <p
-          style={{
-            fontFamily: "'Playfair Display',serif",
-            fontWeight: 700,
-            fontSize: 46,
-            color: T.maroon,
-          }}
-        >
+        style={{
+          fontFamily: "'Playfair Display',serif",
+          fontWeight: 700,
+          fontSize: 46,
+          color: T.maroon
+        }}>
+        
           {certCount}
         </p>
         <p
-          style={{
-            fontFamily: "'Source Sans 3',sans-serif",
-            fontSize: 15,
-            color: T.textL,
-            marginTop: 4,
-          }}
-        >
-          Certificates issued to date
-        </p>
+        style={{
+          fontFamily: "'Source Sans 3',sans-serif",
+          fontSize: 15,
+          color: T.textL,
+          marginTop: 4
+        }}>{literalT("Certificates issued to date")}
+
+
+      </p>
         <div
-          style={{
-            marginTop: 20,
-            background: T.bg,
-            borderRadius: 12,
-            padding: 14,
-            border: `1px solid ${T.border}`,
-            fontFamily: "'Source Sans 3',sans-serif",
-            fontSize: 13,
-            color: T.textL,
-            lineHeight: 1.7,
-          }}
-        >
-          Certificates are <strong>auto-issued</strong> when a user scores ≥ 60%
-          in any exam.
-          <br />
-          Exams: <strong>{exams.length}</strong> · Certificates issued:{" "}
+        style={{
+          marginTop: 20,
+          background: T.bg,
+          borderRadius: 12,
+          padding: 14,
+          border: `1px solid ${T.border}`,
+          fontFamily: "'Source Sans 3',sans-serif",
+          fontSize: 13,
+          color: T.textL,
+          lineHeight: 1.7
+        }}>{literalT("Certificates are")}
+
+        <strong>{literalT("auto-issued")}</strong>{literalT("when a user scores ≥ 60% in any exam.")}
+
+        <br />{literalT("Exams:")}
+        <strong>{exams.length}</strong>{literalT("· Certificates issued:")}{" "}
           <strong>{certCount}</strong>
         </div>
       </div>
-    </Modal>
-  );
+    </Modal>;
+
 
   const modals = {
     addWorker: <AddWorkerModal />,
@@ -1611,21 +1611,21 @@ export default function AdminDashboard() {
     createExam: <CreateExamModal />,
     createJob: <CreateJobModal />,
     sendNotif: <SendNotifModal />,
-    issueCert: <IssueCertModal />,
+    issueCert: <IssueCertModal />
   };
 
   const NAV = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "complaints", label: "Complaints", icon: "📋" },
-    { id: "workers", label: "Workers", icon: "👥" },
-    { id: "news", label: "News & Camps", icon: "📰" },
-    { id: "education", label: "Education", icon: "📚" },
-    { id: "analytics", label: "Analytics", icon: "📈" },
-    { id: "notifications", label: "Notifications", icon: "🔔" },
-    ...(isSuperAdmin
-      ? [{ id: "superadmin", label: "Super Admin", icon: "SA" }]
-      : []),
-  ];
+  { id: "dashboard", label: "Dashboard", icon: "📊" },
+  { id: "complaints", label: "Complaints", icon: "📋" },
+  { id: "workers", label: "Workers", icon: "👥" },
+  { id: "news", label: "News & Camps", icon: "📰" },
+  { id: "education", label: "Education", icon: "📚" },
+  { id: "analytics", label: "Analytics", icon: "📈" },
+  { id: "notifications", label: "Notifications", icon: "🔔" },
+  ...(isSuperAdmin ?
+  [{ id: "superadmin", label: "Super Admin", icon: "SA" }] :
+  [])];
+
 
   const navigateTo = (id) => {
     if (id !== page) setPageHistory((prev) => [...prev, page].slice(-8));
@@ -1646,222 +1646,222 @@ export default function AdminDashboard() {
   // ── SIDEBAR ────────────────────────────────────────────────────────
   const sidebarWidth = isMobile ? "80vw" : sideOpen ? 236 : 68;
 
-  const SidebarContent = () => (
-    <div
-      style={{
-        width: "100%",
-        minHeight: "100%",
-        background: T.sidebar,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+  const SidebarContent = () =>
+  <div
+    style={{
+      width: "100%",
+      minHeight: "100%",
+      background: T.sidebar,
+      display: "flex",
+      flexDirection: "column"
+    }}>
+    
       <div
+      style={{
+        padding: sideOpen || isMobile ? "22px 18px 18px" : "22px 10px 18px",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        justifyContent: sideOpen || isMobile ? "flex-start" : "center"
+      }}>
+      
+        <div
         style={{
-          padding: sideOpen || isMobile ? "22px 18px 18px" : "22px 10px 18px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          width: 38,
+          height: 38,
+          borderRadius: 10,
+          flexShrink: 0,
+          background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
           display: "flex",
           alignItems: "center",
-          gap: 10,
-          justifyContent: sideOpen || isMobile ? "flex-start" : "center",
-        }}
-      >
-        <div
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 10,
-            flexShrink: 0,
-            background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 20,
-          }}
-        >
+          justifyContent: "center",
+          fontSize: 20
+        }}>
+        
           🏛️
         </div>
-        {(sideOpen || isMobile) && (
-          <div>
+        {(sideOpen || isMobile) &&
+      <div>
             <div
-              style={{
-                fontFamily: "'Playfair Display',serif",
-                fontWeight: 700,
-                fontSize: 15,
-                color: "#fff",
-              }}
-            >
-              People Connect
-            </div>
+          style={{
+            fontFamily: "'Playfair Display',serif",
+            fontWeight: 700,
+            fontSize: 15,
+            color: "#fff"
+          }}>{literalT("People Connect")}
+
+
+        </div>
             <div
-              style={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 10,
-                color: "rgba(255,255,255,0.35)",
-                marginTop: 2,
-                letterSpacing: 1,
-              }}
-            >
-              ADMIN PORTAL
-            </div>
+          style={{
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: 10,
+            color: "rgba(255,255,255,0.35)",
+            marginTop: 2,
+            letterSpacing: 1
+          }}>{literalT("ADMIN PORTAL")}
+
+
+        </div>
           </div>
-        )}
-        {isMobile && (
-          <button
-            onClick={() => setMobileSideOpen(false)}
-            style={{
-              marginLeft: "auto",
-              background: "none",
-              border: "none",
-              color: "rgba(255,255,255,0.5)",
-              fontSize: 20,
-              cursor: "pointer",
-              padding: 4,
-            }}
-          >
+      }
+        {isMobile &&
+      <button
+        onClick={() => setMobileSideOpen(false)}
+        style={{
+          marginLeft: "auto",
+          background: "none",
+          border: "none",
+          color: "rgba(255,255,255,0.5)",
+          fontSize: 20,
+          cursor: "pointer",
+          padding: 4
+        }}>
+        
             ✕
           </button>
-        )}
+      }
       </div>
       <nav style={{ flex: 1, padding: "10px 8px" }}>
         {NAV.map((item) => {
-          const active = page === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => navigateTo(item.id)}
-              title={!sideOpen && !isMobile ? item.label : ""}
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: sideOpen || isMobile ? "10px 12px" : "10px",
-                borderRadius: 10,
-                border: "none",
-                background: active
-                  ? `linear-gradient(135deg,${T.maroon},${T.maroonL})`
-                  : "transparent",
-                color: active ? "#fff" : "rgba(255,255,255,0.45)",
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 14,
-                fontWeight: active ? 600 : 400,
-                cursor: "pointer",
-                marginBottom: 2,
-                transition: "all 0.2s",
-                justifyContent: sideOpen || isMobile ? "flex-start" : "center",
-              }}
-              onMouseEnter={(e) => {
-                if (!active)
-                  e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-              }}
-              onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.background = "transparent";
-              }}
-            >
-              <span style={{ fontSize: 17, flexShrink: 0 }}>{item.icon}</span>
-              {(sideOpen || isMobile) && (
-                <span style={{ whiteSpace: "nowrap", overflow: "hidden" }}>
-                  {item.label}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </nav>
-      <div
-        style={{
-          padding: "8px 8px 14px",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        <button
-          onClick={handleLogout}
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: sideOpen || isMobile ? "10px 12px" : "10px",
-            borderRadius: 10,
-            border: "none",
-            background: "transparent",
-            color: "rgba(255,255,255,0.35)",
-            fontFamily: "'Source Sans 3',sans-serif",
-            fontSize: 14,
-            cursor: "pointer",
-            justifyContent: sideOpen || isMobile ? "flex-start" : "center",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(255,255,255,0.06)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
-        >
-          <span style={{ fontSize: 17 }}>🚪</span>
-          {(sideOpen || isMobile) && <span>Logout</span>}
-        </button>
-        {!isMobile && (
+        const active = page === item.id;
+        return (
           <button
-            onClick={() => setSideOpen((o) => !o)}
+            key={item.id}
+            onClick={() => navigateTo(item.id)}
+            title={!sideOpen && !isMobile ? item.label : ""}
             style={{
               width: "100%",
-              padding: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: sideOpen || isMobile ? "10px 12px" : "10px",
               borderRadius: 10,
               border: "none",
-              background: "rgba(255,255,255,0.05)",
-              color: "rgba(255,255,255,0.35)",
-              cursor: "pointer",
+              background: active ?
+              `linear-gradient(135deg,${T.maroon},${T.maroonL})` :
+              "transparent",
+              color: active ? "#fff" : "rgba(255,255,255,0.45)",
+              fontFamily: "'Source Sans 3',sans-serif",
               fontSize: 14,
-              marginTop: 4,
+              fontWeight: active ? 600 : 400,
+              cursor: "pointer",
+              marginBottom: 2,
+              transition: "all 0.2s",
+              justifyContent: sideOpen || isMobile ? "flex-start" : "center"
             }}
-          >
+            onMouseEnter={(e) => {
+              if (!active)
+              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+            }}
+            onMouseLeave={(e) => {
+              if (!active) e.currentTarget.style.background = "transparent";
+            }}>
+            
+              <span style={{ fontSize: 17, flexShrink: 0 }}>{item.icon}</span>
+              {(sideOpen || isMobile) &&
+            <span style={{ whiteSpace: "nowrap", overflow: "hidden" }}>
+                  {item.label}
+                </span>
+            }
+            </button>);
+
+      })}
+      </nav>
+      <div
+      style={{
+        padding: "8px 8px 14px",
+        borderTop: "1px solid rgba(255,255,255,0.06)"
+      }}>
+      
+        <button
+        onClick={handleLogout}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: sideOpen || isMobile ? "10px 12px" : "10px",
+          borderRadius: 10,
+          border: "none",
+          background: "transparent",
+          color: "rgba(255,255,255,0.35)",
+          fontFamily: "'Source Sans 3',sans-serif",
+          fontSize: 14,
+          cursor: "pointer",
+          justifyContent: sideOpen || isMobile ? "flex-start" : "center",
+          transition: "all 0.2s"
+        }}
+        onMouseEnter={(e) =>
+        e.currentTarget.style.background = "rgba(255,255,255,0.06)"
+        }
+        onMouseLeave={(e) =>
+        e.currentTarget.style.background = "transparent"
+        }>
+        
+          <span style={{ fontSize: 17 }}>🚪</span>
+          {(sideOpen || isMobile) && <span>{literalT("Logout")}</span>}
+        </button>
+        {!isMobile &&
+      <button
+        onClick={() => setSideOpen((o) => !o)}
+        style={{
+          width: "100%",
+          padding: "8px",
+          borderRadius: 10,
+          border: "none",
+          background: "rgba(255,255,255,0.05)",
+          color: "rgba(255,255,255,0.35)",
+          cursor: "pointer",
+          fontSize: 14,
+          marginTop: 4
+        }}>
+        
             {sideOpen ? "◀" : "▶"}
           </button>
-        )}
+      }
       </div>
-    </div>
-  );
+    </div>;
+
 
   const Sidebar = () => {
     if (isMobile) {
       return (
         <>
-          {mobileSideOpen && (
-            <div
+          {mobileSideOpen &&
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 300,
+              display: "flex"
+            }}>
+            
+              <div
               style={{
-                position: "fixed",
+                position: "absolute",
                 inset: 0,
-                zIndex: 300,
-                display: "flex",
+                background: "rgba(0,0,0,0.5)"
               }}
-            >
+              onClick={() => setMobileSideOpen(false)} />
+            
               <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "rgba(0,0,0,0.5)",
-                }}
-                onClick={() => setMobileSideOpen(false)}
-              />
-              <div
-                style={{
-                  position: "relative",
-                  width: "80vw",
-                  maxWidth: 280,
-                  minHeight: "100vh",
-                  zIndex: 301,
-                  flexShrink: 0,
-                }}
-              >
+              style={{
+                position: "relative",
+                width: "80vw",
+                maxWidth: 280,
+                minHeight: "100vh",
+                zIndex: 301,
+                flexShrink: 0
+              }}>
+              
                 <SidebarContent />
               </div>
             </div>
-          )}
-        </>
-      );
+          }
+        </>);
+
     }
     return (
       <div
@@ -1875,12 +1875,12 @@ export default function AdminDashboard() {
           position: "sticky",
           top: 0,
           flexShrink: 0,
-          zIndex: 50,
-        }}
-      >
+          zIndex: 50
+        }}>
+        
         <SidebarContent />
-      </div>
-    );
+      </div>);
+
   };
 
   // ── TOPBAR ─────────────────────────────────────────────────────────
@@ -1900,60 +1900,60 @@ export default function AdminDashboard() {
           top: 0,
           zIndex: 40,
           boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
-          gap: 8,
-        }}
-      >
+          gap: 8
+        }}>
+        
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: isMobile ? 8 : 12,
-            minWidth: 0,
-          }}
-        >
-          {isMobile && (
-            <button
-              onClick={() => setMobileSideOpen(true)}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                border: `1px solid ${T.border}`,
-                background: T.bg,
-                cursor: "pointer",
-                fontSize: 18,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
+            minWidth: 0
+          }}>
+          
+          {isMobile &&
+          <button
+            onClick={() => setMobileSideOpen(true)}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              background: T.bg,
+              cursor: "pointer",
+              fontSize: 18,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
+            
               ☰
             </button>
-          )}
-          {page !== "dashboard" && (
-            <button
-              onClick={goBackPage}
-              style={{
-                height: 36,
-                padding: "0 12px",
-                borderRadius: 10,
-                border: `1px solid ${T.border}`,
-                background: T.bg,
-                color: T.maroon,
-                cursor: "pointer",
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 13,
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                flexShrink: 0,
-              }}
-            >
-              ← Back
-            </button>
-          )}
+          }
+          {page !== "dashboard" &&
+          <button
+            onClick={goBackPage}
+            style={{
+              height: 36,
+              padding: "0 12px",
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              background: T.bg,
+              color: T.maroon,
+              cursor: "pointer",
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 13,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexShrink: 0
+            }}>{literalT("← Back")}
+
+
+          </button>
+          }
           <div style={{ minWidth: 0 }}>
             <div
               style={{
@@ -1963,22 +1963,22 @@ export default function AdminDashboard() {
                 color: T.text,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
+                whiteSpace: "nowrap"
+              }}>
+              
               {currentPage?.icon} {currentPage?.label}
             </div>
-            {!isMobile && (
-              <div
-                style={{
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 11,
-                  color: T.textM,
-                }}
-              >
-                People Connect · Tamil Nadu Government Portal
-              </div>
-            )}
+            {!isMobile &&
+            <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 11,
+                color: T.textM
+              }}>{literalT("People Connect · Tamil Nadu Government Portal")}
+
+
+            </div>
+            }
           </div>
         </div>
         <div
@@ -1986,92 +1986,92 @@ export default function AdminDashboard() {
             display: "flex",
             alignItems: "center",
             gap: isMobile ? 6 : 10,
-            flexShrink: 0,
-          }}
-        >
-          {!isMobile && (
-            <div
+            flexShrink: 0
+          }}>
+          
+          {!isMobile &&
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: T.bg,
+              borderRadius: 50,
+              padding: isTablet ? "6px 12px" : "8px 16px",
+              border: `1px solid ${T.border}`
+            }}>
+            
+              <div
               style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                position: "relative",
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-                background: T.bg,
-                borderRadius: 50,
-                padding: isTablet ? "6px 12px" : "8px 16px",
-                border: `1px solid ${T.border}`,
-              }}
-            >
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
+                justifyContent: "center"
+              }}>
+              
                 <svg
-                  width="32"
-                  height="32"
-                  style={{ transform: "rotate(-90deg)" }}
-                >
+                width="32"
+                height="32"
+                style={{ transform: "rotate(-90deg)" }}>
+                
                   <circle
-                    cx="16"
-                    cy="16"
-                    r="12"
-                    fill="none"
-                    stroke={T.border}
-                    strokeWidth="3"
-                  />
+                  cx="16"
+                  cy="16"
+                  r="12"
+                  fill="none"
+                  stroke={T.border}
+                  strokeWidth="3" />
+                
                   <circle
-                    cx="16"
-                    cy="16"
-                    r="12"
-                    fill="none"
-                    stroke={T.green}
-                    strokeWidth="3"
-                    strokeDasharray={`${(2 * Math.PI * 12 * completionRate) / 100} ${2 * Math.PI * 12}`}
-                    strokeLinecap="round"
-                  />
+                  cx="16"
+                  cy="16"
+                  r="12"
+                  fill="none"
+                  stroke={T.green}
+                  strokeWidth="3"
+                  strokeDasharray={`${2 * Math.PI * 12 * completionRate / 100} ${2 * Math.PI * 12}`}
+                  strokeLinecap="round" />
+                
                 </svg>
                 <span
-                  style={{
-                    position: "absolute",
-                    fontSize: 8,
-                    fontWeight: 800,
-                    color: T.text,
-                  }}
-                >
+                style={{
+                  position: "absolute",
+                  fontSize: 8,
+                  fontWeight: 800,
+                  color: T.text
+                }}>
+                
                   {completionRate}%
                 </span>
               </div>
-              {!isTablet && (
-                <div>
+              {!isTablet &&
+            <div>
                   <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: T.text,
-                    }}
-                  >
-                    {completionRate}% Complete
-                  </div>
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: T.text
+                }}>
+                
+                    {completionRate}{literalT("% Complete")}
+              </div>
                   <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 10,
-                      color: T.textM,
-                    }}
-                  >
-                    Overall Resolution
-                  </div>
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 10,
+                  color: T.textM
+                }}>{literalT("Overall Resolution")}
+
+
+              </div>
                 </div>
-              )}
+            }
             </div>
-          )}
+          }
           <div
             style={{
               display: "flex",
@@ -2079,9 +2079,9 @@ export default function AdminDashboard() {
               background: T.bg,
               borderRadius: 50,
               padding: 3,
-              border: `1px solid ${T.border}`,
-            }}
-          >
+              border: `1px solid ${T.border}`
+            }}>
+            
             {["en", "ta"].map((l) => {
               const active = adminLang === l;
               return (
@@ -2092,41 +2092,41 @@ export default function AdminDashboard() {
                     padding: isMobile ? "5px 10px" : "6px 14px",
                     borderRadius: 50,
                     border: "none",
-                    background: active
-                      ? `linear-gradient(135deg,${T.maroon},${T.maroonL})`
-                      : "transparent",
+                    background: active ?
+                    `linear-gradient(135deg,${T.maroon},${T.maroonL})` :
+                    "transparent",
                     color: active ? "#fff" : T.textL,
                     fontFamily: "'Source Sans 3',sans-serif",
                     fontWeight: 700,
                     fontSize: isMobile ? 10 : 12,
                     cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
+                    transition: "all 0.2s"
+                  }}>
+                  
                   {l === "en" ? "EN" : "தமிழ்"}
-                </button>
-              );
+                </button>);
+
             })}
           </div>
-          {!isMobile && (
-            <button
-              onClick={() => setModal("sendNotif")}
-              style={{
-                padding: isTablet ? "7px 12px" : "8px 16px",
-                borderRadius: 50,
-                border: `1.5px solid ${T.maroon}`,
-                background: "transparent",
-                color: T.maroon,
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
+          {!isMobile &&
+          <button
+            onClick={() => setModal("sendNotif")}
+            style={{
+              padding: isTablet ? "7px 12px" : "8px 16px",
+              borderRadius: 50,
+              border: `1.5px solid ${T.maroon}`,
+              background: "transparent",
+              color: T.maroon,
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap"
+            }}>
+            
               📣 {al("announce") || "Announce"}
             </button>
-          )}
+          }
           <div style={{ position: "relative" }}>
             <button
               onClick={() => setUserMenu((o) => !o)}
@@ -2138,9 +2138,9 @@ export default function AdminDashboard() {
                 background: isMobile ? "transparent" : T.bg,
                 borderRadius: 12,
                 border: isMobile ? "none" : `1px solid ${T.border}`,
-                cursor: "pointer",
-              }}
-            >
+                cursor: "pointer"
+              }}>
+              
               <div
                 style={{
                   width: 30,
@@ -2151,652 +2151,1150 @@ export default function AdminDashboard() {
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 14,
-                  color: "#fff",
-                }}
-              >
+                  color: "#fff"
+                }}>
+                
                 👤
               </div>
-              {!isMobile && (
-                <div style={{ textAlign: "left" }}>
+              {!isMobile &&
+              <div style={{ textAlign: "left" }}>
                   <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: T.text,
-                    }}
-                  >
-                    Admin
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 10,
-                      color: T.textM,
-                    }}
-                  >
-                    Super Admin
-                  </div>
-                </div>
-              )}
-            </button>
-            {userMenu && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "110%",
-                  right: 0,
-                  background: "#fff",
-                  borderRadius: 12,
-                  border: `1px solid ${T.border}`,
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                  zIndex: 200,
-                  width: 180,
-                  padding: 6,
-                }}
-              >
-                {isMobile && (
-                  <button
-                    onClick={() => {
-                      setModal("sendNotif");
-                      setUserMenu(false);
-                    }}
-                    style={{
-                      width: "100%",
-                      background: "transparent",
-                      border: "none",
-                      padding: "10px 12px",
-                      fontSize: 13,
-                      textAlign: "left",
-                      cursor: "pointer",
-                      color: T.maroon,
-                      borderRadius: 8,
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
-                    📣 Announce
-                  </button>
-                )}
-                <button
-                  onClick={handleLogout}
                   style={{
-                    width: "100%",
-                    background: "transparent",
-                    border: "none",
-                    padding: "10px 12px",
-                    fontSize: 13,
-                    textAlign: "left",
-                    cursor: "pointer",
-                    color: T.red,
-                    borderRadius: 8,
                     fontFamily: "'Source Sans 3',sans-serif",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  🚪 Logout
-                </button>
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: T.text
+                  }}>{literalT("Admin")}
+
+
+                </div>
+                  <div
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 10,
+                    color: T.textM
+                  }}>{literalT("Super Admin")}
+
+
+                </div>
+                </div>
+              }
+            </button>
+            {userMenu &&
+            <div
+              style={{
+                position: "absolute",
+                top: "110%",
+                right: 0,
+                background: "#fff",
+                borderRadius: 12,
+                border: `1px solid ${T.border}`,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                zIndex: 200,
+                width: 180,
+                padding: 6
+              }}>
+              
+                {isMobile &&
+              <button
+                onClick={() => {
+                  setModal("sendNotif");
+                  setUserMenu(false);
+                }}
+                style={{
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  padding: "10px 12px",
+                  fontSize: 13,
+                  textAlign: "left",
+                  cursor: "pointer",
+                  color: T.maroon,
+                  borderRadius: 8,
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8
+                }}>{literalT("📣 Announce")}
+
+
+              </button>
+              }
+                <button
+                onClick={handleLogout}
+                style={{
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  padding: "10px 12px",
+                  fontSize: 13,
+                  textAlign: "left",
+                  cursor: "pointer",
+                  color: T.red,
+                  borderRadius: 8,
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8
+                }}>{literalT("🚪 Logout")}
+
+
+              </button>
               </div>
-            )}
+            }
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   };
 
   // ── SHARED COMPONENTS ──────────────────────────────────────────────
-  const StatCard = ({ label, value, icon, accent, sub }) => (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 16,
-        padding: isMobile ? "16px" : "22px",
-        border: `1px solid ${T.border}`,
-        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-        display: "flex",
-        gap: isMobile ? 12 : 16,
-        alignItems: "center",
-      }}
-    >
+  const StatCard = ({ label, value, icon, accent, sub }) =>
+  <div
+    style={{
+      background: "#fff",
+      borderRadius: 16,
+      padding: isMobile ? "16px" : "22px",
+      border: `1px solid ${T.border}`,
+      boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+      display: "flex",
+      gap: isMobile ? 12 : 16,
+      alignItems: "center"
+    }}>
+    
       <div
-        style={{
-          width: isMobile ? 44 : 52,
-          height: isMobile ? 44 : 52,
-          borderRadius: 14,
-          background: `${accent}18`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: isMobile ? 22 : 26,
-          flexShrink: 0,
-        }}
-      >
+      style={{
+        width: isMobile ? 44 : 52,
+        height: isMobile ? 44 : 52,
+        borderRadius: 14,
+        background: `${accent}18`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: isMobile ? 22 : 26,
+        flexShrink: 0
+      }}>
+      
         {icon}
       </div>
       <div>
         <div
-          style={{
-            fontFamily: "'Source Sans 3',sans-serif",
-            fontSize: isMobile ? 11 : 12,
-            color: T.textM,
-          }}
-        >
+        style={{
+          fontFamily: "'Source Sans 3',sans-serif",
+          fontSize: isMobile ? 11 : 12,
+          color: T.textM
+        }}>
+        
           {label}
         </div>
         <div
-          style={{
-            fontFamily: "'Playfair Display',serif",
-            fontWeight: 700,
-            fontSize: isMobile ? 22 : 30,
-            color: T.text,
-            lineHeight: 1.1,
-          }}
-        >
+        style={{
+          fontFamily: "'Playfair Display',serif",
+          fontWeight: 700,
+          fontSize: isMobile ? 22 : 30,
+          color: T.text,
+          lineHeight: 1.1
+        }}>
+        
           {value}
         </div>
-        {sub && (
-          <div
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: 11,
-              color: T.textM,
-              marginTop: 3,
-            }}
-          >
+        {sub &&
+      <div
+        style={{
+          fontFamily: "'Source Sans 3',sans-serif",
+          fontSize: 11,
+          color: T.textM,
+          marginTop: 3
+        }}>
+        
             {sub}
           </div>
-        )}
+      }
       </div>
-    </div>
-  );
+    </div>;
 
-  const ActionBtn = ({ label, onClick, gold }) => (
-    <button
-      onClick={onClick}
-      style={{
-        padding: isMobile ? "8px 14px" : "10px 20px",
-        borderRadius: 50,
-        border: "none",
-        cursor: "pointer",
-        background: gold
-          ? `linear-gradient(135deg,${T.gold},${T.goldL})`
-          : `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
-        color: gold ? T.maroonD : "#fff",
-        fontFamily: "'Source Sans 3',sans-serif",
-        fontWeight: 600,
-        fontSize: isMobile ? 12 : 13,
-        boxShadow: gold
-          ? `0 4px 14px rgba(201,152,42,0.3)`
-          : `0 4px 14px rgba(123,28,28,0.3)`,
-        whiteSpace: "nowrap",
-      }}
-    >
+
+  const ActionBtn = ({ label, onClick, gold }) =>
+  <button
+    onClick={onClick}
+    style={{
+      padding: isMobile ? "8px 14px" : "10px 20px",
+      borderRadius: 50,
+      border: "none",
+      cursor: "pointer",
+      background: gold ?
+      `linear-gradient(135deg,${T.gold},${T.goldL})` :
+      `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
+      color: gold ? T.maroonD : "#fff",
+      fontFamily: "'Source Sans 3',sans-serif",
+      fontWeight: 600,
+      fontSize: isMobile ? 12 : 13,
+      boxShadow: gold ?
+      `0 4px 14px rgba(201,152,42,0.3)` :
+      `0 4px 14px rgba(123,28,28,0.3)`,
+      whiteSpace: "nowrap"
+    }}>
+    
       {label}
-    </button>
-  );
+    </button>;
 
-  const DistrictFilterSelect = ({ value, onChange }) => (
-    <select
-      value={value}
-      onChange={onChange}
-      style={{
-        ...sSx,
-        width: "auto",
-        minWidth: isMobile ? 120 : 160,
-        fontSize: isMobile ? 12 : 14,
-      }}
-    >
-      <option value="ALL">All Districts</option>
-      {TN_DISTRICTS.map((d) => (
-        <option key={d} value={d}>
+
+  const DistrictFilterSelect = ({ value, onChange }) =>
+  <select
+    value={value}
+    onChange={onChange}
+    style={{
+      ...sSx,
+      width: "auto",
+      minWidth: isMobile ? 120 : 160,
+      fontSize: isMobile ? 12 : 14
+    }}>
+    
+      <option value="ALL">{literalT("All Districts")}</option>
+      {TN_DISTRICTS.map((d) =>
+    <option key={d} value={d}>
           {d}
         </option>
-      ))}
-    </select>
-  );
+    )}
+    </select>;
+
 
   // ════════════════════════════════════════════════════════════════════
   // PAGE: DASHBOARD
   // ════════════════════════════════════════════════════════════════════
-  const PageDashboard = () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: isMobile ? 14 : 22,
-      }}
-    >
+  const PageDashboard = () =>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: isMobile ? 14 : 22
+    }}>
+    
       {/* Hero */}
       <div
-        style={{
-          background: `linear-gradient(135deg,${T.maroon},${T.maroonL},#B03A3A)`,
-          borderRadius: isMobile ? 16 : 20,
-          padding: isMobile
-            ? "20px 18px"
-            : isTablet
-              ? "22px 24px"
-              : "28px 32px",
-        }}
-      >
+      style={{
+        background: `linear-gradient(135deg,${T.maroon},${T.maroonL},#B03A3A)`,
+        borderRadius: isMobile ? 16 : 20,
+        padding: isMobile ?
+        "20px 18px" :
+        isTablet ?
+        "22px 24px" :
+        "28px 32px"
+      }}>
+      
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: isMobile ? 12 : 20,
-          }}
-        >
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: isMobile ? 12 : 20
+        }}>
+        
           <div>
             <div
-              style={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: isMobile ? 11 : 13,
-                color: "rgba(255,255,255,0.7)",
-                fontWeight: 600,
-                letterSpacing: 1,
-                textTransform: "uppercase",
-              }}
-            >
-              Overall Resolution Rate
-            </div>
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: isMobile ? 11 : 13,
+              color: "rgba(255,255,255,0.7)",
+              fontWeight: 600,
+              letterSpacing: 1,
+              textTransform: "uppercase"
+            }}>{literalT("Overall Resolution Rate")}
+
+
+          </div>
             <div
-              style={{
-                fontFamily: "'Playfair Display',serif",
-                fontWeight: 900,
-                fontSize: isMobile ? 40 : 56,
-                color: "#fff",
-                lineHeight: 1.1,
-              }}
-            >
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontWeight: 900,
+              fontSize: isMobile ? 40 : 56,
+              color: "#fff",
+              lineHeight: 1.1
+            }}>
+            
               {completionRate}
               <span style={{ fontSize: isMobile ? 20 : 28, opacity: 0.7 }}>
                 %
               </span>
             </div>
             <div
-              style={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: isMobile ? 12 : 13,
-                color: "rgba(255,255,255,0.7)",
-                marginTop: 6,
-              }}
-            >
-              {stats.completed} resolved of {stats.totalComplaints} total
-            </div>
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: isMobile ? 12 : 13,
+              color: "rgba(255,255,255,0.7)",
+              marginTop: 6
+            }}>
+            
+              {stats.completed}{literalT("resolved of")}{stats.totalComplaints}{literalT("total")}
+          </div>
           </div>
           <div
-            style={{
-              display: "flex",
-              gap: isMobile ? 8 : 16,
-              flexWrap: "wrap",
-            }}
-          >
+          style={{
+            display: "flex",
+            gap: isMobile ? 8 : 16,
+            flexWrap: "wrap"
+          }}>
+          
             {[
-              ["📋", stats.totalComplaints, "Total", "#fca5a5"],
-              ["⏳", stats.pending, "Pending", "#fde68a"],
-              ["✅", stats.completed, "Done", "#86efac"],
-              ["👥", stats.activeWorkers, "Workers", "#93c5fd"],
-            ].map(([icon, val, label, color]) => (
-              <div
-                key={label}
-                style={{
-                  background: "rgba(255,255,255,0.12)",
-                  borderRadius: isMobile ? 12 : 16,
-                  padding: isMobile ? "10px 12px" : "16px 20px",
-                  textAlign: "center",
-                  minWidth: isMobile ? 60 : 80,
-                }}
-              >
+          ["📋", stats.totalComplaints, "Total", "#fca5a5"],
+          ["⏳", stats.pending, "Pending", "#fde68a"],
+          ["✅", stats.completed, "Done", "#86efac"],
+          ["👥", stats.activeWorkers, "Workers", "#93c5fd"]].
+          map(([icon, val, label, color]) =>
+          <div
+            key={label}
+            style={{
+              background: "rgba(255,255,255,0.12)",
+              borderRadius: isMobile ? 12 : 16,
+              padding: isMobile ? "10px 12px" : "16px 20px",
+              textAlign: "center",
+              minWidth: isMobile ? 60 : 80
+            }}>
+            
                 <div
-                  style={{
-                    fontSize: isMobile ? 16 : 22,
-                    marginBottom: isMobile ? 3 : 6,
-                  }}
-                >
+              style={{
+                fontSize: isMobile ? 16 : 22,
+                marginBottom: isMobile ? 3 : 6
+              }}>
+              
                   {icon}
                 </div>
                 <div
-                  style={{
-                    fontFamily: "'Playfair Display',serif",
-                    fontWeight: 700,
-                    fontSize: isMobile ? 18 : 26,
-                    color,
-                  }}
-                >
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontWeight: 700,
+                fontSize: isMobile ? 18 : 26,
+                color
+              }}>
+              
                   {val}
                 </div>
                 <div
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: isMobile ? 9 : 11,
-                    color: "rgba(255,255,255,0.65)",
-                    marginTop: isMobile ? 1 : 3,
-                  }}
-                >
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: isMobile ? 9 : 11,
+                color: "rgba(255,255,255,0.65)",
+                marginTop: isMobile ? 1 : 3
+              }}>
+              
                   {label}
                 </div>
               </div>
-            ))}
+          )}
           </div>
         </div>
         <div style={{ width: "100%", marginTop: isMobile ? 12 : 16 }}>
           <div
-            style={{
-              height: 8,
-              background: "rgba(255,255,255,0.15)",
-              borderRadius: 4,
-              overflow: "hidden",
-            }}
-          >
+          style={{
+            height: 8,
+            background: "rgba(255,255,255,0.15)",
+            borderRadius: 4,
+            overflow: "hidden"
+          }}>
+          
             <div
-              style={{
-                height: "100%",
-                width: `${completionRate}%`,
-                background: T.goldL,
-                borderRadius: 4,
-                transition: "width 1s ease",
-              }}
-            />
+            style={{
+              height: "100%",
+              width: `${completionRate}%`,
+              background: T.goldL,
+              borderRadius: 4,
+              transition: "width 1s ease"
+            }} />
+          
           </div>
         </div>
       </div>
 
       {/* Charts */}
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "2fr 1fr",
-          gap: isMobile ? 12 : 20,
-        }}
-      >
+      style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "2fr 1fr",
+        gap: isMobile ? 12 : 20
+      }}>
+      
         <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: isMobile ? "16px" : "22px 24px",
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          }}
-        >
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: isMobile ? "16px" : "22px 24px",
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+        }}>
+        
           <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: isMobile ? 12 : 18,
-              flexWrap: "wrap",
-              gap: 8,
-            }}
-          >
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: isMobile ? 12 : 18,
+            flexWrap: "wrap",
+            gap: 8
+          }}>
+          
             <div>
               <div
-                style={{
-                  fontFamily: "'Playfair Display',serif",
-                  fontWeight: 700,
-                  fontSize: isMobile ? 14 : 17,
-                  color: T.text,
-                }}
-              >
-                Weekly Activity
-              </div>
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontWeight: 700,
+                fontSize: isMobile ? 14 : 17,
+                color: T.text
+              }}>{literalT("Weekly Activity")}
+
+
+            </div>
               <div
-                style={{
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 12,
-                  color: T.textM,
-                  marginTop: 2,
-                }}
-              >
-                Submitted vs Resolved
-              </div>
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 12,
+                color: T.textM,
+                marginTop: 2
+              }}>{literalT("Submitted vs Resolved")}
+
+
+            </div>
             </div>
             <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
               {[
-                ["Submitted", T.maroon],
-                ["Resolved", T.green],
-              ].map(([l, c]) => (
-                <div
-                  key={l}
-                  style={{ display: "flex", alignItems: "center", gap: 6 }}
-                >
+            ["Submitted", T.maroon],
+            ["Resolved", T.green]].
+            map(([l, c]) =>
+            <div
+              key={l}
+              style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              
                   <div
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 2,
-                      background: c,
-                    }}
-                  />
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 2,
+                  background: c
+                }} />
+              
                   <span
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 12,
-                      color: T.textL,
-                    }}
-                  >
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 12,
+                  color: T.textL
+                }}>
+                
                     {l}
                   </span>
                 </div>
-              ))}
+            )}
             </div>
           </div>
           <ResponsiveContainer width="100%" height={isMobile ? 160 : 200}>
             <BarChart data={weeklyData} barGap={4}>
               <XAxis
-                dataKey="day"
-                tick={{
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: isMobile ? 10 : 12,
-                  fill: T.textM,
-                }}
-                axisLine={false}
-                tickLine={false}
-              />
+              dataKey="day"
+              tick={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: isMobile ? 10 : 12,
+                fill: T.textM
+              }}
+              axisLine={false}
+              tickLine={false} />
+            
               <YAxis hide />
               <Tooltip
-                contentStyle={{
-                  borderRadius: 10,
-                  border: `1px solid ${T.border}`,
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 12,
-                }}
-              />
+              contentStyle={{
+                borderRadius: 10,
+                border: `1px solid ${T.border}`,
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 12
+              }} />
+            
               <Bar dataKey="complaints" fill={T.maroon} radius={[6, 6, 0, 0]} />
               <Bar dataKey="resolved" fill={T.green} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
         <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: isMobile ? "16px" : "22px 24px",
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+        }}>
+        
+          <div
           style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: isMobile ? "16px" : "22px 24px",
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          }}
-        >
+            fontFamily: "'Playfair Display',serif",
+            fontWeight: 700,
+            fontSize: isMobile ? 14 : 17,
+            color: T.text,
+            marginBottom: 4
+          }}>{literalT("By Category")}
+
+
+        </div>
           <div
-            style={{
-              fontFamily: "'Playfair Display',serif",
-              fontWeight: 700,
-              fontSize: isMobile ? 14 : 17,
-              color: T.text,
-              marginBottom: 4,
-            }}
-          >
-            By Category
-          </div>
-          <div
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: 12,
-              color: T.textM,
-              marginBottom: 12,
-            }}
-          >
-            Distribution
-          </div>
+          style={{
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: 12,
+            color: T.textM,
+            marginBottom: 12
+          }}>{literalT("Distribution")}
+
+
+        </div>
           <ResponsiveContainer width="100%" height={isMobile ? 120 : 140}>
             <PieChart>
               <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                innerRadius={isMobile ? 30 : 42}
-                outerRadius={isMobile ? 50 : 62}
-                dataKey="value"
-                paddingAngle={3}
-              >
-                {categoryData.map((e, i) => (
-                  <Cell key={i} fill={e.color} />
-                ))}
+              data={categoryData}
+              cx="50%"
+              cy="50%"
+              innerRadius={isMobile ? 30 : 42}
+              outerRadius={isMobile ? 50 : 62}
+              dataKey="value"
+              paddingAngle={3}>
+              
+                {categoryData.map((e, i) =>
+              <Cell key={i} fill={e.color} />
+              )}
               </Pie>
               <Tooltip
-                contentStyle={{
-                  borderRadius: 10,
-                  border: `1px solid ${T.border}`,
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 12,
-                }}
-              />
+              contentStyle={{
+                borderRadius: 10,
+                border: `1px solid ${T.border}`,
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 12
+              }} />
+            
             </PieChart>
           </ResponsiveContainer>
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "4px 10px",
-              marginTop: 8,
-            }}
-          >
-            {categoryData.map((d) => (
-              <div
-                key={d.name}
-                style={{ display: "flex", alignItems: "center", gap: 5 }}
-              >
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "4px 10px",
+            marginTop: 8
+          }}>
+          
+            {categoryData.map((d) =>
+          <div
+            key={d.name}
+            style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            
                 <div
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: "50%",
-                    background: d.color,
-                    flexShrink: 0,
-                  }}
-                />
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: d.color,
+                flexShrink: 0
+              }} />
+            
                 <span
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 10,
-                    color: T.textL,
-                  }}
-                >
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 10,
+                color: T.textL
+              }}>
+              
                   {d.name} {d.value}%
                 </span>
               </div>
-            ))}
+          )}
           </div>
         </div>
       </div>
 
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "3fr 2fr",
-          gap: isMobile ? 12 : 20,
-        }}
-      >
+      style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "3fr 2fr",
+        gap: isMobile ? 12 : 20
+      }}>
+      
         <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: isMobile ? "16px" : "22px 24px",
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          }}
-        >
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: isMobile ? "16px" : "22px 24px",
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+        }}>
+        
           <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: isMobile ? 12 : 16,
-            }}
-          >
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: isMobile ? 12 : 16
+          }}>
+          
             <div
-              style={{
-                fontFamily: "'Playfair Display',serif",
-                fontWeight: 700,
-                fontSize: isMobile ? 14 : 17,
-                color: T.text,
-              }}
-            >
-              Recent Complaints
-            </div>
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontWeight: 700,
+              fontSize: isMobile ? 14 : 17,
+              color: T.text
+            }}>{literalT("Recent Complaints")}
+
+
+          </div>
             <button
-              onClick={() => navigateTo("complaints")}
-              style={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 13,
-                color: T.maroon,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: 600,
-              }}
-            >
-              View all →
-            </button>
+            onClick={() => navigateTo("complaints")}
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 13,
+              color: T.maroon,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 600
+            }}>{literalT("View all →")}
+
+
+          </button>
           </div>
           {complaints.slice(0, 5).map((c) => {
-            const s = ss(c.status);
-            return (
-              <div
-                key={c.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "11px 0",
-                  borderBottom: `1px solid ${T.border}`,
-                }}
-              >
+          const s = ss(c.status);
+          return (
+            <div
+              key={c.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "11px 0",
+                borderBottom: `1px solid ${T.border}`
+              }}>
+              
                 <div
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: "50%",
-                    background: pc(c.priority),
-                    flexShrink: 0,
-                  }}
-                />
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: pc(c.priority),
+                  flexShrink: 0
+                }} />
+              
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: isMobile ? 12 : 13,
-                      fontWeight: 600,
-                      color: T.text,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: isMobile ? 12 : 13,
+                    fontWeight: 600,
+                    color: T.text,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}>
+                  
                     {c.category}
                   </div>
                   <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 11,
-                      color: T.textM,
-                    }}
-                  >
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 11,
+                    color: T.textM
+                  }}>
+                  
                     {c.thokuthi} · {c.time}
                   </div>
                 </div>
                 <span
+                style={{
+                  background: s.bg,
+                  color: s.color,
+                  padding: "3px 10px",
+                  borderRadius: 50,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  whiteSpace: "nowrap"
+                }}>
+                
+                  {c.status}
+                </span>
+              </div>);
+
+        })}
+        </div>
+        <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: isMobile ? "16px" : "22px 24px",
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+        }}>
+        
+          <div
+          style={{
+            fontFamily: "'Playfair Display',serif",
+            fontWeight: 700,
+            fontSize: isMobile ? 14 : 17,
+            color: T.text,
+            marginBottom: 16
+          }}>{literalT("District Performance")}
+
+
+        </div>
+          {districtData.map((d) => {
+          const pct =
+          d.total > 0 ? Math.round(d.resolved / d.total * 100) : 0;
+          return (
+            <div key={d.district} style={{ marginBottom: 13 }}>
+                <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 5
+                }}>
+                
+                  <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: isMobile ? 12 : 13,
+                    color: T.text,
+                    fontWeight: 600
+                  }}>
+                  
+                    {d.district}
+                  </span>
+                  <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    color: T.textM
+                  }}>
+                  
+                    {pct}%
+                  </span>
+                </div>
+                <div
+                style={{
+                  height: 7,
+                  background: T.bg,
+                  borderRadius: 4,
+                  overflow: "hidden"
+                }}>
+                
+                  <div
+                  style={{
+                    height: "100%",
+                    width: `${pct}%`,
+                    background:
+                    pct > 90 ? T.green : pct > 70 ? T.gold : T.maroon,
+                    borderRadius: 4,
+                    transition: "width 1s"
+                  }} />
+                
+                </div>
+              </div>);
+
+        })}
+        </div>
+      </div>
+    </div>;
+
+
+  // ════════════════════════════════════════════════════════════════════
+  // PAGE: COMPLAINTS
+  // ════════════════════════════════════════════════════════════════════
+  const PageComplaints = () =>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: isMobile ? 12 : 18
+    }}>
+    
+      <div
+      style={{
+        display: "flex",
+        gap: 8,
+        alignItems: "center",
+        flexWrap: "wrap"
+      }}>
+      
+        <ActionBtn
+        label={literalT("+ File Complaint")}
+        onClick={() => setModal("addComplaint")} />
+      
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          {["ALL", "NEW", "IN PROGRESS", "COMPLETED"].map((s) =>
+        <button
+          key={s}
+          onClick={() => setFilterStatus(s)}
+          style={{
+            padding: isMobile ? "5px 10px" : "7px 14px",
+            borderRadius: 50,
+            border: `1.5px solid ${filterStatus === s ? T.maroon : T.border}`,
+            background: filterStatus === s ? T.maroon : "transparent",
+            color: filterStatus === s ? "#fff" : T.textL,
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: isMobile ? 10 : 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap"
+          }}>
+          
+              {isMobile ? s === "IN PROGRESS" ? "IN PROG" : s : s}
+            </button>
+        )}
+        </div>
+        <DistrictFilterSelect
+        value={filterDistrict}
+        onChange={(e) => setFilterDistrict(e.target.value)} />
+      
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <span
+          style={{
+            padding: "5px 10px",
+            borderRadius: 50,
+            background: "rgba(123,28,28,0.08)",
+            color: T.maroon,
+            fontSize: 12,
+            fontWeight: 700
+          }}>{literalT("Status:")}
+
+          {filterStatus === "ALL" ? "All" : filterStatus}
+          </span>
+          <span
+          style={{
+            padding: "5px 10px",
+            borderRadius: 50,
+            background: "rgba(123,28,28,0.08)",
+            color: T.maroon,
+            fontSize: 12,
+            fontWeight: 700
+          }}>{literalT("District:")}
+
+          {filterDistrict === "ALL" ? "All" : filterDistrict}
+          </span>
+        </div>
+        <span
+        style={{
+          fontFamily: "'Source Sans 3',sans-serif",
+          fontSize: 13,
+          color: T.textM,
+          whiteSpace: "nowrap"
+        }}>
+        
+          {filteredComplaints.length}{literalT("results")}
+      </span>
+        <div style={{ marginLeft: "auto" }}>
+          <ExportMenu
+          onCSV={() =>
+          exportToCSV(filteredComplaints, "complaints.csv", [
+          "ID",
+          "Category",
+          "User",
+          "Thokuthi",
+          "District",
+          "Priority",
+          "Status"]
+          )
+          }
+          onHTML={() =>
+          exportToHTML(
+            generateComplaintsReport(filteredComplaints, stats),
+            "complaints_report"
+          )
+          }
+          onWord={() =>
+          exportToHTML(
+            generateComplaintsReport(filteredComplaints, stats),
+            "complaints_report"
+          )
+          } />
+        
+        </div>
+      </div>
+      <div
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        border: `1px solid ${T.border}`,
+        overflow: "hidden",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+      }}>
+      
+        {isMobile ?
+      <div>
+            {filteredComplaints.map((c) => {
+          const s = ss(c.status);
+          const isOpen = activeRow === c.id;
+          return (
+            <div
+              key={c.id}
+              style={{ borderBottom: `1px solid ${T.border}` }}>
+              
+                  <div
+                onClick={() => setActiveRow(isOpen ? null : c.id)}
+                style={{
+                  padding: "14px 16px",
+                  cursor: "pointer",
+                  background: isOpen ? T.goldP : "transparent"
+                }}>
+                
+                    <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 8
+                  }}>
+                  
+                      <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      minWidth: 0
+                    }}>
+                    
+                        <div
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: pc(c.priority),
+                        flexShrink: 0
+                      }} />
+                    
+                        <div style={{ minWidth: 0 }}>
+                          <div
+                        style={{
+                          fontFamily: "'Source Sans 3',sans-serif",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: T.text,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap"
+                        }}>
+                        
+                            {c.category}
+                          </div>
+                          <div
+                        style={{
+                          fontFamily: "'Source Sans 3',sans-serif",
+                          fontSize: 11,
+                          color: T.textM
+                        }}>
+                        
+                            {c.user} · {c.thokuthi} · {c.district}
+                          </div>
+                        </div>
+                      </div>
+                      <span
+                    style={{
+                      background: s.bg,
+                      color: s.color,
+                      padding: "3px 10px",
+                      borderRadius: 50,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fontFamily: "'Source Sans 3',sans-serif",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0
+                    }}>
+                    
+                        {c.status}
+                      </span>
+                    </div>
+                  </div>
+                  {isOpen &&
+              <div
+                style={{
+                  background: T.goldP,
+                  padding: "12px 16px",
+                  borderTop: `1px dashed ${T.border}`
+                }}>
+                
+                      <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    marginBottom: 8
+                  }}>
+                  
+                        {["NEW", "IN PROGRESS", "COMPLETED"].map((st) =>
+                  <button
+                    key={st}
+                    onClick={() => updateComplaintStatus(c.id, st)}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: 50,
+                      border: `1.5px solid ${c.status === st ? T.maroon : T.border}`,
+                      background: c.status === st ? T.maroon : "#fff",
+                      color: c.status === st ? "#fff" : T.textL,
+                      fontFamily: "'Source Sans 3',sans-serif",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      cursor: "pointer"
+                    }}>
+                    
+                            {st}
+                          </button>
+                  )}
+                      </div>
+                      <div
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 11,
+                    color: T.textM
+                  }}>{literalT("Reported:")}
+
+                  {c.time}
+                      </div>
+                    </div>
+              }
+                </div>);
+
+        })}
+          </div> :
+
+      <div>
+            <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isTablet ?
+            "1fr 2fr 1fr 1fr 1.2fr" :
+            "1fr 2fr 1.5fr 1fr 1fr 1fr 1.5fr",
+            padding: "11px 22px",
+            background: T.bg,
+            borderBottom: `1px solid ${T.border}`
+          }}>
+          
+              {(isTablet ?
+          ["Category", "User", "District", "Priority", "Status"] :
+          [
+          "ID",
+          "Category",
+          "User",
+          "Thokuthi",
+          "District",
+          "Priority",
+          "Status"]).
+
+          map((h) =>
+          <span
+            key={h}
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.textM,
+              textTransform: "uppercase",
+              letterSpacing: 0.8
+            }}>
+            
+                  {h}
+                </span>
+          )}
+            </div>
+            {filteredComplaints.map((c) => {
+          const s = ss(c.status);
+          const isOpen = activeRow === c.id;
+          return (
+            <div key={c.id}>
+                  <div
+                onClick={() => setActiveRow(isOpen ? null : c.id)}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isTablet ?
+                  "1fr 2fr 1fr 1fr 1.2fr" :
+                  "1fr 2fr 1.5fr 1fr 1fr 1fr 1.5fr",
+                  padding: "13px 22px",
+                  borderBottom: `1px solid ${T.border}`,
+                  cursor: "pointer",
+                  background: isOpen ? T.goldP : "transparent",
+                  transition: "background 0.15s"
+                }}
+                onMouseEnter={(e) => {
+                  if (!isOpen) e.currentTarget.style.background = T.bg;
+                }}
+                onMouseLeave={(e) => {
+                  if (!isOpen)
+                  e.currentTarget.style.background = "transparent";
+                }}>
+                
+                    {!isTablet &&
+                <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    color: T.textM
+                  }}>
+                  
+                        {String(c.id || "").slice(-6)}
+                      </span>
+                }
+                    <div
+                  style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  
+                      <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: pc(c.priority),
+                      flexShrink: 0
+                    }} />
+                  
+                      <span
+                    style={{
+                      fontFamily: "'Source Sans 3',sans-serif",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: T.text,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}>
+                    
+                        {c.category}
+                      </span>
+                    </div>
+                    <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 13,
+                    color: T.text
+                  }}>
+                  
+                      {c.user}
+                    </span>
+                    {!isTablet &&
+                <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    color: T.textL
+                  }}>
+                  
+                        {c.thokuthi}
+                      </span>
+                }
+                    <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    color: T.textL
+                  }}>
+                  
+                      {c.district}
+                    </span>
+                    <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    color: pc(c.priority),
+                    fontWeight: 600,
+                    textTransform: "capitalize"
+                  }}>
+                  
+                      {c.priority}
+                    </span>
+                    <span
                   style={{
                     background: s.bg,
                     color: s.color,
@@ -2805,887 +3303,389 @@ export default function AdminDashboard() {
                     fontSize: 11,
                     fontWeight: 600,
                     fontFamily: "'Source Sans 3',sans-serif",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {c.status}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: isMobile ? "16px" : "22px 24px",
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "'Playfair Display',serif",
-              fontWeight: 700,
-              fontSize: isMobile ? 14 : 17,
-              color: T.text,
-              marginBottom: 16,
-            }}
-          >
-            District Performance
-          </div>
-          {districtData.map((d) => {
-            const pct =
-              d.total > 0 ? Math.round((d.resolved / d.total) * 100) : 0;
-            return (
-              <div key={d.district} style={{ marginBottom: 13 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 5,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: isMobile ? 12 : 13,
-                      color: T.text,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {d.district}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 12,
-                      color: T.textM,
-                    }}
-                  >
-                    {pct}%
-                  </span>
-                </div>
-                <div
-                  style={{
-                    height: 7,
-                    background: T.bg,
-                    borderRadius: 4,
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: `${pct}%`,
-                      background:
-                        pct > 90 ? T.green : pct > 70 ? T.gold : T.maroon,
-                      borderRadius: 4,
-                      transition: "width 1s",
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
-  // ════════════════════════════════════════════════════════════════════
-  // PAGE: COMPLAINTS
-  // ════════════════════════════════════════════════════════════════════
-  const PageComplaints = () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: isMobile ? 12 : 18,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <ActionBtn
-          label="+ File Complaint"
-          onClick={() => setModal("addComplaint")}
-        />
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {["ALL", "NEW", "IN PROGRESS", "COMPLETED"].map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilterStatus(s)}
-              style={{
-                padding: isMobile ? "5px 10px" : "7px 14px",
-                borderRadius: 50,
-                border: `1.5px solid ${filterStatus === s ? T.maroon : T.border}`,
-                background: filterStatus === s ? T.maroon : "transparent",
-                color: filterStatus === s ? "#fff" : T.textL,
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: isMobile ? 10 : 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {isMobile ? (s === "IN PROGRESS" ? "IN PROG" : s) : s}
-            </button>
-          ))}
-        </div>
-        <DistrictFilterSelect
-          value={filterDistrict}
-          onChange={(e) => setFilterDistrict(e.target.value)}
-        />
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <span
-            style={{
-              padding: "5px 10px",
-              borderRadius: 50,
-              background: "rgba(123,28,28,0.08)",
-              color: T.maroon,
-              fontSize: 12,
-              fontWeight: 700,
-            }}
-          >
-            Status: {filterStatus === "ALL" ? "All" : filterStatus}
-          </span>
-          <span
-            style={{
-              padding: "5px 10px",
-              borderRadius: 50,
-              background: "rgba(123,28,28,0.08)",
-              color: T.maroon,
-              fontSize: 12,
-              fontWeight: 700,
-            }}
-          >
-            District: {filterDistrict === "ALL" ? "All" : filterDistrict}
-          </span>
-        </div>
-        <span
-          style={{
-            fontFamily: "'Source Sans 3',sans-serif",
-            fontSize: 13,
-            color: T.textM,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {filteredComplaints.length} results
-        </span>
-        <div style={{ marginLeft: "auto" }}>
-          <ExportMenu
-            onCSV={() =>
-              exportToCSV(filteredComplaints, "complaints.csv", [
-                "ID",
-                "Category",
-                "User",
-                "Thokuthi",
-                "District",
-                "Priority",
-                "Status",
-              ])
-            }
-            onHTML={() =>
-              exportToHTML(
-                generateComplaintsReport(filteredComplaints, stats),
-                "complaints_report",
-              )
-            }
-            onWord={() =>
-              exportToHTML(
-                generateComplaintsReport(filteredComplaints, stats),
-                "complaints_report",
-              )
-            }
-          />
-        </div>
-      </div>
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          border: `1px solid ${T.border}`,
-          overflow: "hidden",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-        }}
-      >
-        {isMobile ? (
-          <div>
-            {filteredComplaints.map((c) => {
-              const s = ss(c.status);
-              const isOpen = activeRow === c.id;
-              return (
-                <div
-                  key={c.id}
-                  style={{ borderBottom: `1px solid ${T.border}` }}
-                >
-                  <div
-                    onClick={() => setActiveRow(isOpen ? null : c.id)}
-                    style={{
-                      padding: "14px 16px",
-                      cursor: "pointer",
-                      background: isOpen ? T.goldP : "transparent",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        gap: 8,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          minWidth: 0,
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: "50%",
-                            background: pc(c.priority),
-                            flexShrink: 0,
-                          }}
-                        />
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontFamily: "'Source Sans 3',sans-serif",
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: T.text,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {c.category}
-                          </div>
-                          <div
-                            style={{
-                              fontFamily: "'Source Sans 3',sans-serif",
-                              fontSize: 11,
-                              color: T.textM,
-                            }}
-                          >
-                            {c.user} · {c.thokuthi} · {c.district}
-                          </div>
-                        </div>
-                      </div>
-                      <span
-                        style={{
-                          background: s.bg,
-                          color: s.color,
-                          padding: "3px 10px",
-                          borderRadius: 50,
-                          fontSize: 10,
-                          fontWeight: 600,
-                          fontFamily: "'Source Sans 3',sans-serif",
-                          whiteSpace: "nowrap",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {c.status}
-                      </span>
-                    </div>
-                  </div>
-                  {isOpen && (
-                    <div
-                      style={{
-                        background: T.goldP,
-                        padding: "12px 16px",
-                        borderTop: `1px dashed ${T.border}`,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 8,
-                          flexWrap: "wrap",
-                          marginBottom: 8,
-                        }}
-                      >
-                        {["NEW", "IN PROGRESS", "COMPLETED"].map((st) => (
-                          <button
-                            key={st}
-                            onClick={() => updateComplaintStatus(c.id, st)}
-                            style={{
-                              padding: "6px 12px",
-                              borderRadius: 50,
-                              border: `1.5px solid ${c.status === st ? T.maroon : T.border}`,
-                              background: c.status === st ? T.maroon : "#fff",
-                              color: c.status === st ? "#fff" : T.textL,
-                              fontFamily: "'Source Sans 3',sans-serif",
-                              fontSize: 11,
-                              fontWeight: 600,
-                              cursor: "pointer",
-                            }}
-                          >
-                            {st}
-                          </button>
-                        ))}
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: "'Source Sans 3',sans-serif",
-                          fontSize: 11,
-                          color: T.textM,
-                        }}
-                      >
-                        Reported: {c.time}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isTablet
-                  ? "1fr 2fr 1fr 1fr 1.2fr"
-                  : "1fr 2fr 1.5fr 1fr 1fr 1fr 1.5fr",
-                padding: "11px 22px",
-                background: T.bg,
-                borderBottom: `1px solid ${T.border}`,
-              }}
-            >
-              {(isTablet
-                ? ["Category", "User", "District", "Priority", "Status"]
-                : [
-                    "ID",
-                    "Category",
-                    "User",
-                    "Thokuthi",
-                    "District",
-                    "Priority",
-                    "Status",
-                  ]
-              ).map((h) => (
-                <span
-                  key={h}
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: T.textM,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.8,
-                  }}
-                >
-                  {h}
-                </span>
-              ))}
-            </div>
-            {filteredComplaints.map((c) => {
-              const s = ss(c.status);
-              const isOpen = activeRow === c.id;
-              return (
-                <div key={c.id}>
-                  <div
-                    onClick={() => setActiveRow(isOpen ? null : c.id)}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: isTablet
-                        ? "1fr 2fr 1fr 1fr 1.2fr"
-                        : "1fr 2fr 1.5fr 1fr 1fr 1fr 1.5fr",
-                      padding: "13px 22px",
-                      borderBottom: `1px solid ${T.border}`,
-                      cursor: "pointer",
-                      background: isOpen ? T.goldP : "transparent",
-                      transition: "background 0.15s",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isOpen) e.currentTarget.style.background = T.bg;
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isOpen)
-                        e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    {!isTablet && (
-                      <span
-                        style={{
-                          fontFamily: "'Source Sans 3',sans-serif",
-                          fontSize: 12,
-                          color: T.textM,
-                        }}
-                      >
-                        {String(c.id || "").slice(-6)}
-                      </span>
-                    )}
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 7 }}
-                    >
-                      <div
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: pc(c.priority),
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: "'Source Sans 3',sans-serif",
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: T.text,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {c.category}
-                      </span>
-                    </div>
-                    <span
-                      style={{
-                        fontFamily: "'Source Sans 3',sans-serif",
-                        fontSize: 13,
-                        color: T.text,
-                      }}
-                    >
-                      {c.user}
-                    </span>
-                    {!isTablet && (
-                      <span
-                        style={{
-                          fontFamily: "'Source Sans 3',sans-serif",
-                          fontSize: 12,
-                          color: T.textL,
-                        }}
-                      >
-                        {c.thokuthi}
-                      </span>
-                    )}
-                    <span
-                      style={{
-                        fontFamily: "'Source Sans 3',sans-serif",
-                        fontSize: 12,
-                        color: T.textL,
-                      }}
-                    >
-                      {c.district}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "'Source Sans 3',sans-serif",
-                        fontSize: 12,
-                        color: pc(c.priority),
-                        fontWeight: 600,
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {c.priority}
-                    </span>
-                    <span
-                      style={{
-                        background: s.bg,
-                        color: s.color,
-                        padding: "3px 10px",
-                        borderRadius: 50,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                        display: "inline-block",
-                      }}
-                    >
+                    display: "inline-block"
+                  }}>
+                  
                       {c.status}
                     </span>
                   </div>
-                  {isOpen && (
-                    <div
-                      style={{
-                        background: T.goldP,
-                        borderBottom: `1px solid ${T.border}`,
-                        padding: "12px 22px",
-                        display: "flex",
-                        gap: 10,
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "'Source Sans 3',sans-serif",
-                          fontSize: 13,
-                          color: T.textL,
-                        }}
-                      >
-                        Update Status:
-                      </span>
-                      {["NEW", "IN PROGRESS", "COMPLETED"].map((st) => (
-                        <button
-                          key={st}
-                          onClick={() => updateComplaintStatus(c.id, st)}
-                          style={{
-                            padding: "7px 16px",
-                            borderRadius: 50,
-                            border: `1.5px solid ${c.status === st ? T.maroon : T.border}`,
-                            background: c.status === st ? T.maroon : "#fff",
-                            color: c.status === st ? "#fff" : T.textL,
-                            fontFamily: "'Source Sans 3',sans-serif",
-                            fontSize: 12,
-                            fontWeight: 600,
-                            cursor: "pointer",
-                          }}
-                        >
-                          {st}
-                        </button>
-                      ))}
-                      <span
-                        style={{
-                          marginLeft: "auto",
-                          fontFamily: "'Source Sans 3',sans-serif",
-                          fontSize: 12,
-                          color: T.textM,
-                        }}
-                      >
-                        Reported: {c.time}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            {filteredComplaints.length === 0 && (
+                  {isOpen &&
               <div
                 style={{
-                  padding: "40px",
-                  textAlign: "center",
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 15,
-                  color: T.textM,
-                }}
-              >
-                No complaints found
-              </div>
-            )}
+                  background: T.goldP,
+                  borderBottom: `1px solid ${T.border}`,
+                  padding: "12px 22px",
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "center",
+                  flexWrap: "wrap"
+                }}>
+                
+                      <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 13,
+                    color: T.textL
+                  }}>{literalT("Update Status:")}
+
+
+                </span>
+                      {["NEW", "IN PROGRESS", "COMPLETED"].map((st) =>
+                <button
+                  key={st}
+                  onClick={() => updateComplaintStatus(c.id, st)}
+                  style={{
+                    padding: "7px 16px",
+                    borderRadius: 50,
+                    border: `1.5px solid ${c.status === st ? T.maroon : T.border}`,
+                    background: c.status === st ? T.maroon : "#fff",
+                    color: c.status === st ? "#fff" : T.textL,
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}>
+                  
+                          {st}
+                        </button>
+                )}
+                      <span
+                  style={{
+                    marginLeft: "auto",
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    color: T.textM
+                  }}>{literalT("Reported:")}
+
+                  {c.time}
+                      </span>
+                    </div>
+              }
+                </div>);
+
+        })}
+            {filteredComplaints.length === 0 &&
+        <div
+          style={{
+            padding: "40px",
+            textAlign: "center",
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: 15,
+            color: T.textM
+          }}>{literalT("No complaints found")}
+
+
+        </div>
+        }
           </div>
-        )}
+      }
       </div>
-    </div>
-  );
+    </div>;
+
 
   // ════════════════════════════════════════════════════════════════════
   // PAGE: WORKERS
   // ════════════════════════════════════════════════════════════════════
-  const PageWorkers = () => (
-    <div
+  const PageWorkers = () =>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: isMobile ? 12 : 18
+    }}>
+    
+      <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        gap: isMobile ? 12 : 18,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
+        gap: 8,
+        alignItems: "center",
+        flexWrap: "wrap"
+      }}>
+      
         <input
-          placeholder="🔍  Search workers, thokuthi, district..."
-          value={searchWorker}
-          onChange={(e) => setSearchWorker(e.target.value)}
-          style={{
-            ...iSx,
-            flex: 1,
-            minWidth: isMobile ? 140 : 220,
-            width: "auto",
-            fontSize: isMobile ? 13 : 14,
-          }}
-        />
-        <ActionBtn label="+ Add Worker" onClick={() => setModal("addWorker")} />
+        placeholder={literalT("🔍  Search workers, thokuthi, district...")}
+        value={searchWorker}
+        onChange={(e) => setSearchWorker(e.target.value)}
+        style={{
+          ...iSx,
+          flex: 1,
+          minWidth: isMobile ? 140 : 220,
+          width: "auto",
+          fontSize: isMobile ? 13 : 14
+        }} />
+      
+        <ActionBtn label={literalT("+ Add Worker")} onClick={() => setModal("addWorker")} />
         <ExportMenu
-          onCSV={() =>
-            exportToCSV(filteredWorkers, "workers.csv", [
-              "Name",
-              "Email",
-              "Phone",
-              "Thokuthi",
-              "District",
-              "Resolved",
-              "Pending",
-              "Status",
-            ])
-          }
-          onHTML={() =>
-            exportToHTML(
-              generateWorkersReport(filteredWorkers),
-              "workers_report",
-            )
-          }
-          onWord={() =>
-            exportToHTML(
-              generateWorkersReport(filteredWorkers),
-              "workers_report",
-            )
-          }
-        />
+        onCSV={() =>
+        exportToCSV(filteredWorkers, "workers.csv", [
+        "Name",
+        "Email",
+        "Phone",
+        "Thokuthi",
+        "District",
+        "Resolved",
+        "Pending",
+        "Status"]
+        )
+        }
+        onHTML={() =>
+        exportToHTML(
+          generateWorkersReport(filteredWorkers),
+          "workers_report"
+        )
+        }
+        onWord={() =>
+        exportToHTML(
+          generateWorkersReport(filteredWorkers),
+          "workers_report"
+        )
+        } />
+      
       </div>
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile
-            ? "1fr"
-            : isTablet
-              ? "1fr 1fr"
-              : "repeat(auto-fill,minmax(300px,1fr))",
-          gap: isMobile ? 10 : 16,
-        }}
-      >
+      style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ?
+        "1fr" :
+        isTablet ?
+        "1fr 1fr" :
+        "repeat(auto-fill,minmax(300px,1fr))",
+        gap: isMobile ? 10 : 16
+      }}>
+      
         {filteredWorkers.map((w) => {
-          const total = (w.resolved || 0) + (w.pending || 0);
-          const pct = total > 0 ? Math.round((w.resolved / total) * 100) : 0;
-          return (
-            <div
-              key={w.id}
-              style={{
-                background: "#fff",
-                borderRadius: 18,
-                padding: isMobile ? "16px" : "22px",
-                border: `1px solid ${T.border}`,
-                boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-                transition: "all 0.25s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "translateY(-3px)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "translateY(0)")
-              }
-            >
+        const total = (w.resolved || 0) + (w.pending || 0);
+        const pct = total > 0 ? Math.round(w.resolved / total * 100) : 0;
+        return (
+          <div
+            key={w.id}
+            style={{
+              background: "#fff",
+              borderRadius: 18,
+              padding: isMobile ? "16px" : "22px",
+              border: `1px solid ${T.border}`,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+              transition: "all 0.25s"
+            }}
+            onMouseEnter={(e) =>
+            e.currentTarget.style.transform = "translateY(-3px)"
+            }
+            onMouseLeave={(e) =>
+            e.currentTarget.style.transform = "translateY(0)"
+            }>
+            
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: 16,
-                }}
-              >
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: 16
+              }}>
+              
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: "50%",
-                      background: `linear-gradient(135deg,${T.maroon},${T.gold})`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 18,
-                      color: "#fff",
-                      fontFamily: "'Playfair Display',serif",
-                      fontWeight: 700,
-                    }}
-                  >
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    background: `linear-gradient(135deg,${T.maroon},${T.gold})`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 18,
+                    color: "#fff",
+                    fontFamily: "'Playfair Display',serif",
+                    fontWeight: 700
+                  }}>
+                  
                     {(w.name || "?")[0].toUpperCase()}
                   </div>
                   <div>
                     <div
-                      style={{
-                        fontFamily: "'Source Sans 3',sans-serif",
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: T.text,
-                      }}
-                    >
+                    style={{
+                      fontFamily: "'Source Sans 3',sans-serif",
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: T.text
+                    }}>
+                    
                       {w.name}
                     </div>
                     <div
-                      style={{
-                        fontFamily: "'Source Sans 3',sans-serif",
-                        fontSize: 12,
-                        color: T.textM,
-                      }}
-                    >
+                    style={{
+                      fontFamily: "'Source Sans 3',sans-serif",
+                      fontSize: 12,
+                      color: T.textM
+                    }}>
+                    
                       {w.thokuthi} · {w.district}
                     </div>
                   </div>
                 </div>
                 <span
-                  style={{
-                    background: w.status === "active" ? "#dcfce7" : "#f3f4f6",
-                    color: w.status === "active" ? "#166534" : "#6b7280",
-                    padding: "3px 10px",
-                    borderRadius: 50,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    textTransform: "capitalize",
-                  }}
-                >
+                style={{
+                  background: w.status === "active" ? "#dcfce7" : "#f3f4f6",
+                  color: w.status === "active" ? "#166534" : "#6b7280",
+                  padding: "3px 10px",
+                  borderRadius: 50,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  textTransform: "capitalize"
+                }}>
+                
                   {w.status}
                 </span>
               </div>
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: 8,
-                  marginBottom: 14,
-                }}
-              >
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: 8,
+                marginBottom: 14
+              }}>
+              
                 {[
-                  ["Resolved", w.resolved || 0, T.green],
-                  ["Pending", w.pending || 0, T.amber],
-                  ["Rating", `${w.rating || 4.5}★`, T.gold],
-                ].map(([l, v, c]) => (
-                  <div
-                    key={l}
-                    style={{
-                      textAlign: "center",
-                      padding: "10px 6px",
-                      background: T.bg,
-                      borderRadius: 10,
-                    }}
-                  >
+              ["Resolved", w.resolved || 0, T.green],
+              ["Pending", w.pending || 0, T.amber],
+              ["Rating", `${w.rating || 4.5}★`, T.gold]].
+              map(([l, v, c]) =>
+              <div
+                key={l}
+                style={{
+                  textAlign: "center",
+                  padding: "10px 6px",
+                  background: T.bg,
+                  borderRadius: 10
+                }}>
+                
                     <div
-                      style={{
-                        fontFamily: "'Playfair Display',serif",
-                        fontWeight: 700,
-                        fontSize: 18,
-                        color: c,
-                      }}
-                    >
+                  style={{
+                    fontFamily: "'Playfair Display',serif",
+                    fontWeight: 700,
+                    fontSize: 18,
+                    color: c
+                  }}>
+                  
                       {v}
                     </div>
                     <div
-                      style={{
-                        fontFamily: "'Source Sans 3',sans-serif",
-                        fontSize: 11,
-                        color: T.textM,
-                        marginTop: 2,
-                      }}
-                    >
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 11,
+                    color: T.textM,
+                    marginTop: 2
+                  }}>
+                  
                       {l}
                     </div>
                   </div>
-                ))}
+              )}
               </div>
               <div style={{ marginBottom: 14 }}>
                 <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 5
+                }}>
+                
+                  <span
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 5,
-                  }}
-                >
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    color: T.textL
+                  }}>{literalT("Resolution rate")}
+
+
+                </span>
                   <span
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 12,
-                      color: T.textL,
-                    }}
-                  >
-                    Resolution rate
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: T.maroon,
-                    }}
-                  >
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: T.maroon
+                  }}>
+                  
                     {pct}%
                   </span>
                 </div>
                 <div
-                  style={{
-                    height: 6,
-                    background: T.bg,
-                    borderRadius: 3,
-                    overflow: "hidden",
-                  }}
-                >
+                style={{
+                  height: 6,
+                  background: T.bg,
+                  borderRadius: 3,
+                  overflow: "hidden"
+                }}>
+                
                   <div
-                    style={{
-                      height: "100%",
-                      width: `${pct}%`,
-                      background: `linear-gradient(90deg,${T.maroon},${T.gold})`,
-                      borderRadius: 3,
-                    }}
-                  />
+                  style={{
+                    height: "100%",
+                    width: `${pct}%`,
+                    background: `linear-gradient(90deg,${T.maroon},${T.gold})`,
+                    borderRadius: 3
+                  }} />
+                
                 </div>
               </div>
               <button
-                onClick={() => deleteWorker(w.id)}
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: 8,
-                  border: `1px solid ${T.red}30`,
-                  background: `${T.red}08`,
-                  color: T.red,
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 12,
-                  cursor: "pointer",
-                }}
-              >
-                🗑️ Remove Worker
-              </button>
-            </div>
-          );
-        })}
+              onClick={() => deleteWorker(w.id)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: 8,
+                border: `1px solid ${T.red}30`,
+                background: `${T.red}08`,
+                color: T.red,
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 12,
+                cursor: "pointer"
+              }}>{literalT("🗑️ Remove Worker")}
+
+
+            </button>
+            </div>);
+
+      })}
         <div
-          onClick={() => setModal("addWorker")}
-          style={{
-            background: "#fff",
-            borderRadius: 18,
-            padding: "22px",
-            border: `2px dashed ${T.border}`,
-            cursor: "pointer",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: isMobile ? 120 : 220,
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = T.maroon;
-            e.currentTarget.style.background = T.goldP;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = T.border;
-            e.currentTarget.style.background = "#fff";
-          }}
-        >
+        onClick={() => setModal("addWorker")}
+        style={{
+          background: "#fff",
+          borderRadius: 18,
+          padding: "22px",
+          border: `2px dashed ${T.border}`,
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: isMobile ? 120 : 220,
+          transition: "all 0.2s"
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = T.maroon;
+          e.currentTarget.style.background = T.goldP;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = T.border;
+          e.currentTarget.style.background = "#fff";
+        }}>
+        
           <span style={{ fontSize: 36, marginBottom: 10 }}>➕</span>
           <span
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: 14,
-              color: T.textL,
-              fontWeight: 600,
-            }}
-          >
-            Add New Worker
-          </span>
+          style={{
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: 14,
+            color: T.textL,
+            fontWeight: 600
+          }}>{literalT("Add New Worker")}
+
+
+        </span>
         </div>
       </div>
-    </div>
-  );
+    </div>;
+
 
   // ════════════════════════════════════════════════════════════════════
   // PAGE: NEWS & CAMPS
@@ -3697,25 +3697,25 @@ export default function AdminDashboard() {
       blood: "🩸",
       women: "👩",
       employment: "💼",
-      education: "📚",
+      education: "📚"
     };
     return (
       <div
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? 12 : 18,
-        }}
-      >
+          gap: isMobile ? 12 : 18
+        }}>
+        
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: 10,
-          }}
-        >
+            gap: 10
+          }}>
+          
           <div
             style={{
               display: "flex",
@@ -3723,1351 +3723,40 @@ export default function AdminDashboard() {
               background: "#fff",
               borderRadius: 14,
               padding: 4,
-              border: `1px solid ${T.border}`,
-            }}
-          >
-            {["news", "camps"].map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                style={{
-                  padding: isMobile ? "7px 14px" : "8px 22px",
-                  borderRadius: 10,
-                  border: "none",
-                  background:
-                    tab === t
-                      ? `linear-gradient(135deg,${T.maroon},${T.maroonL})`
-                      : "transparent",
-                  color: tab === t ? "#fff" : T.textL,
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontWeight: 600,
-                  fontSize: isMobile ? 13 : 14,
-                  cursor: "pointer",
-                }}
-              >
+              border: `1px solid ${T.border}`
+            }}>
+            
+            {["news", "camps"].map((t) =>
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                padding: isMobile ? "7px 14px" : "8px 22px",
+                borderRadius: 10,
+                border: "none",
+                background:
+                tab === t ?
+                `linear-gradient(135deg,${T.maroon},${T.maroonL})` :
+                "transparent",
+                color: tab === t ? "#fff" : T.textL,
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontWeight: 600,
+                fontSize: isMobile ? 13 : 14,
+                cursor: "pointer"
+              }}>
+              
                 {t === "news" ? "📰 News" : "⛺ Camps"}
               </button>
-            ))}
+            )}
           </div>
           <ActionBtn
             label={tab === "news" ? "+ Add News" : "+ Add Camp"}
-            onClick={() => setModal(tab === "news" ? "addNews" : "addCamp")}
-          />
+            onClick={() => setModal(tab === "news" ? "addNews" : "addCamp")} />
+          
         </div>
-        {tab === "news" ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {newsItems.map((n) => (
-              <div
-                key={n.id}
-                style={{
-                  background: "#fff",
-                  borderRadius: 14,
-                  padding: isMobile ? "12px 14px" : "16px 20px",
-                  border: `1px solid ${T.border}`,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.transform = "translateX(4px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.transform = "translateX(0)")
-                }
-              >
-                <div
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 10,
-                    background:
-                      n.level === "State"
-                        ? `${T.maroon}18`
-                        : n.level === "District"
-                          ? `${T.gold}18`
-                          : `${T.green}18`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 20,
-                    flexShrink: 0,
-                  }}
-                >
-                  {n.level === "State"
-                    ? "🏛️"
-                    : n.level === "District"
-                      ? "🏙️"
-                      : "📍"}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: isMobile ? 13 : 14,
-                      fontWeight: 600,
-                      color: T.text,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {n.title}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 12,
-                      color: T.textM,
-                      marginTop: 3,
-                    }}
-                  >
-                    {n.level} · {n.date}
-                  </div>
-                </div>
-                <span
-                  style={{
-                    background:
-                      n.status === "published" ? "#dcfce7" : "#fef3c7",
-                    color: n.status === "published" ? "#166534" : "#92400e",
-                    padding: "3px 10px",
-                    borderRadius: 50,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {n.status}
-                </span>
-                <button
-                  onClick={() => deleteNews(n.id)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 8,
-                    border: `1px solid ${T.red}30`,
-                    background: `${T.red}08`,
-                    color: T.red,
-                    fontSize: 12,
-                    cursor: "pointer",
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-            {newsItems.length === 0 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "40px",
-                  color: T.textM,
-                  fontFamily: "'Source Sans 3',sans-serif",
-                }}
-              >
-                No news yet
-              </div>
-            )}
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile
-                ? "1fr"
-                : isTablet
-                  ? "1fr 1fr"
-                  : "repeat(auto-fill,minmax(280px,1fr))",
-              gap: isMobile ? 10 : 16,
-            }}
-          >
-            {camps.map((c) => (
-              <div
-                key={c.id || c.name}
-                style={{
-                  background: "#fff",
-                  borderRadius: 16,
-                  padding: isMobile ? "16px" : "22px",
-                  border: `1px solid ${T.border}`,
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-                  transition: "all 0.25s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.transform = "translateY(-3px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.transform = "translateY(0)")
-                }
-              >
-                <div style={{ fontSize: 38, marginBottom: 12 }}>
-                  {campIcons[c.type] || "⛺"}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Playfair Display',serif",
-                    fontWeight: 700,
-                    fontSize: 17,
-                    color: T.maroon,
-                    marginBottom: 6,
-                  }}
-                >
-                  {c.name}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 13,
-                    color: T.textL,
-                    marginBottom: 4,
-                  }}
-                >
-                  📍 {c.location} · {c.district}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 13,
-                    color: T.textL,
-                    marginBottom: 14,
-                  }}
-                >
-                  📅 {c.date} · 👥 {c.slots} slots
-                </div>
-                <button
-                  onClick={() => setModal("sendNotif")}
-                  style={{
-                    width: "100%",
-                    padding: "9px",
-                    borderRadius: 8,
-                    border: "none",
-                    background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
-                    color: "#fff",
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 12,
-                    cursor: "pointer",
-                  }}
-                >
-                  📣 Notify Users
-                </button>
-              </div>
-            ))}
-            <div
-              onClick={() => setModal("addCamp")}
-              style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: "22px",
-                border: `2px dashed ${T.border}`,
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: isMobile ? 100 : 200,
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = T.maroon;
-                e.currentTarget.style.background = T.goldP;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = T.border;
-                e.currentTarget.style.background = "#fff";
-              }}
-            >
-              <span style={{ fontSize: 34, marginBottom: 8 }}>➕</span>
-              <span
-                style={{
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 13,
-                  color: T.textL,
-                  fontWeight: 600,
-                }}
-              >
-                Add New Camp
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // ════════════════════════════════════════════════════════════════════
-  // PAGE: EDUCATION  ← FIXED: all sections inside one return
-  // ════════════════════════════════════════════════════════════════════
-  const PageEducation = () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: isMobile ? 12 : 20,
-      }}
-    >
-      {/* Row 1: Videos + Exams/Certs */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "1fr 1fr",
-          gap: isMobile ? 12 : 20,
-        }}
-      >
-        {/* Videos */}
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: isMobile ? "16px" : "22px 24px",
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 18,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "'Playfair Display',serif",
-                fontWeight: 700,
-                fontSize: isMobile ? 14 : 17,
-                color: T.text,
-              }}
-            >
-              🎥 Videos
-            </div>
-            <ActionBtn
-              label="+ Upload"
-              onClick={() => setModal("uploadVideo")}
-            />
-          </div>
-          {videos.length === 0 && (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "30px 0",
-                color: T.textM,
-                fontFamily: "'Source Sans 3',sans-serif",
-              }}
-            >
-              No videos yet
-            </div>
-          )}
-          {videos.map((v) => (
-            <div
-              key={v.id}
-              style={{
-                padding: "12px 0",
-                borderBottom: `1px solid ${T.border}`,
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  background: `${T.maroon}15`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 18,
-                  flexShrink: 0,
-                }}
-              >
-                🎬
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: T.text,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {v.title}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 11,
-                    color: T.textM,
-                    marginTop: 2,
-                  }}
-                >
-                  {v.category} · {(v.views || 0).toLocaleString()} views
-                </div>
-              </div>
-              <span
-                style={{
-                  background: v.status === "published" ? "#dcfce7" : "#fef3c7",
-                  color: v.status === "published" ? "#166534" : "#92400e",
-                  padding: "2px 9px",
-                  borderRadius: 50,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {v.status}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Exams + Certs */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: isMobile ? 12 : 18,
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: isMobile ? "16px" : "22px 24px",
-              border: `1px solid ${T.border}`,
-              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 18,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Playfair Display',serif",
-                  fontWeight: 700,
-                  fontSize: isMobile ? 14 : 17,
-                  color: T.text,
-                }}
-              >
-                📝 Exams
-              </div>
-              <ActionBtn
-                label="+ Create"
-                onClick={() => setModal("createExam")}
-                gold
-              />
-            </div>
-            {exams.length === 0 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "20px 0",
-                  color: T.textM,
-                  fontFamily: "'Source Sans 3',sans-serif",
-                }}
-              >
-                No exams yet
-              </div>
-            )}
-            {exams.map((e) => (
-              <div
-                key={e.id}
-                style={{
-                  padding: "12px 14px",
-                  marginBottom: 10,
-                  borderRadius: 12,
-                  background: T.bg,
-                  border: `1px solid ${T.border}`,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: T.text,
-                    }}
-                  >
-                    {e.title}
-                  </div>
-                  <span
-                    style={{
-                      fontFamily: "'Playfair Display',serif",
-                      fontWeight: 700,
-                      fontSize: 16,
-                      color: T.maroon,
-                    }}
-                  >
-                    {e.taken}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 11,
-                    color: T.textM,
-                    marginTop: 4,
-                  }}
-                >
-                  {e.questions} questions · {e.duration} · {e.taken} attempts
-                </div>
-              </div>
-            ))}
-          </div>
-          <div
-            style={{
-              background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
-              borderRadius: 16,
-              padding: isMobile ? "16px" : "22px 24px",
-              color: "#fff",
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "'Playfair Display',serif",
-                fontWeight: 700,
-                fontSize: isMobile ? 14 : 17,
-                marginBottom: 6,
-              }}
-            >
-              🏆 Certificates
-            </div>
-            <div
-              style={{
-                fontFamily: "'Playfair Display',serif",
-                fontWeight: 900,
-                fontSize: isMobile ? 36 : 46,
-                color: T.goldL,
-              }}
-            >
-              {certCount}
-            </div>
-            <div
-              style={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.7)",
-                marginTop: 4,
-              }}
-            >
-              Auto-issued when score ≥ 60%
-            </div>
-            <button
-              onClick={() => setModal("issueCert")}
-              style={{
-                marginTop: 16,
-                padding: "9px 20px",
-                borderRadius: 50,
-                border: "none",
-                background: `linear-gradient(135deg,${T.gold},${T.goldL})`,
-                color: T.maroonD,
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              View Summary →
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Row 2: Government Jobs */}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          padding: isMobile ? "16px" : "22px 24px",
-          border: `1px solid ${T.border}`,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 18,
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: "'Playfair Display',serif",
-                fontWeight: 700,
-                fontSize: isMobile ? 15 : 18,
-                color: T.text,
-              }}
-            >
-              Government Jobs
-            </div>
-            <div
-              style={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 12,
-                color: T.textM,
-                marginTop: 3,
-              }}
-            >
-              {jobSummary.live} live · {jobSummary.upcoming} upcoming ·{" "}
-              {jobSummary.previous} previous · {jobSummary.applications} tracked
-              applications
-            </div>
-          </div>
-          <ActionBtn
-            label="+ Add Job"
-            onClick={() => setModal("createJob")}
-            gold
-          />
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
-            gap: 10,
-            marginBottom: 16,
-          }}
-        >
-          {[
-            ["Live Jobs", jobSummary.live, T.green],
-            ["Upcoming", jobSummary.upcoming, T.blue],
-            ["Previous Year", jobSummary.previous, T.textL],
-            ["Applications", jobSummary.applications, T.maroon],
-          ].map(([label, value, color]) => (
-            <div
-              key={label}
-              style={{
-                background: T.bg,
-                borderRadius: 12,
-                padding: 14,
-                border: `1px solid ${T.border}`,
-              }}
-            >
-              <div style={{ color, fontSize: 24, fontWeight: 900 }}>
-                {value}
-              </div>
-              <div style={{ color: T.textM, fontSize: 11, fontWeight: 700 }}>
-                {label}
-              </div>
-            </div>
-          ))}
-        </div>
-        {govJobs.length === 0 ? (
-          <div
-            style={{ color: T.textM, textAlign: "center", padding: "24px 0" }}
-          >
-            No government jobs created yet
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 860,
-              }}
-            >
-              <thead>
-                <tr style={{ background: T.bg }}>
-                  {[
-                    "Title",
-                    "Department",
-                    "Category",
-                    "Status",
-                    "Vacancies",
-                    "Apply By",
-                    "Applications",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: 12,
-                        fontSize: 12,
-                        color: T.textM,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {govJobs.map((job) => (
-                  <tr
-                    key={job.id}
-                    style={{ borderBottom: `1px solid ${T.border}` }}
-                  >
-                    <td
-                      style={{
-                        padding: 12,
-                        fontWeight: 700,
-                        color: T.text,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {job.title}
-                    </td>
-                    <td
-                      style={{
-                        padding: 12,
-                        color: T.textL,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {job.department}
-                    </td>
-                    <td
-                      style={{
-                        padding: 12,
-                        color: T.textL,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {job.category}
-                    </td>
-                    <td
-                      style={{
-                        padding: 12,
-                        color:
-                          job.status === "live"
-                            ? T.green
-                            : job.status === "upcoming"
-                              ? T.blue
-                              : T.textM,
-                        fontWeight: 800,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {job.status}
-                    </td>
-                    <td
-                      style={{
-                        padding: 12,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {job.vacancies || 0}
-                    </td>
-                    <td
-                      style={{
-                        padding: 12,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {job.applyBy
-                        ? new Date(job.applyBy).toLocaleDateString("en-IN")
-                        : "-"}
-                    </td>
-                    <td
-                      style={{
-                        padding: 12,
-                        color: T.maroon,
-                        fontWeight: 800,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
-                      {job.applications || 0}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Row 3: Mock Test Analytics */}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          padding: isMobile ? "16px" : "22px 24px",
-          border: `1px solid ${T.border}`,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Playfair Display',serif",
-            fontWeight: 700,
-            fontSize: isMobile ? 15 : 18,
-            color: T.text,
-            marginBottom: 12,
-          }}
-        >
-          Mock Test Analytics
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
-            gap: 10,
-            marginBottom: 14,
-          }}
-        >
-          {[
-            ["Attempts", mockAggregate.attempts, T.maroon],
-            ["Avg Accuracy", `${mockAggregate.avgAccuracy || 0}%`, T.blue],
-            ["Pass Rate", `${mockAggregate.passRate || 0}%`, T.green],
-            ["Categories", mockAggregate.categories?.length || 0, T.gold],
-          ].map(([label, value, color]) => (
-            <div
-              key={label}
-              style={{
-                background: T.bg,
-                borderRadius: 12,
-                padding: 14,
-                border: `1px solid ${T.border}`,
-              }}
-            >
-              <div style={{ color, fontSize: 22, fontWeight: 900 }}>
-                {value}
-              </div>
-              <div style={{ color: T.textM, fontSize: 11, fontWeight: 700 }}>
-                {label}
-              </div>
-            </div>
-          ))}
-        </div>
-        {(mockAggregate.recent || []).slice(0, 6).map((r) => (
-          <div
-            key={r.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr",
-              gap: 8,
-              padding: "10px 0",
-              borderBottom: `1px solid ${T.border}`,
-            }}
-          >
-            <span
-              style={{
-                fontWeight: 700,
-                color: T.text,
-                fontFamily: "'Source Sans 3',sans-serif",
-              }}
-            >
-              {r.test}
-            </span>
-            <span
-              style={{
-                color: T.textL,
-                fontFamily: "'Source Sans 3',sans-serif",
-              }}
-            >
-              {r.user}
-            </span>
-            <span
-              style={{
-                color: T.blue,
-                fontWeight: 800,
-                fontFamily: "'Source Sans 3',sans-serif",
-              }}
-            >
-              {r.accuracy}% accuracy
-            </span>
-            <span
-              style={{
-                color: T.maroon,
-                fontWeight: 800,
-                fontFamily: "'Source Sans 3',sans-serif",
-              }}
-            >
-              {r.score}/{r.total}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  // ════════════════════════════════════════════════════════════════════
-  // PAGE: ANALYTICS
-  // ════════════════════════════════════════════════════════════════════
-  const PageAnalytics = () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: isMobile ? 12 : 20,
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <ExportMenu
-          onCSV={() =>
-            exportToCSV(
-              districtData.map((d) => ({
-                ...d,
-                rate:
-                  d.total > 0
-                    ? Math.round((d.resolved / d.total) * 100) + "%"
-                    : "0%",
-              })),
-              "analytics.csv",
-              ["District", "Total", "Resolved", "Pending"],
-            )
-          }
-          onHTML={() =>
-            exportToHTML(
-              generateAnalyticsReport(
-                stats,
-                analyticsStats,
-                districtData,
-                weeklyData,
-              ),
-              "analytics_report",
-            )
-          }
-          onWord={() =>
-            exportToHTML(
-              generateAnalyticsReport(
-                stats,
-                analyticsStats,
-                districtData,
-                weeklyData,
-              ),
-              "analytics_report",
-            )
-          }
-        />
-      </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile
-            ? "1fr 1fr"
-            : isTablet
-              ? "1fr 1fr"
-              : "repeat(auto-fit,minmax(200px,1fr))",
-          gap: isMobile ? 10 : 16,
-        }}
-      >
-        <StatCard
-          label="Avg Resolution Time"
-          value={analyticsStats.avgResolutionTime || "N/A"}
-          icon="⚡"
-          accent={T.blue}
-        />
-        <StatCard
-          label="Citizen Satisfaction"
-          value={analyticsStats.citizenSatisfaction || "N/A"}
-          icon="😊"
-          accent={T.green}
-        />
-        <StatCard
-          label="Worker Efficiency"
-          value={analyticsStats.workerEfficiency || "N/A"}
-          icon="🎯"
-          accent={T.gold}
-        />
-        <StatCard
-          label="Repeat Complaints"
-          value={analyticsStats.repeatComplaints || 0}
-          icon="🔄"
-          accent={T.amber}
-        />
-      </div>
-      <div
-        style={{
-          background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
-          borderRadius: isMobile ? 16 : 20,
-          padding: isMobile ? "20px 18px" : "28px 32px",
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "1fr auto",
-          gap: isMobile ? 16 : 24,
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: 12,
-              color: "rgba(255,255,255,0.65)",
-              fontWeight: 700,
-              letterSpacing: 1,
-              textTransform: "uppercase",
-              marginBottom: 8,
-            }}
-          >
-            Overall Completion Rate
-          </div>
-          <div
-            style={{
-              fontFamily: "'Playfair Display',serif",
-              fontWeight: 900,
-              fontSize: isMobile ? 44 : 64,
-              color: "#fff",
-              lineHeight: 1,
-            }}
-          >
-            {completionRate}
-            <span style={{ fontSize: isMobile ? 22 : 32, opacity: 0.6 }}>
-              %
-            </span>
-          </div>
-          <div
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: isMobile ? 12 : 14,
-              color: "rgba(255,255,255,0.7)",
-              marginTop: 10,
-            }}
-          >
-            {stats.completed} completed · {stats.pending} pending ·{" "}
-            {stats.totalComplaints} total
-          </div>
-          <div
-            style={{
-              height: 10,
-              background: "rgba(255,255,255,0.15)",
-              borderRadius: 5,
-              overflow: "hidden",
-              marginTop: 16,
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${completionRate}%`,
-                background: T.goldL,
-                borderRadius: 5,
-                transition: "width 1s",
-              }}
-            />
-          </div>
-        </div>
-        <div
-          style={{
-            textAlign: "center",
-            background: "rgba(255,255,255,0.12)",
-            borderRadius: 20,
-            padding: isMobile ? "16px" : "24px 32px",
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: 13,
-              color: "rgba(255,255,255,0.7)",
-              marginBottom: 8,
-            }}
-          >
-            Active Workers
-          </div>
-          <div
-            style={{
-              fontFamily: "'Playfair Display',serif",
-              fontWeight: 900,
-              fontSize: isMobile ? 36 : 48,
-              color: T.goldL,
-            }}
-          >
-            {stats.activeWorkers}
-          </div>
-          <div
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: 11,
-              color: "rgba(255,255,255,0.5)",
-              marginTop: 4,
-            }}
-          >
-            Across 38 districts
-          </div>
-        </div>
-      </div>
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          padding: isMobile ? "16px" : "22px 24px",
-          border: `1px solid ${T.border}`,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Playfair Display',serif",
-            fontWeight: 700,
-            fontSize: isMobile ? 14 : 17,
-            color: T.text,
-            marginBottom: 20,
-          }}
-        >
-          Weekly Trend
-        </div>
-        <ResponsiveContainer width="100%" height={isMobile ? 160 : 220}>
-          <LineChart data={weeklyData}>
-            <XAxis
-              dataKey="day"
-              tick={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: isMobile ? 10 : 12,
-                fill: T.textM,
-              }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis hide />
-            <Tooltip
-              contentStyle={{
-                borderRadius: 10,
-                border: `1px solid ${T.border}`,
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 12,
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="complaints"
-              stroke={T.maroon}
-              strokeWidth={3}
-              dot={{ fill: T.maroon, r: isMobile ? 3 : 5 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="resolved"
-              stroke={T.green}
-              strokeWidth={3}
-              dot={{ fill: T.green, r: isMobile ? 3 : 5 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          padding: isMobile ? "16px" : "22px 24px",
-          border: `1px solid ${T.border}`,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          overflowX: "auto",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Playfair Display',serif",
-            fontWeight: 700,
-            fontSize: isMobile ? 14 : 17,
-            color: T.text,
-            marginBottom: 16,
-          }}
-        >
-          District Breakdown
-        </div>
-        <div style={{ minWidth: isMobile ? 500 : 0 }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr 1fr 1fr 2fr",
-              padding: "9px 14px",
-              background: T.bg,
-              borderRadius: 10,
-              marginBottom: 8,
-            }}
-          >
-            {["District", "Total", "Resolved", "Pending", "Performance"].map(
-              (h) => (
-                <span
-                  key={h}
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: T.textM,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.8,
-                  }}
-                >
-                  {h}
-                </span>
-              ),
-            )}
-          </div>
-          {districtData.map((d) => {
-            const pct =
-              d.total > 0 ? Math.round((d.resolved / d.total) * 100) : 0;
-            return (
-              <div
-                key={d.district}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "2fr 1fr 1fr 1fr 2fr",
-                  padding: "12px 14px",
-                  borderBottom: `1px solid ${T.border}`,
-                  alignItems: "center",
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: T.text,
-                  }}
-                >
-                  {d.district}
-                </span>
-                <span
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 14,
-                    color: T.text,
-                  }}
-                >
-                  {d.total}
-                </span>
-                <span
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 14,
-                    color: T.green,
-                    fontWeight: 600,
-                  }}
-                >
-                  {d.resolved}
-                </span>
-                <span
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 14,
-                    color: T.amber,
-                    fontWeight: 600,
-                  }}
-                >
-                  {d.pending}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 8,
-                      background: T.bg,
-                      borderRadius: 4,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${pct}%`,
-                        background:
-                          pct > 90 ? T.green : pct > 70 ? T.gold : T.maroon,
-                        borderRadius: 4,
-                      }}
-                    />
-                  </div>
-                  <span
-                    style={{
-                      fontFamily: "'Source Sans 3',sans-serif",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: T.textL,
-                      minWidth: 36,
-                    }}
-                  >
-                    {pct}%
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
-  // ════════════════════════════════════════════════════════════════════
-  // PAGE: NOTIFICATIONS
-  // ════════════════════════════════════════════════════════════════════
-  const PageNotifications = () => {
-    const typeStyle = (t) =>
-      ({
-        complaint: "#fef3c7",
-        worker: "#dbeafe",
-        camp: "#dcfce7",
-        news: "#f3e8ff",
-        announcement: "#fee2e2",
-      })[t] || "#f3f4f6";
-    const typeIcon = (t) =>
-      ({
-        complaint: "📋",
-        worker: "👤",
-        camp: "⛺",
-        news: "📰",
-        announcement: "📢",
-      })[t] || "🔔";
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: isMobile ? 12 : 18,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "'Source Sans 3',sans-serif",
-              fontSize: 14,
-              color: T.textL,
-            }}
-          >
-            {notifications.length} activity logs
-          </div>
-          <ActionBtn
-            label="📣 Send Announcement"
-            onClick={() => setModal("sendNotif")}
-            gold
-          />
-        </div>
-        {notifications.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "40px",
-              color: T.textM,
-              fontFamily: "'Source Sans 3',sans-serif",
-            }}
-          >
-            No notifications yet
-          </div>
-        )}
-        {notifications.map((n) => (
+        {tab === "news" ?
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {newsItems.map((n) =>
           <div
             key={n.id}
             style={{
@@ -5077,66 +3766,1377 @@ export default function AdminDashboard() {
               border: `1px solid ${T.border}`,
               display: "flex",
               alignItems: "center",
-              gap: 14,
+              gap: 12,
               boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              transition: "all 0.2s",
+              transition: "all 0.2s"
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.transform = "translateX(4px)")
+            e.currentTarget.style.transform = "translateX(4px)"
             }
             onMouseLeave={(e) =>
-              (e.currentTarget.style.transform = "translateX(0)")
-            }
-          >
-            <div
+            e.currentTarget.style.transform = "translateX(0)"
+            }>
+            
+                <div
               style={{
                 width: 42,
                 height: 42,
-                borderRadius: 12,
-                background: typeStyle(n.type),
+                borderRadius: 10,
+                background:
+                n.level === "State" ?
+                `${T.maroon}18` :
+                n.level === "District" ?
+                `${T.gold}18` :
+                `${T.green}18`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 20,
-                flexShrink: 0,
-              }}
-            >
-              {typeIcon(n.type)}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
+                flexShrink: 0
+              }}>
+              
+                  {n.level === "State" ?
+              "🏛️" :
+              n.level === "District" ?
+              "🏙️" :
+              "📍"}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
                 style={{
                   fontFamily: "'Source Sans 3',sans-serif",
                   fontSize: isMobile ? 13 : 14,
+                  fontWeight: 600,
                   color: T.text,
-                }}
-              >
-                {n.msg}
-              </div>
-              <div
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap"
+                }}>
+                
+                    {n.title}
+                  </div>
+                  <div
                 style={{
                   fontFamily: "'Source Sans 3',sans-serif",
                   fontSize: 12,
                   color: T.textM,
-                  marginTop: 3,
-                }}
-              >
+                  marginTop: 3
+                }}>
+                
+                    {n.level} · {n.date}
+                  </div>
+                </div>
+                <span
+              style={{
+                background:
+                n.status === "published" ? "#dcfce7" : "#fef3c7",
+                color: n.status === "published" ? "#166534" : "#92400e",
+                padding: "3px 10px",
+                borderRadius: 50,
+                fontSize: 11,
+                fontWeight: 600,
+                fontFamily: "'Source Sans 3',sans-serif",
+                whiteSpace: "nowrap"
+              }}>
+              
+                  {n.status}
+                </span>
+                <button
+              onClick={() => deleteNews(n.id)}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 8,
+                border: `1px solid ${T.red}30`,
+                background: `${T.red}08`,
+                color: T.red,
+                fontSize: 12,
+                cursor: "pointer",
+                fontFamily: "'Source Sans 3',sans-serif",
+                whiteSpace: "nowrap"
+              }}>{literalT("Delete")}
+
+
+            </button>
+              </div>
+          )}
+            {newsItems.length === 0 &&
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px",
+              color: T.textM,
+              fontFamily: "'Source Sans 3',sans-serif"
+            }}>{literalT("No news yet")}
+
+
+          </div>
+          }
+          </div> :
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ?
+            "1fr" :
+            isTablet ?
+            "1fr 1fr" :
+            "repeat(auto-fill,minmax(280px,1fr))",
+            gap: isMobile ? 10 : 16
+          }}>
+          
+            {camps.map((c) =>
+          <div
+            key={c.id || c.name}
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              padding: isMobile ? "16px" : "22px",
+              border: `1px solid ${T.border}`,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+              transition: "all 0.25s"
+            }}
+            onMouseEnter={(e) =>
+            e.currentTarget.style.transform = "translateY(-3px)"
+            }
+            onMouseLeave={(e) =>
+            e.currentTarget.style.transform = "translateY(0)"
+            }>
+            
+                <div style={{ fontSize: 38, marginBottom: 12 }}>
+                  {campIcons[c.type] || "⛺"}
+                </div>
+                <div
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontWeight: 700,
+                fontSize: 17,
+                color: T.maroon,
+                marginBottom: 6
+              }}>
+              
+                  {c.name}
+                </div>
+                <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 13,
+                color: T.textL,
+                marginBottom: 4
+              }}>
+              
+                  📍 {c.location} · {c.district}
+                </div>
+                <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 13,
+                color: T.textL,
+                marginBottom: 14
+              }}>
+              
+                  📅 {c.date} · 👥 {c.slots}{literalT("slots")}
+            </div>
+                <button
+              onClick={() => setModal("sendNotif")}
+              style={{
+                width: "100%",
+                padding: "9px",
+                borderRadius: 8,
+                border: "none",
+                background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
+                color: "#fff",
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 12,
+                cursor: "pointer"
+              }}>{literalT("📣 Notify Users")}
+
+
+            </button>
+              </div>
+          )}
+            <div
+            onClick={() => setModal("addCamp")}
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              padding: "22px",
+              border: `2px dashed ${T.border}`,
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: isMobile ? 100 : 200,
+              transition: "all 0.2s"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = T.maroon;
+              e.currentTarget.style.background = T.goldP;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = T.border;
+              e.currentTarget.style.background = "#fff";
+            }}>
+            
+              <span style={{ fontSize: 34, marginBottom: 8 }}>➕</span>
+              <span
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 13,
+                color: T.textL,
+                fontWeight: 600
+              }}>{literalT("Add New Camp")}
+
+
+            </span>
+            </div>
+          </div>
+        }
+      </div>);
+
+  };
+
+  // ════════════════════════════════════════════════════════════════════
+  // PAGE: EDUCATION  ← FIXED: all sections inside one return
+  // ════════════════════════════════════════════════════════════════════
+  const PageEducation = () =>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: isMobile ? 12 : 20
+    }}>
+    
+      {/* Row 1: Videos + Exams/Certs */}
+      <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "1fr 1fr",
+        gap: isMobile ? 12 : 20
+      }}>
+      
+        {/* Videos */}
+        <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: isMobile ? "16px" : "22px 24px",
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+        }}>
+        
+          <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 18
+          }}>
+          
+            <div
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontWeight: 700,
+              fontSize: isMobile ? 14 : 17,
+              color: T.text
+            }}>{literalT("🎥 Videos")}
+
+
+          </div>
+            <ActionBtn
+            label={literalT("+ Upload")}
+            onClick={() => setModal("uploadVideo")} />
+          
+          </div>
+          {videos.length === 0 &&
+        <div
+          style={{
+            textAlign: "center",
+            padding: "30px 0",
+            color: T.textM,
+            fontFamily: "'Source Sans 3',sans-serif"
+          }}>{literalT("No videos yet")}
+
+
+        </div>
+        }
+          {videos.map((v) =>
+        <div
+          key={v.id}
+          style={{
+            padding: "12px 0",
+            borderBottom: `1px solid ${T.border}`,
+            display: "flex",
+            gap: 12,
+            alignItems: "center"
+          }}>
+          
+              <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: `${T.maroon}15`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+              flexShrink: 0
+            }}>
+            
+                🎬
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 13,
+                fontWeight: 600,
+                color: T.text,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap"
+              }}>
+              
+                  {v.title}
+                </div>
+                <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 11,
+                color: T.textM,
+                marginTop: 2
+              }}>
+              
+                  {v.category} · {(v.views || 0).toLocaleString()}{literalT("views")}
+            </div>
+              </div>
+              <span
+            style={{
+              background: v.status === "published" ? "#dcfce7" : "#fef3c7",
+              color: v.status === "published" ? "#166534" : "#92400e",
+              padding: "2px 9px",
+              borderRadius: 50,
+              fontSize: 10,
+              fontWeight: 600,
+              fontFamily: "'Source Sans 3',sans-serif",
+              whiteSpace: "nowrap"
+            }}>
+            
+                {v.status}
+              </span>
+            </div>
+        )}
+        </div>
+
+        {/* Exams + Certs */}
+        <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: isMobile ? 12 : 18
+        }}>
+        
+          <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: isMobile ? "16px" : "22px 24px",
+            border: `1px solid ${T.border}`,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+          }}>
+          
+            <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 18
+            }}>
+            
+              <div
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontWeight: 700,
+                fontSize: isMobile ? 14 : 17,
+                color: T.text
+              }}>{literalT("📝 Exams")}
+
+
+            </div>
+              <ActionBtn
+              label={literalT("+ Create")}
+              onClick={() => setModal("createExam")}
+              gold />
+            
+            </div>
+            {exams.length === 0 &&
+          <div
+            style={{
+              textAlign: "center",
+              padding: "20px 0",
+              color: T.textM,
+              fontFamily: "'Source Sans 3',sans-serif"
+            }}>{literalT("No exams yet")}
+
+
+          </div>
+          }
+            {exams.map((e) =>
+          <div
+            key={e.id}
+            style={{
+              padding: "12px 14px",
+              marginBottom: 10,
+              borderRadius: 12,
+              background: T.bg,
+              border: `1px solid ${T.border}`
+            }}>
+            
+                <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+              
+                  <div
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: T.text
+                }}>
+                
+                    {e.title}
+                  </div>
+                  <span
+                style={{
+                  fontFamily: "'Playfair Display',serif",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  color: T.maroon
+                }}>
+                
+                    {e.taken}
+                  </span>
+                </div>
+                <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 11,
+                color: T.textM,
+                marginTop: 4
+              }}>
+              
+                  {e.questions}{literalT("questions ·")}{e.duration} · {e.taken}{literalT("attempts")}
+            </div>
+              </div>
+          )}
+          </div>
+          <div
+          style={{
+            background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
+            borderRadius: 16,
+            padding: isMobile ? "16px" : "22px 24px",
+            color: "#fff"
+          }}>
+          
+            <div
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontWeight: 700,
+              fontSize: isMobile ? 14 : 17,
+              marginBottom: 6
+            }}>{literalT("🏆 Certificates")}
+
+
+          </div>
+            <div
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontWeight: 900,
+              fontSize: isMobile ? 36 : 46,
+              color: T.goldL
+            }}>
+            
+              {certCount}
+            </div>
+            <div
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 13,
+              color: "rgba(255,255,255,0.7)",
+              marginTop: 4
+            }}>{literalT("Auto-issued when score ≥ 60%")}
+
+
+          </div>
+            <button
+            onClick={() => setModal("issueCert")}
+            style={{
+              marginTop: 16,
+              padding: "9px 20px",
+              borderRadius: 50,
+              border: "none",
+              background: `linear-gradient(135deg,${T.gold},${T.goldL})`,
+              color: T.maroonD,
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer"
+            }}>{literalT("View Summary →")}
+
+
+          </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Government Jobs */}
+      <div
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        padding: isMobile ? "16px" : "22px 24px",
+        border: `1px solid ${T.border}`,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+      }}>
+      
+        <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 18,
+          gap: 12,
+          flexWrap: "wrap"
+        }}>
+        
+          <div>
+            <div
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontWeight: 700,
+              fontSize: isMobile ? 15 : 18,
+              color: T.text
+            }}>{literalT("Government Jobs")}
+
+
+          </div>
+            <div
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 12,
+              color: T.textM,
+              marginTop: 3
+            }}>
+            
+              {jobSummary.live}{literalT("live ·")}{jobSummary.upcoming}{literalT("upcoming ·")}{" "}
+              {jobSummary.previous}{literalT("previous ·")}{jobSummary.applications}{literalT("tracked applications")}
+
+          </div>
+          </div>
+          <ActionBtn
+          label={literalT("+ Add Job")}
+          onClick={() => setModal("createJob")}
+          gold />
+        
+        </div>
+        <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
+          gap: 10,
+          marginBottom: 16
+        }}>
+        
+          {[
+        ["Live Jobs", jobSummary.live, T.green],
+        ["Upcoming", jobSummary.upcoming, T.blue],
+        ["Previous Year", jobSummary.previous, T.textL],
+        ["Applications", jobSummary.applications, T.maroon]].
+        map(([label, value, color]) =>
+        <div
+          key={label}
+          style={{
+            background: T.bg,
+            borderRadius: 12,
+            padding: 14,
+            border: `1px solid ${T.border}`
+          }}>
+          
+              <div style={{ color, fontSize: 24, fontWeight: 900 }}>
+                {value}
+              </div>
+              <div style={{ color: T.textM, fontSize: 11, fontWeight: 700 }}>
+                {label}
+              </div>
+            </div>
+        )}
+        </div>
+        {govJobs.length === 0 ?
+      <div
+        style={{ color: T.textM, textAlign: "center", padding: "24px 0" }}>{literalT("No government jobs created yet")}
+
+
+      </div> :
+
+      <div style={{ overflowX: "auto" }}>
+            <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            minWidth: 860
+          }}>
+          
+              <thead>
+                <tr style={{ background: T.bg }}>
+                  {[
+              "Title",
+              "Department",
+              "Category",
+              "Status",
+              "Vacancies",
+              "Apply By",
+              "Applications"].
+              map((h) =>
+              <th
+                key={h}
+                style={{
+                  textAlign: "left",
+                  padding: 12,
+                  fontSize: 12,
+                  color: T.textM,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {h}
+                    </th>
+              )}
+                </tr>
+              </thead>
+              <tbody>
+                {govJobs.map((job) =>
+            <tr
+              key={job.id}
+              style={{ borderBottom: `1px solid ${T.border}` }}>
+              
+                    <td
+                style={{
+                  padding: 12,
+                  fontWeight: 700,
+                  color: T.text,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {job.title}
+                    </td>
+                    <td
+                style={{
+                  padding: 12,
+                  color: T.textL,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {job.department}
+                    </td>
+                    <td
+                style={{
+                  padding: 12,
+                  color: T.textL,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {job.category}
+                    </td>
+                    <td
+                style={{
+                  padding: 12,
+                  color:
+                  job.status === "live" ?
+                  T.green :
+                  job.status === "upcoming" ?
+                  T.blue :
+                  T.textM,
+                  fontWeight: 800,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {job.status}
+                    </td>
+                    <td
+                style={{
+                  padding: 12,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {job.vacancies || 0}
+                    </td>
+                    <td
+                style={{
+                  padding: 12,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {job.applyBy ?
+                new Date(job.applyBy).toLocaleDateString("en-IN") :
+                "-"}
+                    </td>
+                    <td
+                style={{
+                  padding: 12,
+                  color: T.maroon,
+                  fontWeight: 800,
+                  fontFamily: "'Source Sans 3',sans-serif"
+                }}>
+                
+                      {job.applications || 0}
+                    </td>
+                  </tr>
+            )}
+              </tbody>
+            </table>
+          </div>
+      }
+      </div>
+
+      {/* Row 3: Mock Test Analytics */}
+      <div
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        padding: isMobile ? "16px" : "22px 24px",
+        border: `1px solid ${T.border}`,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+      }}>
+      
+        <div
+        style={{
+          fontFamily: "'Playfair Display',serif",
+          fontWeight: 700,
+          fontSize: isMobile ? 15 : 18,
+          color: T.text,
+          marginBottom: 12
+        }}>{literalT("Mock Test Analytics")}
+
+
+      </div>
+        <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
+          gap: 10,
+          marginBottom: 14
+        }}>
+        
+          {[
+        ["Attempts", mockAggregate.attempts, T.maroon],
+        ["Avg Accuracy", `${mockAggregate.avgAccuracy || 0}%`, T.blue],
+        ["Pass Rate", `${mockAggregate.passRate || 0}%`, T.green],
+        ["Categories", mockAggregate.categories?.length || 0, T.gold]].
+        map(([label, value, color]) =>
+        <div
+          key={label}
+          style={{
+            background: T.bg,
+            borderRadius: 12,
+            padding: 14,
+            border: `1px solid ${T.border}`
+          }}>
+          
+              <div style={{ color, fontSize: 22, fontWeight: 900 }}>
+                {value}
+              </div>
+              <div style={{ color: T.textM, fontSize: 11, fontWeight: 700 }}>
+                {label}
+              </div>
+            </div>
+        )}
+        </div>
+        {(mockAggregate.recent || []).slice(0, 6).map((r) =>
+      <div
+        key={r.id}
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr",
+          gap: 8,
+          padding: "10px 0",
+          borderBottom: `1px solid ${T.border}`
+        }}>
+        
+            <span
+          style={{
+            fontWeight: 700,
+            color: T.text,
+            fontFamily: "'Source Sans 3',sans-serif"
+          }}>
+          
+              {r.test}
+            </span>
+            <span
+          style={{
+            color: T.textL,
+            fontFamily: "'Source Sans 3',sans-serif"
+          }}>
+          
+              {r.user}
+            </span>
+            <span
+          style={{
+            color: T.blue,
+            fontWeight: 800,
+            fontFamily: "'Source Sans 3',sans-serif"
+          }}>
+          
+              {r.accuracy}{literalT("% accuracy")}
+        </span>
+            <span
+          style={{
+            color: T.maroon,
+            fontWeight: 800,
+            fontFamily: "'Source Sans 3',sans-serif"
+          }}>
+          
+              {r.score}/{r.total}
+            </span>
+          </div>
+      )}
+      </div>
+    </div>;
+
+
+  // ════════════════════════════════════════════════════════════════════
+  // PAGE: ANALYTICS
+  // ════════════════════════════════════════════════════════════════════
+  const PageAnalytics = () =>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: isMobile ? 12 : 20
+    }}>
+    
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <ExportMenu
+        onCSV={() =>
+        exportToCSV(
+          districtData.map((d) => ({
+            ...d,
+            rate:
+            d.total > 0 ?
+            Math.round(d.resolved / d.total * 100) + "%" :
+            "0%"
+          })),
+          "analytics.csv",
+          ["District", "Total", "Resolved", "Pending"]
+        )
+        }
+        onHTML={() =>
+        exportToHTML(
+          generateAnalyticsReport(
+            stats,
+            analyticsStats,
+            districtData,
+            weeklyData
+          ),
+          "analytics_report"
+        )
+        }
+        onWord={() =>
+        exportToHTML(
+          generateAnalyticsReport(
+            stats,
+            analyticsStats,
+            districtData,
+            weeklyData
+          ),
+          "analytics_report"
+        )
+        } />
+      
+      </div>
+      <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ?
+        "1fr 1fr" :
+        isTablet ?
+        "1fr 1fr" :
+        "repeat(auto-fit,minmax(200px,1fr))",
+        gap: isMobile ? 10 : 16
+      }}>
+      
+        <StatCard
+        label={literalT("Avg Resolution Time")}
+        value={analyticsStats.avgResolutionTime || "N/A"}
+        icon="⚡"
+        accent={T.blue} />
+      
+        <StatCard
+        label={literalT("Citizen Satisfaction")}
+        value={analyticsStats.citizenSatisfaction || "N/A"}
+        icon="😊"
+        accent={T.green} />
+      
+        <StatCard
+        label={literalT("Worker Efficiency")}
+        value={analyticsStats.workerEfficiency || "N/A"}
+        icon="🎯"
+        accent={T.gold} />
+      
+        <StatCard
+        label={literalT("Repeat Complaints")}
+        value={analyticsStats.repeatComplaints || 0}
+        icon="🔄"
+        accent={T.amber} />
+      
+      </div>
+      <div
+      style={{
+        background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
+        borderRadius: isMobile ? 16 : 20,
+        padding: isMobile ? "20px 18px" : "28px 32px",
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "1fr auto",
+        gap: isMobile ? 16 : 24,
+        alignItems: "center"
+      }}>
+      
+        <div>
+          <div
+          style={{
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: 12,
+            color: "rgba(255,255,255,0.65)",
+            fontWeight: 700,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            marginBottom: 8
+          }}>{literalT("Overall Completion Rate")}
+
+
+        </div>
+          <div
+          style={{
+            fontFamily: "'Playfair Display',serif",
+            fontWeight: 900,
+            fontSize: isMobile ? 44 : 64,
+            color: "#fff",
+            lineHeight: 1
+          }}>
+          
+            {completionRate}
+            <span style={{ fontSize: isMobile ? 22 : 32, opacity: 0.6 }}>
+              %
+            </span>
+          </div>
+          <div
+          style={{
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: isMobile ? 12 : 14,
+            color: "rgba(255,255,255,0.7)",
+            marginTop: 10
+          }}>
+          
+            {stats.completed}{literalT("completed ·")}{stats.pending}{literalT("pending ·")}{" "}
+            {stats.totalComplaints}{literalT("total")}
+        </div>
+          <div
+          style={{
+            height: 10,
+            background: "rgba(255,255,255,0.15)",
+            borderRadius: 5,
+            overflow: "hidden",
+            marginTop: 16
+          }}>
+          
+            <div
+            style={{
+              height: "100%",
+              width: `${completionRate}%`,
+              background: T.goldL,
+              borderRadius: 5,
+              transition: "width 1s"
+            }} />
+          
+          </div>
+        </div>
+        <div
+        style={{
+          textAlign: "center",
+          background: "rgba(255,255,255,0.12)",
+          borderRadius: 20,
+          padding: isMobile ? "16px" : "24px 32px"
+        }}>
+        
+          <div
+          style={{
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: 13,
+            color: "rgba(255,255,255,0.7)",
+            marginBottom: 8
+          }}>{literalT("Active Workers")}
+
+
+        </div>
+          <div
+          style={{
+            fontFamily: "'Playfair Display',serif",
+            fontWeight: 900,
+            fontSize: isMobile ? 36 : 48,
+            color: T.goldL
+          }}>
+          
+            {stats.activeWorkers}
+          </div>
+          <div
+          style={{
+            fontFamily: "'Source Sans 3',sans-serif",
+            fontSize: 11,
+            color: "rgba(255,255,255,0.5)",
+            marginTop: 4
+          }}>{literalT("Across 38 districts")}
+
+
+        </div>
+        </div>
+      </div>
+      <div
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        padding: isMobile ? "16px" : "22px 24px",
+        border: `1px solid ${T.border}`,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+      }}>
+      
+        <div
+        style={{
+          fontFamily: "'Playfair Display',serif",
+          fontWeight: 700,
+          fontSize: isMobile ? 14 : 17,
+          color: T.text,
+          marginBottom: 20
+        }}>{literalT("Weekly Trend")}
+
+
+      </div>
+        <ResponsiveContainer width="100%" height={isMobile ? 160 : 220}>
+          <LineChart data={weeklyData}>
+            <XAxis
+            dataKey="day"
+            tick={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: isMobile ? 10 : 12,
+              fill: T.textM
+            }}
+            axisLine={false}
+            tickLine={false} />
+          
+            <YAxis hide />
+            <Tooltip
+            contentStyle={{
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 12
+            }} />
+          
+            <Line
+            type="monotone"
+            dataKey="complaints"
+            stroke={T.maroon}
+            strokeWidth={3}
+            dot={{ fill: T.maroon, r: isMobile ? 3 : 5 }} />
+          
+            <Line
+            type="monotone"
+            dataKey="resolved"
+            stroke={T.green}
+            strokeWidth={3}
+            dot={{ fill: T.green, r: isMobile ? 3 : 5 }} />
+          
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <div
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        padding: isMobile ? "16px" : "22px 24px",
+        border: `1px solid ${T.border}`,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+        overflowX: "auto"
+      }}>
+      
+        <div
+        style={{
+          fontFamily: "'Playfair Display',serif",
+          fontWeight: 700,
+          fontSize: isMobile ? 14 : 17,
+          color: T.text,
+          marginBottom: 16
+        }}>{literalT("District Breakdown")}
+
+
+      </div>
+        <div style={{ minWidth: isMobile ? 500 : 0 }}>
+          <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr 1fr 1fr 2fr",
+            padding: "9px 14px",
+            background: T.bg,
+            borderRadius: 10,
+            marginBottom: 8
+          }}>
+          
+            {["District", "Total", "Resolved", "Pending", "Performance"].map(
+            (h) =>
+            <span
+              key={h}
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 11,
+                fontWeight: 700,
+                color: T.textM,
+                textTransform: "uppercase",
+                letterSpacing: 0.8
+              }}>
+              
+                  {h}
+                </span>
+
+          )}
+          </div>
+          {districtData.map((d) => {
+          const pct =
+          d.total > 0 ? Math.round(d.resolved / d.total * 100) : 0;
+          return (
+            <div
+              key={d.district}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 1fr 1fr 1fr 2fr",
+                padding: "12px 14px",
+                borderBottom: `1px solid ${T.border}`,
+                alignItems: "center"
+              }}>
+              
+                <span
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: T.text
+                }}>
+                
+                  {d.district}
+                </span>
+                <span
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 14,
+                  color: T.text
+                }}>
+                
+                  {d.total}
+                </span>
+                <span
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 14,
+                  color: T.green,
+                  fontWeight: 600
+                }}>
+                
+                  {d.resolved}
+                </span>
+                <span
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 14,
+                  color: T.amber,
+                  fontWeight: 600
+                }}>
+                
+                  {d.pending}
+                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                  style={{
+                    flex: 1,
+                    height: 8,
+                    background: T.bg,
+                    borderRadius: 4,
+                    overflow: "hidden"
+                  }}>
+                  
+                    <div
+                    style={{
+                      height: "100%",
+                      width: `${pct}%`,
+                      background:
+                      pct > 90 ? T.green : pct > 70 ? T.gold : T.maroon,
+                      borderRadius: 4
+                    }} />
+                  
+                  </div>
+                  <span
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: T.textL,
+                    minWidth: 36
+                  }}>
+                  
+                    {pct}%
+                  </span>
+                </div>
+              </div>);
+
+        })}
+        </div>
+      </div>
+    </div>;
+
+
+  // ════════════════════════════════════════════════════════════════════
+  // PAGE: NOTIFICATIONS
+  // ════════════════════════════════════════════════════════════════════
+  const PageNotifications = () => {
+    const typeStyle = (t) =>
+    ({
+      complaint: "#fef3c7",
+      worker: "#dbeafe",
+      camp: "#dcfce7",
+      news: "#f3e8ff",
+      announcement: "#fee2e2"
+    })[t] || "#f3f4f6";
+    const typeIcon = (t) =>
+    ({
+      complaint: "📋",
+      worker: "👤",
+      camp: "⛺",
+      news: "📰",
+      announcement: "📢"
+    })[t] || "🔔";
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: isMobile ? 12 : 18
+        }}>
+        
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 10
+          }}>
+          
+          <div
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 14,
+              color: T.textL
+            }}>
+            
+            {notifications.length}{literalT("activity logs")}
+          </div>
+          <ActionBtn
+            label={literalT("📣 Send Announcement")}
+            onClick={() => setModal("sendNotif")}
+            gold />
+          
+        </div>
+        {notifications.length === 0 &&
+        <div
+          style={{
+            textAlign: "center",
+            padding: "40px",
+            color: T.textM,
+            fontFamily: "'Source Sans 3',sans-serif"
+          }}>{literalT("No notifications yet")}
+
+
+        </div>
+        }
+        {notifications.map((n) =>
+        <div
+          key={n.id}
+          style={{
+            background: "#fff",
+            borderRadius: 14,
+            padding: isMobile ? "12px 14px" : "16px 20px",
+            border: `1px solid ${T.border}`,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            transition: "all 0.2s"
+          }}
+          onMouseEnter={(e) =>
+          e.currentTarget.style.transform = "translateX(4px)"
+          }
+          onMouseLeave={(e) =>
+          e.currentTarget.style.transform = "translateX(0)"
+          }>
+          
+            <div
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              background: typeStyle(n.type),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              flexShrink: 0
+            }}>
+            
+              {typeIcon(n.type)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: isMobile ? 13 : 14,
+                color: T.text
+              }}>
+              
+                {n.msg}
+              </div>
+              <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 12,
+                color: T.textM,
+                marginTop: 3
+              }}>
+              
                 {new Date(n.time).toLocaleString("en-IN")}
               </div>
             </div>
             <div
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: T.green,
-                flexShrink: 0,
-              }}
-            />
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: T.green,
+              flexShrink: 0
+            }} />
+          
           </div>
-        ))}
-      </div>
-    );
+        )}
+      </div>);
+
   };
 
   // ════════════════════════════════════════════════════════════════════
@@ -5154,13 +5154,13 @@ export default function AdminDashboard() {
       thokuthi: "",
       district: "Chennai",
       address: "",
-      pincode: "",
+      pincode: ""
     });
     const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
     const visibleUsers = users.filter((u) => {
       const roleOk = roleFilter === "ALL" || u.role === roleFilter;
       const text =
-        `${u.name || ""} ${u.email || ""} ${u.phone || ""} ${u.ward || ""} ${u.thokuthi || ""} ${u.district || ""}`.toLowerCase();
+      `${u.name || ""} ${u.email || ""} ${u.phone || ""} ${u.ward || ""} ${u.thokuthi || ""} ${u.district || ""}`.toLowerCase();
       return roleOk && text.includes(q.toLowerCase());
     });
     const createUser = async (e) => {
@@ -5169,7 +5169,7 @@ export default function AdminDashboard() {
         const { data } = await axios.post(
           `${API}/api/users`,
           form,
-          getConfig(),
+          getConfig()
         );
         setUsers((p) => [data, ...p]);
         setForm({
@@ -5181,7 +5181,7 @@ export default function AdminDashboard() {
           thokuthi: "",
           district: "Chennai",
           address: "",
-          pincode: "",
+          pincode: ""
         });
         showToast("User created");
       } catch (err) {
@@ -5193,9 +5193,9 @@ export default function AdminDashboard() {
         const { data } = await axios.put(
           `${API}/api/users/${u.id}`,
           { isActive: !u.isActive },
-          getConfig(),
+          getConfig()
         );
-        setUsers((p) => p.map((x) => (x.id === u.id ? data : x)));
+        setUsers((p) => p.map((x) => x.id === u.id ? data : x));
         showToast(data.isActive ? "User activated" : "User deactivated");
       } catch (err) {
         alert(err?.response?.data?.message || "Failed to update user");
@@ -5212,7 +5212,7 @@ export default function AdminDashboard() {
       }
     };
     const roleCounts = ["superadmin", "admin", "worker", "public"].map(
-      (role) => ({ role, count: users.filter((u) => u.role === role).length }),
+      (role) => ({ role, count: users.filter((u) => u.role === role).length })
     );
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -5220,123 +5220,123 @@ export default function AdminDashboard() {
           style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
-            gap: 12,
-          }}
-        >
-          {roleCounts.map(({ role, count }) => (
-            <div
-              key={role}
-              style={{
-                background: "#fff",
-                borderRadius: 14,
-                padding: 18,
-                border: `1px solid ${T.border}`,
-              }}
-            >
+            gap: 12
+          }}>
+          
+          {roleCounts.map(({ role, count }) =>
+          <div
+            key={role}
+            style={{
+              background: "#fff",
+              borderRadius: 14,
+              padding: 18,
+              border: `1px solid ${T.border}`
+            }}>
+            
               <div
-                style={{
-                  fontSize: 12,
-                  color: T.textM,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  fontFamily: "'Source Sans 3',sans-serif",
-                }}
-              >
+              style={{
+                fontSize: 12,
+                color: T.textM,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                fontFamily: "'Source Sans 3',sans-serif"
+              }}>
+              
                 {role}
               </div>
               <div
-                style={{
-                  fontSize: 30,
-                  color: role === "superadmin" ? T.red : T.maroon,
-                  fontWeight: 900,
-                  fontFamily: "'Playfair Display',serif",
-                }}
-              >
+              style={{
+                fontSize: 30,
+                color: role === "superadmin" ? T.red : T.maroon,
+                fontWeight: 900,
+                fontFamily: "'Playfair Display',serif"
+              }}>
+              
                 {count}
               </div>
             </div>
-          ))}
+          )}
         </div>
         <div
           style={{
             background: "#fff",
             borderRadius: 16,
             padding: 18,
-            border: `1px solid ${T.border}`,
-          }}
-        >
+            border: `1px solid ${T.border}`
+          }}>
+          
           <div
             style={{
               fontSize: 18,
               fontWeight: 800,
               color: T.text,
               marginBottom: 14,
-              fontFamily: "'Playfair Display',serif",
-            }}
-          >
-            Create Account
+              fontFamily: "'Playfair Display',serif"
+            }}>{literalT("Create Account")}
+
+
           </div>
           <form
             onSubmit={createUser}
             style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "repeat(4,1fr)",
-              gap: 12,
-            }}
-          >
+              gap: 12
+            }}>
+            
             <input
               style={iSx}
-              placeholder="Name"
+              placeholder={literalT("Name")}
               value={form.name}
               onChange={set("name")}
-              required
-            />
+              required />
+            
             <input
               style={iSx}
-              placeholder="Email"
+              placeholder={literalT("Email")}
               value={form.email}
               onChange={set("email")}
-              required
-            />
+              required />
+            
             <input
               style={iSx}
-              placeholder="Mobile"
+              placeholder={literalT("Mobile")}
               value={form.phone}
-              onChange={set("phone")}
-            />
+              onChange={set("phone")} />
+            
             <input
               style={iSx}
-              placeholder="Password"
+              placeholder={literalT("Password")}
               value={form.password}
               onChange={set("password")}
-              required
-            />
+              required />
+            
             <select style={sSx} value={form.role} onChange={set("role")}>
-              {["admin", "worker", "agent", "public", "superadmin"].map((r) => (
-                <option key={r} value={r}>
+              {["admin", "worker", "agent", "public", "superadmin"].map((r) =>
+              <option key={r} value={r}>
                   {r}
                 </option>
-              ))}
+              )}
             </select>
             <input
               style={iSx}
-              placeholder="Ward / assembly constituency"
+              placeholder={literalT("Ward / assembly constituency")}
               value={form.thokuthi}
-              onChange={set("thokuthi")}
-            />
+              onChange={set("thokuthi")} />
+            
             <DistrictSelect value={form.district} onChange={set("district")} />
             <input
               style={iSx}
-              placeholder="Pincode"
+              placeholder={literalT("Pincode")}
               value={form.pincode}
-              onChange={set("pincode")}
-            />
+              onChange={set("pincode")} />
+            
             <input
               style={{ ...iSx, gridColumn: isMobile ? "auto" : "span 3" }}
-              placeholder="Address / area"
+              placeholder={literalT("Address / area")}
               value={form.address}
-              onChange={set("address")}
-            />
+              onChange={set("address")} />
+            
             <button
               type="submit"
               style={{
@@ -5347,10 +5347,10 @@ export default function AdminDashboard() {
                 fontWeight: 800,
                 cursor: "pointer",
                 padding: "11px 14px",
-                fontFamily: "'Source Sans 3',sans-serif",
-              }}
-            >
-              Create
+                fontFamily: "'Source Sans 3',sans-serif"
+              }}>{literalT("Create")}
+
+
             </button>
           </form>
         </div>
@@ -5359,34 +5359,34 @@ export default function AdminDashboard() {
             background: "#fff",
             borderRadius: 16,
             padding: 18,
-            border: `1px solid ${T.border}`,
-          }}
-        >
+            border: `1px solid ${T.border}`
+          }}>
+          
           <div
             style={{
               display: "flex",
               gap: 10,
               flexWrap: "wrap",
-              marginBottom: 14,
-            }}
-          >
+              marginBottom: 14
+            }}>
+            
             <input
               style={{ ...iSx, flex: 1, minWidth: 220 }}
-              placeholder="Search users..."
+              placeholder={literalT("Search users...")}
               value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
+              onChange={(e) => setQ(e.target.value)} />
+            
             <select
               style={{ ...sSx, width: 180 }}
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-            >
+              onChange={(e) => setRoleFilter(e.target.value)}>
+              
               {["ALL", "superadmin", "admin", "worker", "agent", "public"].map(
-                (r) => (
-                  <option key={r} value={r}>
+                (r) =>
+                <option key={r} value={r}>
                     {r}
                   </option>
-                ),
+
               )}
             </select>
           </div>
@@ -5395,152 +5395,152 @@ export default function AdminDashboard() {
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
-                minWidth: 860,
-              }}
-            >
+                minWidth: 860
+              }}>
+              
               <thead>
                 <tr style={{ background: T.bg }}>
                   {[
-                    "Name",
-                    "Role",
-                    "Mobile",
-                    "Thokuthi",
-                    "District",
-                    "Pincode",
-                    "Status",
-                    "Actions",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: 12,
-                        fontSize: 12,
-                        color: T.textM,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
+                  "Name",
+                  "Role",
+                  "Mobile",
+                  "Thokuthi",
+                  "District",
+                  "Pincode",
+                  "Status",
+                  "Actions"].
+                  map((h) =>
+                  <th
+                    key={h}
+                    style={{
+                      textAlign: "left",
+                      padding: 12,
+                      fontSize: 12,
+                      color: T.textM,
+                      fontFamily: "'Source Sans 3',sans-serif"
+                    }}>
+                    
                       {h}
                     </th>
-                  ))}
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {visibleUsers.map((u) => (
-                  <tr
-                    key={u.id}
-                    style={{ borderBottom: `1px solid ${T.border}` }}
-                  >
+                {visibleUsers.map((u) =>
+                <tr
+                  key={u.id}
+                  style={{ borderBottom: `1px solid ${T.border}` }}>
+                  
                     <td style={{ padding: 12 }}>
                       <div
-                        style={{
-                          fontWeight: 700,
-                          fontFamily: "'Source Sans 3',sans-serif",
-                        }}
-                      >
+                      style={{
+                        fontWeight: 700,
+                        fontFamily: "'Source Sans 3',sans-serif"
+                      }}>
+                      
                         {u.name}
                       </div>
                       <div
-                        style={{
-                          fontSize: 12,
-                          color: T.textM,
-                          fontFamily: "'Source Sans 3',sans-serif",
-                        }}
-                      >
+                      style={{
+                        fontSize: 12,
+                        color: T.textM,
+                        fontFamily: "'Source Sans 3',sans-serif"
+                      }}>
+                      
                         {u.email}
                       </div>
                     </td>
                     <td
-                      style={{
-                        padding: 12,
-                        textTransform: "capitalize",
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
+                    style={{
+                      padding: 12,
+                      textTransform: "capitalize",
+                      fontFamily: "'Source Sans 3',sans-serif"
+                    }}>
+                    
                       {u.role}
                     </td>
                     <td
-                      style={{
-                        padding: 12,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
+                    style={{
+                      padding: 12,
+                      fontFamily: "'Source Sans 3',sans-serif"
+                    }}>
+                    
                       {u.phone || "-"}
                     </td>
                     <td
-                      style={{
-                        padding: 12,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
+                    style={{
+                      padding: 12,
+                      fontFamily: "'Source Sans 3',sans-serif"
+                    }}>
+                    
                       {u.ward || u.thokuthi || "-"}
                     </td>
                     <td
-                      style={{
-                        padding: 12,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
+                    style={{
+                      padding: 12,
+                      fontFamily: "'Source Sans 3',sans-serif"
+                    }}>
+                    
                       {u.district || "-"}
                     </td>
                     <td
-                      style={{
-                        padding: 12,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
+                    style={{
+                      padding: 12,
+                      fontFamily: "'Source Sans 3',sans-serif"
+                    }}>
+                    
                       {u.pincode || "-"}
                     </td>
                     <td
-                      style={{
-                        padding: 12,
-                        color: u.isActive ? T.green : T.red,
-                        fontWeight: 700,
-                        fontFamily: "'Source Sans 3',sans-serif",
-                      }}
-                    >
+                    style={{
+                      padding: 12,
+                      color: u.isActive ? T.green : T.red,
+                      fontWeight: 700,
+                      fontFamily: "'Source Sans 3',sans-serif"
+                    }}>
+                    
                       {u.isActive ? "Active" : "Inactive"}
                     </td>
                     <td style={{ padding: 12 }}>
                       <button
-                        onClick={() => toggleActive(u)}
-                        style={{
-                          marginRight: 8,
-                          padding: "7px 10px",
-                          borderRadius: 8,
-                          border: `1px solid ${T.border}`,
-                          background: T.bg,
-                          cursor: "pointer",
-                          fontFamily: "'Source Sans 3',sans-serif",
-                        }}
-                      >
+                      onClick={() => toggleActive(u)}
+                      style={{
+                        marginRight: 8,
+                        padding: "7px 10px",
+                        borderRadius: 8,
+                        border: `1px solid ${T.border}`,
+                        background: T.bg,
+                        cursor: "pointer",
+                        fontFamily: "'Source Sans 3',sans-serif"
+                      }}>
+                      
                         {u.isActive ? "Disable" : "Enable"}
                       </button>
                       <button
-                        onClick={() => deleteUser(u)}
-                        disabled={u.id === currentUser._id}
-                        style={{
-                          padding: "7px 10px",
-                          borderRadius: 8,
-                          border: `1px solid ${T.red}40`,
-                          background: `${T.red}10`,
-                          color: T.red,
-                          cursor: "pointer",
-                          opacity: u.id === currentUser._id ? 0.5 : 1,
-                          fontFamily: "'Source Sans 3',sans-serif",
-                        }}
-                      >
-                        Delete
-                      </button>
+                      onClick={() => deleteUser(u)}
+                      disabled={u.id === currentUser._id}
+                      style={{
+                        padding: "7px 10px",
+                        borderRadius: 8,
+                        border: `1px solid ${T.red}40`,
+                        background: `${T.red}10`,
+                        color: T.red,
+                        cursor: "pointer",
+                        opacity: u.id === currentUser._id ? 0.5 : 1,
+                        fontFamily: "'Source Sans 3',sans-serif"
+                      }}>{literalT("Delete")}
+
+
+                    </button>
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   };
 
   // ── ATTACHMENT VIEWER ──────────────────────────────────────────────
@@ -5559,12 +5559,12 @@ export default function AdminDashboard() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "center"
         }}
         onClick={(e) => {
           if (e.target === e.currentTarget) setAttachViewer(null);
-        }}
-      >
+        }}>
+        
         <button
           onClick={() => setAttachViewer(null)}
           style={{
@@ -5581,9 +5581,9 @@ export default function AdminDashboard() {
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+            justifyContent: "center"
+          }}>
+          
           ×
         </button>
         <div
@@ -5594,9 +5594,9 @@ export default function AdminDashboard() {
             transform: "translateX(-50%)",
             color: "rgba(255,255,255,0.7)",
             fontFamily: "'Source Sans 3',sans-serif",
-            fontSize: 13,
-          }}
-        >
+            fontSize: 13
+          }}>
+          
           {cur + 1} / {items.length}
         </div>
         <div
@@ -5605,124 +5605,124 @@ export default function AdminDashboard() {
             maxHeight: "75vh",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {item?.type === "image" ? (
-            <img
-              src={item.url}
-              alt="proof"
-              style={{
-                maxWidth: "85vw",
-                maxHeight: "75vh",
-                borderRadius: 12,
-                objectFit: "contain",
-                boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                background: "#1e293b",
-                borderRadius: 16,
-                padding: 40,
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: 64, marginBottom: 16 }}>🎥</div>
-              <p
-                style={{
-                  color: "#fff",
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontSize: 14,
-                  marginBottom: 16,
-                }}
-              >
-                Video attachment
-              </p>
-              <a
-                href={item?.url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  padding: "12px 24px",
-                  borderRadius: 50,
-                  background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
-                  color: "#fff",
-                  fontFamily: "'Source Sans 3',sans-serif",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  textDecoration: "none",
-                }}
-              >
-                ▶ Open Video
-              </a>
-            </div>
-          )}
-        </div>
-        {items.length > 1 && (
+            justifyContent: "center"
+          }}>
+          
+          {item?.type === "image" ?
+          <img
+            src={item.url}
+            alt={literalT("proof")}
+            style={{
+              maxWidth: "85vw",
+              maxHeight: "75vh",
+              borderRadius: 12,
+              objectFit: "contain",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.5)"
+            }} /> :
+
+
           <div
             style={{
-              display: "flex",
-              gap: 16,
-              marginTop: 24,
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => setCur((c) => Math.max(0, c - 1))}
-              disabled={cur === 0}
+              background: "#1e293b",
+              borderRadius: 16,
+              padding: 40,
+              textAlign: "center"
+            }}>
+            
+              <div style={{ fontSize: 64, marginBottom: 16 }}>🎥</div>
+              <p
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: "50%",
-                border: "1px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.1)",
                 color: "#fff",
-                fontSize: 20,
-                cursor: cur === 0 ? "not-allowed" : "pointer",
-                opacity: cur === 0 ? 0.4 : 1,
-              }}
-            >
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 14,
+                marginBottom: 16
+              }}>{literalT("Video attachment")}
+
+
+            </p>
+              <a
+              href={item?.url}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                padding: "12px 24px",
+                borderRadius: 50,
+                background: `linear-gradient(135deg,${T.maroon},${T.maroonL})`,
+                color: "#fff",
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontWeight: 700,
+                fontSize: 14,
+                textDecoration: "none"
+              }}>{literalT("▶ Open Video")}
+
+
+            </a>
+            </div>
+          }
+        </div>
+        {items.length > 1 &&
+        <div
+          style={{
+            display: "flex",
+            gap: 16,
+            marginTop: 24,
+            alignItems: "center"
+          }}>
+          
+            <button
+            onClick={() => setCur((c) => Math.max(0, c - 1))}
+            disabled={cur === 0}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              border: "1px solid rgba(255,255,255,0.3)",
+              background: "rgba(255,255,255,0.1)",
+              color: "#fff",
+              fontSize: 20,
+              cursor: cur === 0 ? "not-allowed" : "pointer",
+              opacity: cur === 0 ? 0.4 : 1
+            }}>
+            
               ‹
             </button>
             <div style={{ display: "flex", gap: 8 }}>
-              {items.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCur(i)}
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
-                    border: "none",
-                    background: i === cur ? "#fff" : "rgba(255,255,255,0.3)",
-                    cursor: "pointer",
-                  }}
-                />
-              ))}
+              {items.map((_, i) =>
+            <button
+              key={i}
+              onClick={() => setCur(i)}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                border: "none",
+                background: i === cur ? "#fff" : "rgba(255,255,255,0.3)",
+                cursor: "pointer"
+              }} />
+
+            )}
             </div>
             <button
-              onClick={() => setCur((c) => Math.min(items.length - 1, c + 1))}
-              disabled={cur === items.length - 1}
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: "50%",
-                border: "1px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                fontSize: 20,
-                cursor: cur === items.length - 1 ? "not-allowed" : "pointer",
-                opacity: cur === items.length - 1 ? 0.4 : 1,
-              }}
-            >
+            onClick={() => setCur((c) => Math.min(items.length - 1, c + 1))}
+            disabled={cur === items.length - 1}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              border: "1px solid rgba(255,255,255,0.3)",
+              background: "rgba(255,255,255,0.1)",
+              color: "#fff",
+              fontSize: 20,
+              cursor: cur === items.length - 1 ? "not-allowed" : "pointer",
+              opacity: cur === items.length - 1 ? 0.4 : 1
+            }}>
+            
               ›
             </button>
           </div>
-        )}
-      </div>
-    );
+        }
+      </div>);
+
   };
 
   const pages = {
@@ -5733,7 +5733,7 @@ export default function AdminDashboard() {
     education: <PageEducation />,
     analytics: <PageAnalytics />,
     notifications: <PageNotifications />,
-    superadmin: isSuperAdmin ? <PageSuperAdmin /> : <PageDashboard />,
+    superadmin: isSuperAdmin ? <PageSuperAdmin /> : <PageDashboard />
   };
 
   return (
@@ -5742,9 +5742,9 @@ export default function AdminDashboard() {
         display: "flex",
         minHeight: "100vh",
         background: T.bg,
-        fontFamily: "'Source Sans 3',sans-serif",
-      }}
-    >
+        fontFamily: "'Source Sans 3',sans-serif"
+      }}>
+      
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -5762,117 +5762,117 @@ export default function AdminDashboard() {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          minWidth: 0,
-        }}
-      >
+          minWidth: 0
+        }}>
+        
         <Topbar />
         <div
           style={{
             flex: 1,
-            padding: isMobile
-              ? "18px 12px 80px"
-              : isTablet
-                ? "22px 20px"
-                : "32px 28px",
-            overflowY: "auto",
-          }}
-        >
+            padding: isMobile ?
+            "18px 12px 80px" :
+            isTablet ?
+            "22px 20px" :
+            "32px 28px",
+            overflowY: "auto"
+          }}>
+          
           {pages[page]}
         </div>
       </div>
       {/* Mobile bottom nav */}
-      {isMobile && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            background: "#fff",
-            borderTop: `1px solid ${T.border}`,
-            display: "flex",
-            zIndex: 100,
-            boxShadow: "0 -4px 20px rgba(0,0,0,0.08)",
-          }}
-        >
+      {isMobile &&
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "#fff",
+          borderTop: `1px solid ${T.border}`,
+          display: "flex",
+          zIndex: 100,
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.08)"
+        }}>
+        
           {NAV.slice(0, 5).map((item) => {
-            const active = page === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => navigateTo(item.id)}
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "8px 2px",
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  gap: 2,
-                }}
-              >
+          const active = page === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => navigateTo(item.id)}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "8px 2px",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                gap: 2
+              }}>
+              
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
                 <span
-                  style={{
-                    fontFamily: "'Source Sans 3',sans-serif",
-                    fontSize: 9,
-                    fontWeight: active ? 700 : 400,
-                    color: active ? T.maroon : T.textM,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: 52,
-                  }}
-                >
+                style={{
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 9,
+                  fontWeight: active ? 700 : 400,
+                  color: active ? T.maroon : T.textM,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: 52
+                }}>
+                
                   {item.label.split(" ")[0]}
                 </span>
-                {active && (
-                  <div
-                    style={{
-                      width: 16,
-                      height: 2,
-                      borderRadius: 1,
-                      background: T.maroon,
-                    }}
-                  />
-                )}
-              </button>
-            );
-          })}
+                {active &&
+              <div
+                style={{
+                  width: 16,
+                  height: 2,
+                  borderRadius: 1,
+                  background: T.maroon
+                }} />
+
+              }
+              </button>);
+
+        })}
           <button
-            onClick={() => setMobileSideOpen(true)}
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "8px 2px",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              gap: 2,
-            }}
-          >
+          onClick={() => setMobileSideOpen(true)}
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px 2px",
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+            gap: 2
+          }}>
+          
             <span style={{ fontSize: 18 }}>•••</span>
             <span
-              style={{
-                fontFamily: "'Source Sans 3',sans-serif",
-                fontSize: 9,
-                color: T.textM,
-              }}
-            >
-              More
-            </span>
+            style={{
+              fontFamily: "'Source Sans 3',sans-serif",
+              fontSize: 9,
+              color: T.textM
+            }}>{literalT("More")}
+
+
+          </span>
           </button>
         </div>
-      )}
+      }
       {modal && modals[modal]}
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
       {attachViewer && <AttachViewerModal />}
-    </div>
-  );
+    </div>);
+
 }

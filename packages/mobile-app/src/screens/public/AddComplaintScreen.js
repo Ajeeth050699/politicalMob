@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,8 +12,8 @@ import {
   Image,
   Linking,
   Modal,
-  Alert,
-} from "react-native";
+  Alert } from
+"react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -31,7 +31,7 @@ const CATEGORY_ICONS = {
   "Water Supply Problem": "💧",
   "Drainage Issue": "🚰",
   "Public Safety Issue": "🚨",
-  Others: "📝",
+  Others: "📝"
 };
 
 // ── Permission denied popup ─────────────────────────────────────────
@@ -40,27 +40,27 @@ function PermissionModal({ visible, type, onClose }) {
     camera: {
       icon: "📷",
       title: "Camera Permission Required",
-      msg: "To capture photos and videos as proof, please allow camera access in your device settings.",
+      msg: "To capture photos and videos as proof, please allow camera access in your device settings."
     },
     gallery: {
       icon: "🖼️",
       title: "Gallery Permission Required",
-      msg: "To attach photos and videos from your device, please allow photo library access in settings.",
+      msg: "To attach photos and videos from your device, please allow photo library access in settings."
     },
     document: {
       icon: "📄",
       title: "File Access Required",
-      msg: "To attach documents as proof, please allow file access in your device settings.",
+      msg: "To attach documents as proof, please allow file access in your device settings."
     },
     location: {
       icon: "📍",
       title: "Location Permission Required",
-      msg: "To auto detect your complaint location, please allow location access in your device settings.",
-    },
+      msg: "To auto detect your complaint location, please allow location access in your device settings."
+    }
   }[type] || {
     icon: "📎",
     title: "Permission Required",
-    msg: "Please allow access in your device settings.",
+    msg: "Please allow access in your device settings."
   };
 
   return (
@@ -68,8 +68,8 @@ function PermissionModal({ visible, type, onClose }) {
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
-    >
+      onRequestClose={onClose}>
+      
       <View style={pm.overlay}>
         <View style={pm.card}>
           <View style={pm.iconCircle}>
@@ -79,27 +79,27 @@ function PermissionModal({ visible, type, onClose }) {
           <Text style={pm.msg}>{info.msg}</Text>
           <View style={pm.btnRow}>
             <TouchableOpacity style={pm.cancelBtn} onPress={onClose}>
-              <Text style={pm.cancelTxt}>Not Now</Text>
+              <Text style={pm.cancelTxt}>{literalT("Not Now")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={pm.settingsBtn}
               onPress={() => {
                 onClose();
                 Linking.openSettings();
-              }}
-            >
+              }}>
+              
               <LinearGradient
                 colors={[T.maroon, T.maroonL]}
-                style={pm.settingsGrad}
-              >
-                <Text style={pm.settingsTxt}>Open Settings</Text>
+                style={pm.settingsGrad}>
+                
+                <Text style={pm.settingsTxt}>{literalT("Open Settings")}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-    </Modal>
-  );
+    </Modal>);
+
 }
 
 // ── Bottom sheet attachment picker ──────────────────────────────────
@@ -113,53 +113,53 @@ function AttachPickerSheet({
   isRecording
 }) {
   const OPTIONS = [
-    {
-      icon: "📷",
-      label: "Take Photo / Video",
-      sub: "Open camera to capture",
-      fn: onCamera,
-    },
-    {
-      icon: "🖼️",
-      label: "Choose from Gallery",
-      sub: "Pick from your photos",
-      fn: onGallery,
-    },
-    {
-      icon: "🎙️",
-      label: "Attach Document",
-      sub: "PDF or other files",
-      fn: onDocument,
-    },
-    {
-      icon: isRecording ? "🛑" : "⏺️",
-      label: isRecording ? "Stop Recording" : "Record Audio",
-      sub: isRecording ? "Tap to stop" : "Record an audio message",
-      fn: onRecord,
-    },
-  ];
+  {
+    icon: "📷",
+    label: "Take Photo / Video",
+    sub: "Open camera to capture",
+    fn: onCamera
+  },
+  {
+    icon: "🖼️",
+    label: "Choose from Gallery",
+    sub: "Pick from your photos",
+    fn: onGallery
+  },
+  {
+    icon: "🎙️",
+    label: "Attach Document",
+    sub: "PDF or other files",
+    fn: onDocument
+  },
+  {
+    icon: isRecording ? "🛑" : "⏺️",
+    label: isRecording ? "Stop Recording" : "Record Audio",
+    sub: isRecording ? "Tap to stop" : "Record an audio message",
+    fn: onRecord
+  }];
+
   return (
     <Modal
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
-    >
+      onRequestClose={onClose}>
+      
       <TouchableOpacity style={ap.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity activeOpacity={1} style={ap.sheet}>
           <View style={ap.handle} />
-          <Text style={ap.title}>📎 Add Proof Attachment</Text>
-          <Text style={ap.sub}>Attach evidence of the issue (max 5 files)</Text>
-          {OPTIONS.map(({ icon, label, sub, fn }) => (
-            <TouchableOpacity
-              key={label}
-              style={ap.option}
-              onPress={() => {
-                onClose();
-                setTimeout(fn, 300);
-              }}
-              activeOpacity={0.85}
-            >
+          <Text style={ap.title}>{literalT("📎 Add Proof Attachment")}</Text>
+          <Text style={ap.sub}>{literalT("Attach evidence of the issue (max 5 files)")}</Text>
+          {OPTIONS.map(({ icon, label, sub, fn }) =>
+          <TouchableOpacity
+            key={label}
+            style={ap.option}
+            onPress={() => {
+              onClose();
+              setTimeout(fn, 300);
+            }}
+            activeOpacity={0.85}>
+            
               <View style={ap.optIconBox}>
                 <Text style={{ fontSize: 26 }}>{icon}</Text>
               </View>
@@ -169,14 +169,14 @@ function AttachPickerSheet({
               </View>
               <Text style={{ fontSize: 20, color: T.textM }}>›</Text>
             </TouchableOpacity>
-          ))}
+          )}
           <TouchableOpacity style={ap.cancelBtn} onPress={onClose}>
-            <Text style={ap.cancelTxt}>Cancel</Text>
+            <Text style={ap.cancelTxt}>{literalT("Cancel")}</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </TouchableOpacity>
-    </Modal>
-  );
+    </Modal>);
+
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -193,7 +193,7 @@ export default function AddComplaintScreen({ navigation }) {
     pincode: userInfo?.pincode || "",
     address: userInfo?.address || "",
     location: null,
-    citizenPhone: userInfo?.phone || "",
+    citizenPhone: userInfo?.phone || ""
   });
   const [attachments, setAttachments] = useState([]);
   const [wards, setWards] = useState([]);
@@ -222,7 +222,7 @@ export default function AddComplaintScreen({ navigation }) {
         }
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: true,
-          playsInSilentModeIOS: true,
+          playsInSilentModeIOS: true
         });
         const { recording } = await Audio.Recording.createAsync(
           Audio.RecordingOptionsPresets.HIGH_QUALITY
@@ -237,11 +237,11 @@ export default function AddComplaintScreen({ navigation }) {
   const [toast, setToast] = useState({
     visible: false,
     message: "",
-    type: "error",
+    type: "error"
   });
 
   const showToast = (msg, type = "error") =>
-    setToast({ visible: true, message: msg, type });
+  setToast({ visible: true, message: msg, type });
   const hideToast = () => setToast((t) => ({ ...t, visible: false }));
   const showPermModal = (type) => setPermType(type);
   const hidePermModal = () => setPermType("");
@@ -271,31 +271,31 @@ export default function AddComplaintScreen({ navigation }) {
       }
 
       const pos = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.Balanced
       });
       const coords = {
         lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
+        lng: pos.coords.longitude
       };
 
       let updates = { location: coords };
       try {
         const places = await Location.reverseGeocodeAsync({
           latitude: coords.lat,
-          longitude: coords.lng,
+          longitude: coords.lng
         });
         const place = places?.[0];
         if (place) {
           const detectedAddress = [
-            place.name,
-            place.street,
-            place.subregion,
-            place.city,
-          ].filter(Boolean).join(", ");
+          place.name,
+          place.street,
+          place.subregion,
+          place.city].
+          filter(Boolean).join(", ");
           updates = {
             ...updates,
             address: detectedAddress || form.address,
-            pincode: place.postalCode || form.pincode || "",
+            pincode: place.postalCode || form.pincode || ""
           };
         }
       } catch {}
@@ -351,17 +351,17 @@ export default function AddComplaintScreen({ navigation }) {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 0.85,
-      videoMaxDuration: 30,
+      videoMaxDuration: 30
     });
     if (!result.canceled) {
       const a = result.assets[0];
       addFiles([
-        {
-          uri: a.uri,
-          type: a.type === "video" ? "video" : "image",
-          filename: a.fileName || "capture",
-        },
-      ]);
+      {
+        uri: a.uri,
+        type: a.type === "video" ? "video" : "image",
+        filename: a.fileName || "capture"
+      }]
+      );
     }
   };
 
@@ -394,15 +394,15 @@ export default function AddComplaintScreen({ navigation }) {
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsMultipleSelection: true,
       quality: 0.85,
-      videoMaxDuration: 60,
+      videoMaxDuration: 60
     });
     if (!result.canceled) {
       addFiles(
         result.assets.map((a) => ({
           uri: a.uri,
           type: a.type === "video" ? "video" : "image",
-          filename: a.fileName || "file",
-        })),
+          filename: a.fileName || "file"
+        }))
       );
     }
   };
@@ -412,23 +412,23 @@ export default function AddComplaintScreen({ navigation }) {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: [
-          "application/pdf",
-          "image/*",
-          "video/*",
-          "audio/*",
-          "application/msword",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ],
+        "application/pdf",
+        "image/*",
+        "video/*",
+        "audio/*",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+
         multiple: true,
-        copyToCacheDirectory: true,
+        copyToCacheDirectory: true
       });
       if (!result.canceled && result.assets) {
         addFiles(
           result.assets.map((a) => ({
             uri: a.uri,
             type: a.mimeType?.startsWith("audio/") ? "audio" : "document",
-            filename: a.name,
-          })),
+            filename: a.name
+          }))
         );
       }
     } catch {
@@ -459,9 +459,9 @@ export default function AddComplaintScreen({ navigation }) {
       "Confirm Complaint",
       "Are you sure you want to submit this complaint? Please verify all details before submitting.",
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Submit", style: "default", onPress: performSubmit }
-      ]
+      { text: "Cancel", style: "cancel" },
+      { text: "Submit", style: "default", onPress: performSubmit }]
+
     );
   };
 
@@ -478,21 +478,22 @@ export default function AddComplaintScreen({ navigation }) {
     try {
       await complaintAPI.create({
         ...form,
-        category: form.category === "Others" ? form.customCategory.trim() : form.category,
+        category: form.category,
+        customCategory: form.category === "Others" ? form.customCategory.trim() : undefined,
         attachments: attachments.map((a) => ({
           url: a.uri,
           type: a.type,
-          filename: a.filename,
-        })),
+          filename: a.filename
+        }))
       });
       showToast(
         `Complaint submitted${attachments.length > 0 ? ` with ${attachments.length} file(s)` : ""}! ✅`,
-        "success",
+        "success"
       );
       setTimeout(() => navigation.goBack(), 1500);
     } catch (e) {
       showToast(
-        e?.response?.data?.message || "Failed to submit. Please try again.",
+        e?.response?.data?.message || "Failed to submit. Please try again."
       );
     } finally {
       setLoading(false);
@@ -500,11 +501,11 @@ export default function AddComplaintScreen({ navigation }) {
   };
 
   const typeColor = (t) =>
-    t === "video" ? "#3b82f6" : t === "document" ? T.gold : t === "audio" ? T.maroon : T.green;
+  t === "video" ? "#3b82f6" : t === "document" ? T.gold : t === "audio" ? T.maroon : T.green;
   const typeLabel = (t) =>
-    t === "video" ? "VID" : t === "document" ? "DOC" : t === "audio" ? "AUD" : "IMG";
+  t === "video" ? "VID" : t === "document" ? "DOC" : t === "audio" ? "AUD" : "IMG";
   const typeIcon = (t) =>
-    t === "video" ? "🎥" : t === "document" ? "📄" : t === "audio" ? "🎙️" : "🖼️";
+  t === "video" ? "🎥" : t === "document" ? "📄" : t === "audio" ? "🎙️" : "🖼️";
 
   return (
     <View style={s.root}>
@@ -513,31 +514,31 @@ export default function AddComplaintScreen({ navigation }) {
         message={toast.message}
         type={toast.type}
         visible={toast.visible}
-        onHide={hideToast}
-      />
+        onHide={hideToast} />
+      
 
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-          <Text style={s.backTxt}>← Back</Text>
+          <Text style={s.backTxt}>{literalT("← Back")}</Text>
         </TouchableOpacity>
         <View style={s.headerIcon}>
           <Text style={{ fontSize: 28 }}>📋</Text>
         </View>
-        <Text style={s.headerTitle}>Report an Issue</Text>
-        <Text style={s.headerSub}>Photos, videos & documents as proof</Text>
+        <Text style={s.headerTitle}>{literalT("Report an Issue")}</Text>
+        <Text style={s.headerSub}>{literalT("Photos, videos & documents as proof")}</Text>
       </LinearGradient>
 
       <ScrollView
         style={s.scroll}
         contentContainerStyle={{ padding: 16 }}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+        keyboardShouldPersistTaps="handled">
+        
         {/* Category */}
         <View style={s.section}>
           <View style={s.sHead}>
             <Text style={s.sIcon}>🏷️</Text>
-            <Text style={s.sTitle}>Issue Category *</Text>
+            <Text style={s.sTitle}>{literalT("Issue Category *")}</Text>
           </View>
           <View style={s.catGrid}>
             {COMPLAINT_CATEGORIES.map((cat) => {
@@ -547,68 +548,69 @@ export default function AddComplaintScreen({ navigation }) {
                   key={cat}
                   style={[s.catChip, active && s.catActive]}
                   onPress={() => setForm((f) => ({ ...f, category: cat }))}
-                  activeOpacity={0.8}
-                >
+                  activeOpacity={0.8}>
+                  
                   <Text style={{ fontSize: 18, marginBottom: 4 }}>
                     {CATEGORY_ICONS[cat]}
                   </Text>
                   <Text
                     style={[
-                      s.catTxt,
-                      active && { color: "#fff", fontWeight: "700" },
-                    ]}
-                  >
-                    {cat}
+                    s.catTxt,
+                    active && { color: "#fff", fontWeight: "700" }]
+                    }>
+                    
+                    {complaintCategoryT(cat)}
                   </Text>
-                </TouchableOpacity>
-              );
+                </TouchableOpacity>);
+
             })}
           </View>
-          {form.category === "Others" && (
-            <View style={[s.inputRow, { marginTop: 14 }]}>
+          {form.category === "Others" &&
+          <View style={[s.inputRow, { marginTop: 14 }]}>
               <Text style={s.iIcon}>📝</Text>
               <TextInput
-                style={s.input}
-                placeholder="Specify other category..."
-                placeholderTextColor={T.textM}
-                value={form.customCategory}
-                onChangeText={(v) => setForm((f) => ({ ...f, customCategory: v }))}
-              />
+              style={s.input}
+              placeholder={literalT("Specify other category...")}
+              placeholderTextColor={T.textM}
+              value={form.customCategory}
+              autoFocus
+              onChangeText={(v) => setForm((f) => ({ ...f, customCategory: v }))} />
+            
             </View>
-          )}
+          }
         </View>
 
         {/* Description */}
         <View style={s.section}>
           <View style={s.sHead}>
             <Text style={s.sIcon}>📝</Text>
-            <Text style={s.sTitle}>Description *</Text>
+            <Text style={s.sTitle}>{literalT("Description *")}</Text>
           </View>
           <TextInput
             style={s.textarea}
-            placeholder="Describe the issue in detail..."
+            placeholder={literalT("Describe the issue in detail...")}
             placeholderTextColor={T.textM}
             value={form.description}
             onChangeText={(v) => setForm((f) => ({ ...f, description: v }))}
             multiline
             numberOfLines={4}
-            textAlignVertical="top"
-          />
-          <Text style={s.charCount}>{form.description.length} characters</Text>
+            textAlignVertical="top" />
+          
+          <Text style={s.charCount}>{form.description.length}{literalT("characters")}</Text>
         </View>
 
         {/* Location */}
         <View style={s.section}>
           <View style={s.sHead}>
             <Text style={s.sIcon}>📍</Text>
-            <Text style={s.sTitle}>Location *</Text>
+            <Text style={s.sTitle}>{literalT("Location *")}</Text>
           </View>
           <TouchableOpacity
             style={s.locationBtn}
             onPress={detectLocation}
             activeOpacity={0.85}
-            disabled={loading}
-          >
+            disabled={loading}>
+            
             <Text style={s.locationBtnTxt}>
               {form.location ? "📍 Location detected" : "📍 Auto detect location"}
             </Text>
@@ -618,54 +620,54 @@ export default function AddComplaintScreen({ navigation }) {
             <TextInput
               style={[s.input, { color: T.textM }]}
               value={form.ward || "Thokuthi not assigned"}
-              editable={false}
-            />
+              editable={false} />
+            
           </View>
           <View style={[s.inputRow, { marginTop: 10, backgroundColor: '#f3f4f6' }]}>
             <Text style={s.iIcon}>🔢</Text>
             <TextInput
               style={[s.input, { color: T.textM }]}
               value={form.wardNo || "Ward number not assigned"}
-              editable={false}
-            />
+              editable={false} />
+            
           </View>
           <View style={[s.inputRow, { marginTop: 10, backgroundColor: '#f3f4f6' }]}>
             <Text style={s.iIcon}>📍</Text>
             <TextInput
               style={[s.input, { color: T.textM }]}
               value={form.district || "District not assigned"}
-              editable={false}
-            />
+              editable={false} />
+            
           </View>
           <View style={[s.inputRow, { marginTop: 10 }]}>
             <Text style={s.iIcon}>📮</Text>
             <TextInput
               style={s.input}
-              placeholder="Pincode"
+              placeholder={literalT("Pincode")}
               placeholderTextColor={T.textM}
               value={form.pincode}
               keyboardType="numeric"
               maxLength={6}
-              onChangeText={(v) => setForm((f) => ({ ...f, pincode: v }))}
-            />
+              onChangeText={(v) => setForm((f) => ({ ...f, pincode: v }))} />
+            
           </View>
           <View style={[s.inputRow, { marginTop: 10 }]}>
             <Text style={s.iIcon}>📌</Text>
             <TextInput
               style={s.input}
-              placeholder="Address / area"
+              placeholder={literalT("Address / area")}
               placeholderTextColor={T.textM}
               value={form.address}
-              onChangeText={(v) => setForm((f) => ({ ...f, address: v }))}
-            />
+              onChangeText={(v) => setForm((f) => ({ ...f, address: v }))} />
+            
           </View>
           <View style={[s.inputRow, { marginTop: 10, backgroundColor: '#f3f4f6' }]}>
             <Text style={s.iIcon}>📞</Text>
             <TextInput
               style={[s.input, { color: T.textM }]}
               value={form.citizenPhone || "Phone not assigned"}
-              editable={false}
-            />
+              editable={false} />
+            
           </View>
         </View>
 
@@ -673,150 +675,150 @@ export default function AddComplaintScreen({ navigation }) {
         <View style={s.section}>
           <View style={s.sHead}>
             <Text style={s.sIcon}>📎</Text>
-            <Text style={s.sTitle}>Proof Attachments</Text>
+            <Text style={s.sTitle}>{literalT("Proof Attachments")}</Text>
             <View
               style={[
-                s.countBadge,
-                { backgroundColor: attachments.length >= 5 ? T.red : T.maroon },
-              ]}
-            >
+              s.countBadge,
+              { backgroundColor: attachments.length >= 5 ? T.red : T.maroon }]
+              }>
+              
               <Text style={s.countBadgeTxt}>{attachments.length}/5</Text>
             </View>
           </View>
-          <Text style={s.attachHint}>
-            Optional · Add photos, videos or documents as evidence · Max 5
+          <Text style={s.attachHint}>{literalT("Optional · Add photos, videos or documents as evidence · Max 5")}
+
           </Text>
 
-          {attachments.length < 5 && (
-            <TouchableOpacity
-              style={s.addBtn}
-              onPress={() => setSheetVisible(true)}
-              activeOpacity={0.85}
-            >
+          {attachments.length < 5 &&
+          <TouchableOpacity
+            style={s.addBtn}
+            onPress={() => setSheetVisible(true)}
+            activeOpacity={0.85}>
+            
               <LinearGradient
-                colors={[T.maroon, T.maroonL]}
-                style={s.addBtnGrad}
-              >
+              colors={[T.maroon, T.maroonL]}
+              style={s.addBtnGrad}>
+              
                 <Text style={{ fontSize: 22 }}>📎</Text>
                 <View>
-                  <Text style={s.addBtnTxt}>Add Attachment</Text>
-                  <Text style={s.addBtnSub}>Photo · Video · Document</Text>
+                  <Text style={s.addBtnTxt}>{literalT("Add Attachment")}</Text>
+                  <Text style={s.addBtnSub}>{literalT("Photo · Video · Document")}</Text>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
-          )}
+          }
 
-          {attachments.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ marginTop: 14 }}
-            >
-              {attachments.map((att, i) => (
-                <View key={i} style={s.previewWrap}>
-                  {att.type === "image" ? (
-                    <Image source={{ uri: att.uri }} style={s.previewImg} />
-                  ) : (
-                    <View
-                      style={[
-                        s.previewImg,
-                        {
-                          backgroundColor:
-                            att.type === "document" ? "#fef3c7" : "#1e293b",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        },
-                      ]}
-                    >
+          {attachments.length > 0 &&
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginTop: 14 }}>
+            
+              {attachments.map((att, i) =>
+            <View key={i} style={s.previewWrap}>
+                  {att.type === "image" ?
+              <Image source={{ uri: att.uri }} style={s.previewImg} /> :
+
+              <View
+                style={[
+                s.previewImg,
+                {
+                  backgroundColor:
+                  att.type === "document" ? "#fef3c7" : "#1e293b",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }]
+                }>
+                
                       <Text style={{ fontSize: 30 }}>{typeIcon(att.type)}</Text>
                       <Text
-                        style={{
-                          fontSize: 9,
-                          color: att.type === "document" ? T.maroon : "#fff",
-                          fontWeight: "700",
-                          marginTop: 3,
-                        }}
-                      >
-                        {att.filename
-                          ?.split(".")
-                          .pop()
-                          ?.toUpperCase()
-                          ?.slice(0, 4)}
+                  style={{
+                    fontSize: 9,
+                    color: att.type === "document" ? T.maroon : "#fff",
+                    fontWeight: "700",
+                    marginTop: 3
+                  }}>
+                  
+                        {att.filename?.
+                  split(".").
+                  pop()?.
+                  toUpperCase()?.
+                  slice(0, 4)}
                       </Text>
                     </View>
-                  )}
+              }
                   <TouchableOpacity
-                    style={s.removeBtn}
-                    onPress={() =>
-                      setAttachments((p) => p.filter((_, j) => j !== i))
-                    }
-                  >
+                style={s.removeBtn}
+                onPress={() =>
+                setAttachments((p) => p.filter((_, j) => j !== i))
+                }>
+                
                     <Text style={s.removeTxt}>×</Text>
                   </TouchableOpacity>
                   <View
-                    style={[
-                      s.typeBadge,
-                      { backgroundColor: typeColor(att.type) },
-                    ]}
-                  >
+                style={[
+                s.typeBadge,
+                { backgroundColor: typeColor(att.type) }]
+                }>
+                
                     <Text style={s.typeBadgeTxt}>{typeLabel(att.type)}</Text>
                   </View>
                 </View>
-              ))}
+            )}
             </ScrollView>
-          )}
+          }
 
-          {attachments.length === 0 && (
-            <View style={{ alignItems: "center", paddingVertical: 16 }}>
+          {attachments.length === 0 &&
+          <View style={{ alignItems: "center", paddingVertical: 16 }}>
               <Text style={{ fontSize: 28, opacity: 0.25 }}>📎</Text>
-              <Text style={{ fontSize: 12, color: T.textM, marginTop: 6 }}>
-                No attachments added
-              </Text>
+              <Text style={{ fontSize: 12, color: T.textM, marginTop: 6 }}>{literalT("No attachments added")}
+
+            </Text>
             </View>
-          )}
+          }
         </View>
 
         {/* Summary */}
-        {form.category && form.district && (
-          <View style={s.summary}>
-            <Text style={s.summaryTitle}>📋 Summary</Text>
+        {form.category && form.district &&
+        <View style={s.summary}>
+            <Text style={s.summaryTitle}>{literalT("📋 Summary")}</Text>
             {[
-              ["Category", `${CATEGORY_ICONS[form.category] || "📝"} ${form.category === "Others" ? form.customCategory || "Others" : form.category}`],
-              ["District", `📍 ${form.district}`],
-              ...(form.ward ? [["Thokuthi", `🏠 ${form.ward}`]] : []),
-              ...(form.wardNo ? [["Ward No", `🔢 ${form.wardNo}`]] : []),
-              ...(form.pincode ? [["Pincode", `📮 ${form.pincode}`]] : []),
-              ...(form.location ? [["GPS", `${form.location.lat.toFixed(5)}, ${form.location.lng.toFixed(5)}`]] : []),
-              ["Attachments", `📎 ${attachments.length} file(s)`],
-            ].map(([l, v]) => (
-              <View key={l} style={s.summaryRow}>
+          ["Category", `${CATEGORY_ICONS[form.category] || "📝"} ${form.category === "Others" ? form.customCategory || complaintCategoryT("Others") : complaintCategoryT(form.category)}`],
+          ["District", `📍 ${form.district}`],
+          ...(form.ward ? [["Thokuthi", `🏠 ${form.ward}`]] : []),
+          ...(form.wardNo ? [["Ward No", `🔢 ${form.wardNo}`]] : []),
+          ...(form.pincode ? [["Pincode", `📮 ${form.pincode}`]] : []),
+          ...(form.location ? [["GPS", `${form.location.lat.toFixed(5)}, ${form.location.lng.toFixed(5)}`]] : []),
+          ["Attachments", `📎 ${attachments.length} file(s)`]].
+          map(([l, v]) =>
+          <View key={l} style={s.summaryRow}>
                 <Text style={s.summaryL}>{l}</Text>
                 <Text style={s.summaryV}>{v}</Text>
               </View>
-            ))}
+          )}
           </View>
-        )}
+        }
 
         {/* Submit */}
         <TouchableOpacity
           style={[s.submitBtn, loading && { opacity: 0.7 }]}
           onPress={handleSubmit}
           disabled={loading}
-          activeOpacity={0.85}
-        >
+          activeOpacity={0.85}>
+          
           <LinearGradient colors={[T.maroon, T.maroonL]} style={s.submitGrad}>
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <>
-                <Text style={s.submitTxt}>🚀 Submit Complaint</Text>
+            {loading ?
+            <ActivityIndicator color="#fff" /> :
+
+            <>
+                <Text style={s.submitTxt}>{literalT("🚀 Submit Complaint")}</Text>
                 <Text style={s.submitSub}>
-                  {attachments.length > 0
-                    ? `With ${attachments.length} attachment(s)`
-                    : "No attachments"}
+                  {attachments.length > 0 ?
+                `With ${attachments.length} attachment(s)` :
+                "No attachments"}
                 </Text>
               </>
-            )}
+            }
           </LinearGradient>
         </TouchableOpacity>
         <View style={{ height: 32 }} />
@@ -829,15 +831,15 @@ export default function AddComplaintScreen({ navigation }) {
         onGallery={handleGallery}
         onDocument={handleDocument}
         onRecord={handleRecord}
-        isRecording={isRecording}
-      />
+        isRecording={isRecording} />
+      
       <PermissionModal
         visible={!!permType}
         type={permType}
-        onClose={hidePermModal}
-      />
-    </View>
-  );
+        onClose={hidePermModal} />
+      
+    </View>);
+
 }
 
 const pm = StyleSheet.create({
@@ -846,7 +848,7 @@ const pm = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 28,
+    padding: 28
   },
   card: {
     backgroundColor: "#fff",
@@ -857,7 +859,7 @@ const pm = StyleSheet.create({
     elevation: 20,
     shadowColor: "#000",
     shadowOpacity: 0.2,
-    shadowRadius: 20,
+    shadowRadius: 20
   },
   iconCircle: {
     width: 80,
@@ -866,21 +868,21 @@ const pm = StyleSheet.create({
     backgroundColor: T.bg,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
+    marginBottom: 16
   },
   title: {
     fontSize: 18,
     fontWeight: "800",
     color: T.text,
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 10
   },
   msg: {
     fontSize: 14,
     color: T.textL,
     textAlign: "center",
     lineHeight: 21,
-    marginBottom: 24,
+    marginBottom: 24
   },
   btnRow: { flexDirection: "row", gap: 12, width: "100%" },
   cancelBtn: {
@@ -889,25 +891,25 @@ const pm = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     borderColor: T.border,
-    alignItems: "center",
+    alignItems: "center"
   },
   cancelTxt: { fontSize: 14, fontWeight: "700", color: T.textL },
   settingsBtn: { flex: 1, borderRadius: 50, overflow: "hidden" },
   settingsGrad: { paddingVertical: 14, alignItems: "center" },
-  settingsTxt: { fontSize: 14, fontWeight: "800", color: "#fff" },
+  settingsTxt: { fontSize: 14, fontWeight: "800", color: "#fff" }
 });
 const ap = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+    justifyContent: "flex-end"
   },
   sheet: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 24,
-    paddingBottom: Platform.OS === "ios" ? 40 : 28,
+    paddingBottom: Platform.OS === "ios" ? 40 : 28
   },
   handle: {
     width: 40,
@@ -915,7 +917,7 @@ const ap = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: T.border,
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 20
   },
   title: { fontSize: 18, fontWeight: "800", color: T.text, marginBottom: 4 },
   sub: { fontSize: 13, color: T.textM, marginBottom: 18 },
@@ -925,7 +927,7 @@ const ap = StyleSheet.create({
     gap: 14,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: T.border,
+    borderBottomColor: T.border
   },
   optIconBox: {
     width: 52,
@@ -933,7 +935,7 @@ const ap = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: T.bg,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "center"
   },
   optLabel: { fontSize: 15, fontWeight: "700", color: T.text },
   optSub: { fontSize: 12, color: T.textM, marginTop: 2 },
@@ -943,9 +945,9 @@ const ap = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     borderColor: T.border,
-    alignItems: "center",
+    alignItems: "center"
   },
-  cancelTxt: { fontSize: 15, fontWeight: "700", color: T.textL },
+  cancelTxt: { fontSize: 15, fontWeight: "700", color: T.textL }
 });
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: T.bg },
@@ -954,7 +956,7 @@ const s = StyleSheet.create({
     paddingBottom: 28,
     paddingHorizontal: 24,
     alignItems: "center",
-    zIndex: 1,
+    zIndex: 1
   },
   backBtn: {
     position: "absolute",
@@ -965,7 +967,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
-    elevation: 10,
+    elevation: 10
   },
   backTxt: { color: "#fff", fontSize: 20, fontWeight: "800" },
   headerIcon: {
@@ -976,18 +978,18 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
-    marginTop: 8,
+    marginTop: 8
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "900",
     color: "#fff",
-    marginBottom: 6,
+    marginBottom: 6
   },
   headerSub: {
     fontSize: 13,
     color: "rgba(255,255,255,0.75)",
-    textAlign: "center",
+    textAlign: "center"
   },
   scroll: { flex: 1 },
   section: {
@@ -1000,13 +1002,13 @@ const s = StyleSheet.create({
     elevation: 2,
     shadowColor: "#000",
     shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowRadius: 8
   },
   sHead: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: 14,
+    marginBottom: 14
   },
   sIcon: { fontSize: 18 },
   sTitle: { fontSize: 15, fontWeight: "800", color: T.text, flex: 1 },
@@ -1020,7 +1022,7 @@ const s = StyleSheet.create({
     borderColor: T.border,
     backgroundColor: T.bg,
     padding: 12,
-    alignItems: "center",
+    alignItems: "center"
   },
   catActive: { backgroundColor: T.maroon, borderColor: T.maroon },
   catTxt: {
@@ -1028,7 +1030,7 @@ const s = StyleSheet.create({
     fontWeight: "600",
     color: T.textL,
     textAlign: "center",
-    marginTop: 2,
+    marginTop: 2
   },
   textarea: {
     borderWidth: 1.5,
@@ -1039,7 +1041,7 @@ const s = StyleSheet.create({
     color: T.text,
     backgroundColor: T.bg,
     height: 110,
-    textAlignVertical: "top",
+    textAlignVertical: "top"
   },
   charCount: { fontSize: 11, color: T.textM, textAlign: "right", marginTop: 6 },
   inputRow: {
@@ -1049,7 +1051,7 @@ const s = StyleSheet.create({
     borderColor: T.border,
     borderRadius: 14,
     backgroundColor: T.bg,
-    paddingHorizontal: 14,
+    paddingHorizontal: 14
   },
   iIcon: { fontSize: 16, marginRight: 10 },
   input: { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
@@ -1058,7 +1060,7 @@ const s = StyleSheet.create({
     borderColor: T.border,
     borderRadius: 14,
     backgroundColor: T.bg,
-    overflow: "hidden",
+    overflow: "hidden"
   },
   locationBtn: {
     borderRadius: 14,
@@ -1067,7 +1069,7 @@ const s = StyleSheet.create({
     backgroundColor: "#FFF8E7",
     paddingVertical: 12,
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 10
   },
   locationBtnTxt: { fontSize: 14, color: T.maroonD, fontWeight: "800" },
   distChip: {
@@ -1077,7 +1079,7 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: T.border,
     marginRight: 8,
-    backgroundColor: T.bg,
+    backgroundColor: T.bg
   },
   distActive: { backgroundColor: T.maroon, borderColor: T.maroon },
   distTxt: { fontSize: 13, color: T.textL, fontWeight: "600" },
@@ -1088,14 +1090,14 @@ const s = StyleSheet.create({
     elevation: 3,
     shadowColor: T.maroon,
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 8
   },
   addBtnGrad: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
     paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
   addBtnTxt: { fontSize: 15, fontWeight: "800", color: "#fff" },
   addBtnSub: { fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 },
@@ -1111,7 +1113,7 @@ const s = StyleSheet.create({
     backgroundColor: T.red,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 4,
+    elevation: 4
   },
   removeTxt: { color: "#fff", fontSize: 16, fontWeight: "900", lineHeight: 18 },
   typeBadge: {
@@ -1120,7 +1122,7 @@ const s = StyleSheet.create({
     left: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 6
   },
   typeBadgeTxt: { color: "#fff", fontSize: 9, fontWeight: "800" },
   summary: {
@@ -1129,18 +1131,18 @@ const s = StyleSheet.create({
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#C9982A",
+    borderColor: "#C9982A"
   },
   summaryTitle: {
     fontSize: 14,
     fontWeight: "800",
     color: T.maroonD,
-    marginBottom: 12,
+    marginBottom: 12
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 8
   },
   summaryL: { fontSize: 12, color: T.textM, fontWeight: "600" },
   summaryV: { fontSize: 13, color: T.text, fontWeight: "700" },
@@ -1151,14 +1153,14 @@ const s = StyleSheet.create({
     shadowColor: T.maroon,
     shadowOpacity: 0.4,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 4 }
   },
   submitGrad: { paddingVertical: 18, alignItems: "center" },
   submitTxt: {
     fontSize: 17,
     fontWeight: "800",
     color: "#fff",
-    letterSpacing: 0.5,
+    letterSpacing: 0.5
   },
-  submitSub: { fontSize: 11, color: "rgba(255,255,255,0.75)", marginTop: 3 },
+  submitSub: { fontSize: 11, color: "rgba(255,255,255,0.75)", marginTop: 3 }
 });

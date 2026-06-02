@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { literalT } from "../i18n/runtimeTamil";import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { API_URL } from '../config';
@@ -7,7 +7,7 @@ function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,13 +36,13 @@ function UserManagement() {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      
+
       const payload = { name, email, password, role };
       if (role === 'worker' || role === 'public') {
-         payload.thokuthi = '000';
-         payload.district = 'Admin';
-         payload.address = 'Admin';
-         payload.pincode = '000000';
+        payload.thokuthi = '000';
+        payload.district = 'Admin';
+        payload.address = 'Admin';
+        payload.pincode = '000000';
       }
 
       await axios.post(`${API_URL}/api/users`, payload, config);
@@ -74,72 +74,72 @@ function UserManagement() {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>User Management (Super Admin)</h2>
-        <Button variant="primary" onClick={() => setShowModal(true)}>Add User</Button>
+        <h2>{literalT("User Management (Super Admin)")}</h2>
+        <Button variant="primary" onClick={() => setShowModal(true)}>{literalT("Add User")}</Button>
       </div>
 
-      {loading ? (
-        <Spinner animation="border" />
-      ) : (
-        <Table striped bordered hover responsive>
+      {loading ?
+      <Spinner animation="border" /> :
+
+      <Table striped bordered hover responsive>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
+              <th>{literalT("ID")}</th>
+              <th>{literalT("Name")}</th>
+              <th>{literalT("Email")}</th>
+              <th>{literalT("Role")}</th>
+              <th>{literalT("Actions")}</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
+            {users.map((user) =>
+          <tr key={user.id}>
                 <td>{user.id}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.role}</td>
                 <td>
-                  <Button variant="danger" size="sm" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                  <Button variant="danger" size="sm" onClick={() => handleDeleteUser(user.id)}>{literalT("Delete")}</Button>
                 </td>
               </tr>
-            ))}
+          )}
           </tbody>
         </Table>
-      )}
+      }
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Create New User</Modal.Title>
+          <Modal.Title>{literalT("Create New User")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleCreateUser}>
             <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>{literalT("Name")}</Form.Label>
               <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} required />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
+              <Form.Label>{literalT("Email")}</Form.Label>
               <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
+              <Form.Label>{literalT("Password")}</Form.Label>
               <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Role</Form.Label>
+              <Form.Label>{literalT("Role")}</Form.Label>
               <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="admin">Web Admin</option>
-                <option value="worker">Worker</option>
-                <option value="public">Public</option>
-                <option value="superadmin">Super Admin</option>
+                <option value="admin">{literalT("Web Admin")}</option>
+                <option value="worker">{literalT("Worker")}</option>
+                <option value="public">{literalT("Public")}</option>
+                <option value="superadmin">{literalT("Super Admin")}</option>
               </Form.Select>
             </Form.Group>
-            <Button variant="primary" type="submit" className="w-100">Create User</Button>
+            <Button variant="primary" type="submit" className="w-100">{literalT("Create User")}</Button>
           </Form>
         </Modal.Body>
       </Modal>
-    </div>
-  );
+    </div>);
+
 }
 
 export default UserManagement;

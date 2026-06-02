@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { literalT } from "../i18n/runtimeTamil";import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -22,8 +22,8 @@ function Login() {
       navigate('/dashboard/overview');
     } catch (error) {
       alert(
-        error.response?.data?.message ||
-        (error.request ? `Cannot reach backend at ${API_URL}. Check that the API server is running.` : error.message) ||
+        error.response?.data?.message || (
+        error.request ? `Cannot reach backend at ${API_URL}. Check that the API server is running.` : error.message) ||
         'Login failed.'
       );
     }
@@ -34,44 +34,44 @@ function Login() {
       <Row>
         <Col md="12">
           <div className="auth-form">
-            <h2 className="text-center">Login</h2>
+            <h2 className="text-center">{literalT("Login")}</h2>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
-                <Form.Label>Email address</Form.Label>
+                <Form.Label>{literalT("Email address")}</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="Enter email"
+                  placeholder={literalT("Enter email")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                  required />
+                
               </Form.Group>
 
               <Form.Group controlId="formBasicPassword">
-                <Form.Label>Password</Form.Label>
+                <Form.Label>{literalT("Password")}</Form.Label>
                 <Form.Control
                   type="password"
-                  placeholder="Password"
+                  placeholder={literalT("Password")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                  required />
+                
               </Form.Group>
-              <Button variant="primary" type="submit" className="w-100 mt-3">
-                Login
+              <Button variant="primary" type="submit" className="w-100 mt-3">{literalT("Login")}
+
               </Button>
             </Form>
             <div className="text-center mt-3">
-              <Link to="/forgot-password">Forgot Password?</Link>
+              <Link to="/forgot-password">{literalT("Forgot Password?")}</Link>
             </div>
-            <div className="text-center mt-3">
-              Don't have an account? <Link to="/signup">Sign Up</Link>
+            <div className="text-center mt-3">{literalT("Don't have an account?")}
+              <Link to="/signup">{literalT("Sign Up")}</Link>
             </div>
           </div>
         </Col>
       </Row>
-    </Container>
-  );
+    </Container>);
+
 }
 
 export default Login;

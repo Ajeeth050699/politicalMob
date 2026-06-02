@@ -1,34 +1,34 @@
-import { useTranslation } from 'react-i18next';
+import { literalT } from "../../i18n/runtimeTamil";import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, Alert, ActivityIndicator, Platform, StatusBar,
-} from 'react-native';
+  ScrollView, Alert, ActivityIndicator, Platform, StatusBar } from
+'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 import { T } from '../../constants/theme';
 import { useLang } from '../../context/LanguageContext';
 
 const ROLE_META = {
-  public: { label: 'CITIZEN',  icon: '👤', color: T.gold    },
-  worker: { label: 'WORKER',   icon: '👷', color: '#3b82f6' },
-  agent:  { label: 'AGENT',    icon: '👷', color: '#0ea5e9' },
-  admin:  { label: 'ADMIN',    icon: '🛡️', color: '#8b5cf6' },
+  public: { label: 'CITIZEN', icon: '👤', color: T.gold },
+  worker: { label: 'WORKER', icon: '👷', color: '#3b82f6' },
+  agent: { label: 'AGENT', icon: '👷', color: '#0ea5e9' },
+  admin: { label: 'ADMIN', icon: '🛡️', color: '#8b5cf6' }
 };
 
 export default function ProfileScreen({ navigation }) {
   const { t, i18n } = useTranslation();
   const { userInfo, updateProfile, logout } = useAuth();
 
-  const [name,   setName]   = useState(userInfo?.name  || '');
-  const [email,  setEmail]  = useState(userInfo?.email || '');
-  const [phone,  setPhone]  = useState(userInfo?.phone || '');
-  const [district,setDistrict]= useState(userInfo?.district || '');
+  const [name, setName] = useState(userInfo?.name || '');
+  const [email, setEmail] = useState(userInfo?.email || '');
+  const [phone, setPhone] = useState(userInfo?.phone || '');
+  const [district, setDistrict] = useState(userInfo?.district || '');
   const [thokuthi, setThokuthi] = useState(userInfo?.ward || userInfo?.thokuthi || '');
   const [wardNo, setWardNo] = useState(userInfo?.wardNo ? String(userInfo.wardNo) : '');
-  const [pincode,setPincode]= useState(userInfo?.pincode || '');
-  const [address,setAddress]= useState(userInfo?.address || '');
-  const [workCategory,setWorkCategory]= useState(userInfo?.workCategory || '');
+  const [pincode, setPincode] = useState(userInfo?.pincode || '');
+  const [address, setAddress] = useState(userInfo?.address || '');
+  const [workCategory, setWorkCategory] = useState(userInfo?.workCategory || '');
   const [saving, setSaving] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -36,8 +36,8 @@ export default function ProfileScreen({ navigation }) {
   const role = ROLE_META[userInfo?.role] || ROLE_META.public;
 
   const handleSave = async () => {
-    if (!name.trim())  { Alert.alert('Required', 'Name cannot be empty.');  return; }
-    if (!email.trim()) { Alert.alert('Required', 'Email cannot be empty.'); return; }
+    if (!name.trim()) {Alert.alert('Required', 'Name cannot be empty.');return;}
+    if (!email.trim()) {Alert.alert('Required', 'Email cannot be empty.');return;}
     if ((userInfo?.role === 'worker' || userInfo?.role === 'agent') && !workCategory.trim()) {
       Alert.alert('Required', 'Work category cannot be empty.');
       return;
@@ -70,11 +70,11 @@ export default function ProfileScreen({ navigation }) {
 
         {/* ── Hero Header ── */}
         <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-          {navigation?.canGoBack && navigation.canGoBack() && navigation?.getState?.()?.index > 0 && (
-            <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-              <Text style={s.backTxt}>← Back</Text>
+          {navigation?.canGoBack && navigation.canGoBack() && navigation?.getState?.()?.index > 0 &&
+          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+              <Text style={s.backTxt}>{literalT("← Back")}</Text>
             </TouchableOpacity>
-          )}
+          }
 
           {/* Avatar */}
           <View style={s.avatarRing}>
@@ -93,16 +93,16 @@ export default function ProfileScreen({ navigation }) {
 
           {/* Info pills */}
           <View style={s.pillRow}>
-            {userInfo?.district && (
-              <View style={s.pill}>
+            {userInfo?.district &&
+            <View style={s.pill}>
                 <Text style={s.pillTxt}>📍 {userInfo.district}</Text>
               </View>
-            )}
-            {userInfo?.thokuthi && (
-              <View style={s.pill}>
+            }
+            {userInfo?.thokuthi &&
+            <View style={s.pill}>
                 <Text style={s.pillTxt}>🏠 {userInfo.ward || userInfo.thokuthi}</Text>
               </View>
-            )}
+            }
           </View>
         </LinearGradient>
 
@@ -110,58 +110,58 @@ export default function ProfileScreen({ navigation }) {
 
           {/* ── Edit section ── */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>✏️ Edit Profile</Text>
+            <Text style={s.sectionTitle}>{literalT("✏️ Edit Profile")}</Text>
 
             {[
-              { label: 'Full Name',     icon: '👤', value: name,  setter: setName,  placeholder: 'Enter your name',    kb: 'default'       },
-              { label: 'Email Address', icon: '✉️', value: email, setter: setEmail, placeholder: 'Enter your email',   kb: 'email-address' },
-              { label: 'Phone Number',  icon: '📱', value: phone, setter: null, placeholder: 'Enter phone number', kb: 'phone-pad', readonly: true },
-              { label: 'District',      icon: '📍', value: district, setter: setDistrict, placeholder: 'District', kb: 'default', readonly: !!userInfo?.district },
-              { label: 'Thokuthi / Constituency', icon: '🏛️', value: thokuthi, setter: setThokuthi, placeholder: 'Enter Thokuthi', kb: 'default', readonly: !!userInfo?.ward },
-              { label: 'Ward No',       icon: '🔢', value: wardNo, setter: setWardNo, placeholder: 'Enter ward no.', kb: 'numeric', readonly: !!userInfo?.wardNo },
-              { label: 'Pincode',       icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
-              { label: 'Address / Area',icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
-              ...(userInfo?.role === 'worker' || userInfo?.role === 'agent'
-                ? [{ label: 'Work Category', icon: '#', value: workCategory, setter: setWorkCategory, placeholder: 'e.g. Electrician, Plumber', kb: 'default' }]
-                : []),
-            ].map(({ label, icon, value, setter, placeholder, kb, readonly }) => (
-              <View key={label} style={{ marginBottom: 14 }}>
+            { label: 'Full Name', icon: '👤', value: name, setter: setName, placeholder: 'Enter your name', kb: 'default' },
+            { label: 'Email Address', icon: '✉️', value: email, setter: setEmail, placeholder: 'Enter your email', kb: 'email-address' },
+            { label: 'Phone Number', icon: '📱', value: phone, setter: null, placeholder: 'Enter phone number', kb: 'phone-pad', readonly: true },
+            { label: 'District', icon: '📍', value: district, setter: setDistrict, placeholder: 'District', kb: 'default', readonly: !!userInfo?.district },
+            { label: 'Thokuthi / Constituency', icon: '🏛️', value: thokuthi, setter: setThokuthi, placeholder: 'Enter Thokuthi', kb: 'default', readonly: !!userInfo?.ward },
+            { label: 'Ward No', icon: '🔢', value: wardNo, setter: setWardNo, placeholder: 'Enter ward no.', kb: 'numeric', readonly: !!userInfo?.wardNo },
+            { label: 'Pincode', icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
+            { label: 'Address / Area', icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
+            ...(userInfo?.role === 'worker' || userInfo?.role === 'agent' ?
+            [{ label: 'Work Category', icon: '#', value: workCategory, setter: setWorkCategory, placeholder: 'e.g. Electrician, Plumber', kb: 'default' }] :
+            [])].
+            map(({ label, icon, value, setter, placeholder, kb, readonly }) =>
+            <View key={label} style={{ marginBottom: 14 }}>
                 <Text style={s.label}>{label}</Text>
                 <View style={[s.inputRow, readonly && { backgroundColor: '#f3f4f6' }]}>
                   <Text style={s.inputIcon}>{icon}</Text>
                   <TextInput
-                    style={[s.input, readonly && { color: T.textM }]}
-                    value={value}
-                    onChangeText={setter}
-                    placeholder={placeholder}
-                    placeholderTextColor={T.textM}
-                    keyboardType={kb}
-                    autoCapitalize={kb === 'email-address' ? 'none' : 'words'}
-                    editable={!readonly}
-                  />
+                  style={[s.input, readonly && { color: T.textM }]}
+                  value={value}
+                  onChangeText={setter}
+                  placeholder={placeholder}
+                  placeholderTextColor={T.textM}
+                  keyboardType={kb}
+                  autoCapitalize={kb === 'email-address' ? 'none' : 'words'}
+                  editable={!readonly} />
+                
                   {label === 'Phone Number' && (
-                    !userInfo.isPhoneVerified ? (
-                      <TouchableOpacity onPress={() => navigation.navigate('Verify', { phone: userInfo.phone })}>
-                        <Text style={{ color: T.gold, fontWeight: 'bold' }}>Verify</Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <Text style={{ color: 'green', fontWeight: 'bold' }}>✓ Verified</Text>
-                    )
-                  )}
+                !userInfo.isPhoneVerified ?
+                <TouchableOpacity onPress={() => navigation.navigate('Verify', { phone: userInfo.phone })}>
+                        <Text style={{ color: T.gold, fontWeight: 'bold' }}>{literalT("Verify")}</Text>
+                      </TouchableOpacity> :
+
+                <Text style={{ color: 'green', fontWeight: 'bold' }}>{literalT("✓ Verified")}</Text>)
+
+                }
                 </View>
               </View>
-            ))}
+            )}
 
             <TouchableOpacity
               style={[s.saveBtn, saving && { opacity: 0.7 }]}
               onPress={handleSave}
               disabled={saving}
-              activeOpacity={0.85}
-            >
+              activeOpacity={0.85}>
+              
               <LinearGradient colors={[T.maroon, T.maroonL]} style={s.saveBtnGrad}>
-                {saving
-                  ? <ActivityIndicator color="#fff" />
-                  : <Text style={s.saveBtnTxt}>💾 Save Changes</Text>
+                {saving ?
+                <ActivityIndicator color="#fff" /> :
+                <Text style={s.saveBtnTxt}>{literalT("💾 Save Changes")}</Text>
                 }
               </LinearGradient>
             </TouchableOpacity>
@@ -169,61 +169,61 @@ export default function ProfileScreen({ navigation }) {
 
           {/* ── Account info (read-only) ── */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>📋 Account Info</Text>
+            <Text style={s.sectionTitle}>{literalT("📋 Account Info")}</Text>
             {[
-              { label: 'Role',     value: userInfo?.role?.toUpperCase(), icon: role.icon },
-              ...(userInfo?.role === 'worker' || userInfo?.role === 'agent'
-                ? [{ label: 'Work Category', value: userInfo?.workCategory || '—', icon: '#' }]
-                : []),
-              { label: 'District', value: userInfo?.district || '—',     icon: '📍'      },
-              { label: 'Thokuthi',     value: userInfo?.ward || userInfo?.thokuthi || '—',     icon: '🏠'      },
-              { label: 'Ward No',      value: userInfo?.wardNo  || '—',     icon: '🔢'      },
-              { label: 'Pincode',  value: userInfo?.pincode  || '—',     icon: '📮'      },
-              { label: 'Address',  value: userInfo?.address  || '—',     icon: '📌'      },
-            ].map(({ label, value, icon }) => (
-              <View key={label} style={s.infoRow}>
+            { label: 'Role', value: userInfo?.role?.toUpperCase(), icon: role.icon },
+            ...(userInfo?.role === 'worker' || userInfo?.role === 'agent' ?
+            [{ label: 'Work Category', value: userInfo?.workCategory || '—', icon: '#' }] :
+            []),
+            { label: 'District', value: userInfo?.district || '—', icon: '📍' },
+            { label: 'Thokuthi', value: userInfo?.ward || userInfo?.thokuthi || '—', icon: '🏠' },
+            { label: 'Ward No', value: userInfo?.wardNo || '—', icon: '🔢' },
+            { label: 'Pincode', value: userInfo?.pincode || '—', icon: '📮' },
+            { label: 'Address', value: userInfo?.address || '—', icon: '📌' }].
+            map(({ label, value, icon }) =>
+            <View key={label} style={s.infoRow}>
                 <Text style={s.infoIcon}>{icon}</Text>
                 <Text style={s.infoLabel}>{label}</Text>
                 <Text style={s.infoVal}>{value}</Text>
               </View>
-            ))}
+            )}
           </View>
 
           {/* ── Language ── */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>🌐 Language / மொழி</Text>
+            <Text style={s.sectionTitle}>{literalT("🌐 Language / மொழி")}</Text>
             <View style={langS.row}>
               {[
-                { code:'en', label:'English', sub:'English' },
-                { code:'ta', label:'தமிழ்',   sub:'Tamil'   },
-              ].map(({ code, label, sub }) => {
+              { code: 'en', label: 'English', sub: 'English' },
+              { code: 'ta', label: 'தமிழ்', sub: 'Tamil' }].
+              map(({ code, label, sub }) => {
                 const active = lang === code;
                 return (
                   <TouchableOpacity
                     key={code}
                     style={[langS.btn, active && langS.btnActive]}
                     onPress={() => changeLang(code)}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={[langS.label, active && { color:'#fff' }]}>{label}</Text>
-                    <Text style={[langS.sub, active && { color:'rgba(255,255,255,0.75)' }]}>{sub}</Text>
-                    {active && <View style={langS.checkBadge}><Text style={{ fontSize:12 }}>✓</Text></View>}
-                  </TouchableOpacity>
-                );
+                    activeOpacity={0.85}>
+                    
+                    <Text style={[langS.label, active && { color: '#fff' }]}>{label}</Text>
+                    <Text style={[langS.sub, active && { color: 'rgba(255,255,255,0.75)' }]}>{sub}</Text>
+                    {active && <View style={langS.checkBadge}><Text style={{ fontSize: 12 }}>✓</Text></View>}
+                  </TouchableOpacity>);
+
               })}
             </View>
           </View>
 
           {/* ── Pricing & Billing ── */}
-          <TouchableOpacity 
-            style={[s.section, { flexDirection: 'row', alignItems: 'center' }]} 
-            onPress={() => navigation.navigate('Billing')} 
-            activeOpacity={0.85}
-          >
+          <TouchableOpacity
+            style={[s.section, { flexDirection: 'row', alignItems: 'center' }]}
+            onPress={() => navigation.navigate('Billing')}
+            activeOpacity={0.85}>
+            
             <Text style={{ fontSize: 24, marginRight: 12 }}>💳</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: '800', color: T.text }}>Pricing & Billing</Text>
-              <Text style={{ fontSize: 13, color: T.textM, marginTop: 2 }}>Manage your plan and invoices</Text>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: T.text }}>{literalT("Pricing & Billing")}</Text>
+              <Text style={{ fontSize: 13, color: T.textM, marginTop: 2 }}>{literalT("Manage your plan and invoices")}</Text>
             </View>
             <Text style={{ fontSize: 20, color: T.textM }}>›</Text>
           </TouchableOpacity>
@@ -233,64 +233,64 @@ export default function ProfileScreen({ navigation }) {
             style={[s.logoutBtn, loggingOut && { opacity: 0.6 }]}
             onPress={handleLogout}
             disabled={loggingOut}
-            activeOpacity={0.85}
-          >
+            activeOpacity={0.85}>
+            
             <Text style={s.logoutTxt}>{loggingOut ? 'Logging out...' : '🚪 Logout'}</Text>
           </TouchableOpacity>
 
-          <Text style={s.version}>People Connect v1.0 · Tamil Nadu</Text>
+          <Text style={s.version}>{literalT("People Connect v1.0 · Tamil Nadu")}</Text>
           <View style={{ height: 32 }} />
         </View>
       </ScrollView>
-    </View>
-  );
+    </View>);
+
 }
 
 const s = StyleSheet.create({
-  root:       { flex: 1, backgroundColor: T.bg },
+  root: { flex: 1, backgroundColor: T.bg },
 
-  header:     { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 32, alignItems: 'center', paddingHorizontal: 24 },
-  backBtn:    { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 20 },
-  backTxt:    { color: 'rgba(255,255,255,0.85)', fontSize: 15, fontWeight: '600' },
+  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 32, alignItems: 'center', paddingHorizontal: 24 },
+  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 20 },
+  backTxt: { color: 'rgba(255,255,255,0.85)', fontSize: 15, fontWeight: '600' },
 
   avatarRing: { width: 96, height: 96, borderRadius: 48, borderWidth: 3, borderColor: 'rgba(255,255,255,0.4)', alignItems: 'center', justifyContent: 'center', marginBottom: 14, marginTop: 20 },
-  avatar:     { width: 84, height: 84, borderRadius: 42, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  userName:   { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 4 },
-  userEmail:  { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 12 },
-  roleBadge:  { paddingHorizontal: 18, paddingVertical: 6, borderRadius: 50, marginBottom: 14 },
-  roleTxt:    { fontSize: 12, fontWeight: '900', color: '#fff', letterSpacing: 1 },
-  pillRow:    { flexDirection: 'row', gap: 10 },
-  pill:       { backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  pillTxt:    { color: '#fff', fontSize: 12, fontWeight: '600' },
+  avatar: { width: 84, height: 84, borderRadius: 42, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  userName: { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 4 },
+  userEmail: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 12 },
+  roleBadge: { paddingHorizontal: 18, paddingVertical: 6, borderRadius: 50, marginBottom: 14 },
+  roleTxt: { fontSize: 12, fontWeight: '900', color: '#fff', letterSpacing: 1 },
+  pillRow: { flexDirection: 'row', gap: 10 },
+  pill: { backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  pillTxt: { color: '#fff', fontSize: 12, fontWeight: '600' },
 
-  body:         { padding: 16 },
-  section:      { backgroundColor: '#fff', borderRadius: 20, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8 },
+  body: { padding: 16 },
+  section: { backgroundColor: '#fff', borderRadius: 20, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8 },
   sectionTitle: { fontSize: 15, fontWeight: '800', color: T.text, marginBottom: 16 },
 
-  label:      { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 8 },
-  inputRow:   { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14 },
-  inputIcon:  { fontSize: 16, marginRight: 10 },
-  input:      { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
+  label: { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 8 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14 },
+  inputIcon: { fontSize: 16, marginRight: 10 },
+  input: { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
 
-  saveBtn:     { borderRadius: 50, overflow: 'hidden', marginTop: 4, elevation: 4, shadowColor: T.maroon, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
+  saveBtn: { borderRadius: 50, overflow: 'hidden', marginTop: 4, elevation: 4, shadowColor: T.maroon, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
   saveBtnGrad: { paddingVertical: 16, alignItems: 'center' },
-  saveBtnTxt:  { fontSize: 16, fontWeight: '800', color: '#fff' },
+  saveBtnTxt: { fontSize: 16, fontWeight: '800', color: '#fff' },
 
-  infoRow:    { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.border },
-  infoIcon:   { fontSize: 18, width: 32 },
-  infoLabel:  { fontSize: 14, color: T.textM, flex: 1 },
-  infoVal:    { fontSize: 14, fontWeight: '700', color: T.text },
+  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.border },
+  infoIcon: { fontSize: 18, width: 32 },
+  infoLabel: { fontSize: 14, color: T.textM, flex: 1 },
+  infoVal: { fontSize: 14, fontWeight: '700', color: T.text },
 
-  logoutBtn:  { backgroundColor: '#fff', borderRadius: 50, borderWidth: 2, borderColor: T.red + '60', paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
-  logoutTxt:  { fontSize: 16, fontWeight: '800', color: T.red },
-  version:    { textAlign: 'center', fontSize: 12, color: T.textM },
+  logoutBtn: { backgroundColor: '#fff', borderRadius: 50, borderWidth: 2, borderColor: T.red + '60', paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
+  logoutTxt: { fontSize: 16, fontWeight: '800', color: T.red },
+  version: { textAlign: 'center', fontSize: 12, color: T.textM }
 });
 
 const langS = StyleSheet.create({
-  row:       { flexDirection:'row', gap:12 },
-  btn:       { flex:1, borderRadius:16, borderWidth:2, borderColor:T.border, padding:16, alignItems:'center', backgroundColor:T.bg },
-  btnActive: { backgroundColor:T.maroon, borderColor:T.maroon },
-  label:     { fontSize:18, fontWeight:'800', color:T.text, marginBottom:4 },
-  sub:       { fontSize:12, color:T.textM },
-  checkBadge:{ position:'absolute', top:8, right:8, width:22, height:22, borderRadius:11, backgroundColor:'rgba(255,255,255,0.25)', alignItems:'center', justifyContent:'center' },
+  row: { flexDirection: 'row', gap: 12 },
+  btn: { flex: 1, borderRadius: 16, borderWidth: 2, borderColor: T.border, padding: 16, alignItems: 'center', backgroundColor: T.bg },
+  btnActive: { backgroundColor: T.maroon, borderColor: T.maroon },
+  label: { fontSize: 18, fontWeight: '800', color: T.text, marginBottom: 4 },
+  sub: { fontSize: 12, color: T.textM },
+  checkBadge: { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' }
 });

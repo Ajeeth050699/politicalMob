@@ -1,46 +1,46 @@
-import React, { useState } from 'react';
+import { literalT } from "../i18n/runtimeTamil";import React, { useState } from 'react';
 import { Table, Button } from 'react-bootstrap';
 
 const mockUsers = [
-  { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin' },
-  { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'User' },
-  { id: 3, name: 'Peter Jones', email: 'peter.jones@example.com', role: 'User' },
-];
+{ id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin' },
+{ id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'User' },
+{ id: 3, name: 'Peter Jones', email: 'peter.jones@example.com', role: 'User' }];
+
 
 function UserManagement() {
   const [users, setUsers] = useState(mockUsers);
 
   return (
     <div>
-      <h2>User Management</h2>
-      <Button variant="primary" className="mb-3">Add User</Button>
+      <h2>{literalT("User Management")}</h2>
+      <Button variant="primary" className="mb-3">{literalT("Add User")}</Button>
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
+            <th>{literalT("ID")}</th>
+            <th>{literalT("Name")}</th>
+            <th>{literalT("Email")}</th>
+            <th>{literalT("Role")}</th>
+            <th>{literalT("Actions")}</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
+          {users.map((user) =>
+          <tr key={user.id}>
               <td>{user.id}</td>
               <td>{user.name}</td>
               <td>{user.email}</td>
               <td>{user.role}</td>
               <td>
-                <Button variant="warning" size="sm" className="me-2">Edit</Button>
-                <Button variant="danger" size="sm">Delete</Button>
+                <Button variant="warning" size="sm" className="me-2">{literalT("Edit")}</Button>
+                <Button variant="danger" size="sm">{literalT("Delete")}</Button>
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
-    </div>
-  );
+    </div>);
+
 }
 
 export default UserManagement;

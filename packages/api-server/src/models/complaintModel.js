@@ -14,6 +14,7 @@ const complaintSchema = new mongoose.Schema(
       ],
       required: true,
     },
+    customCategory: { type: String },
     description: { type: String, required: true },
 
     // ── Location matching ─────────────────────────────────────────

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { literalT } from "../i18n/runtimeTamil";import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -23,33 +23,33 @@ function ForgotPassword() {
       <Row>
         <Col md="12">
           <div className="auth-form">
-            <h2 className="text-center">Forgot Password</h2>
+            <h2 className="text-center">{literalT("Forgot Password")}</h2>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
-                <Form.Label>Email address</Form.Label>
+                <Form.Label>{literalT("Email address")}</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="Enter email"
+                  placeholder={literalT("Enter email")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <Form.Text className="text-muted">
-                  We'll send a password reset link to your email.
+                  required />
+                
+                <Form.Text className="text-muted">{literalT("We'll send a password reset link to your email.")}
+
                 </Form.Text>
               </Form.Group>
-              <Button variant="primary" type="submit" className="w-100 mt-3">
-                Send Reset Link
+              <Button variant="primary" type="submit" className="w-100 mt-3">{literalT("Send Reset Link")}
+
               </Button>
             </Form>
-            <div className="text-center mt-3">
-              Remember your password? <Link to="/login">Login</Link>
+            <div className="text-center mt-3">{literalT("Remember your password?")}
+              <Link to="/login">{literalT("Login")}</Link>
             </div>
           </div>
         </Col>
       </Row>
-    </Container>
-  );
+    </Container>);
+
 }
 
 export default ForgotPassword;

@@ -1,27 +1,27 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, Platform, StatusBar, Linking, TextInput,
-  ScrollView, Alert, RefreshControl,
-} from 'react-native';
+  ScrollView, Alert, RefreshControl } from
+'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { educationAPI } from '../../services/api';
 import { T, useAppTheme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 
 const JOB_STATUS = [
-  { key: 'all', label: 'All' },
-  { key: 'live', label: 'Live' },
-  { key: 'upcoming', label: 'Upcoming' },
-  { key: 'previous', label: 'Previous Year' },
-];
+{ key: 'all', label: 'All' },
+{ key: 'live', label: 'Live' },
+{ key: 'upcoming', label: 'Upcoming' },
+{ key: 'previous', label: 'Previous Year' }];
+
 
 const VIDEO_META = {
   Educational: { color: '#3b82f6', bg: '#dbeafe', icon: 'Book' },
   'General Knowledge': { color: '#8b5cf6', bg: '#ede9fe', icon: 'GK' },
   'Competitive Exam': { color: '#ef4444', bg: '#fee2e2', icon: 'Test' },
   'Women Skill': { color: '#ec4899', bg: '#fce7f3', icon: 'Skill' },
-  'Career Guidance': { color: '#22c55e', bg: '#dcfce7', icon: 'Career' },
+  'Career Guidance': { color: '#22c55e', bg: '#dcfce7', icon: 'Career' }
 };
 
 function Stat({ label, value, theme }) {
@@ -29,8 +29,8 @@ function Stat({ label, value, theme }) {
     <View style={s.statCard}>
       <Text style={s.statNum}>{value}</Text>
       <Text style={s.statLabel}>{label}</Text>
-    </View>
-  );
+    </View>);
+
 }
 
 function Empty({ title, sub, theme }) {
@@ -38,8 +38,8 @@ function Empty({ title, sub, theme }) {
     <View style={s.empty}>
       <Text style={[s.emptyTitle, { color: theme.text }]}>{title}</Text>
       <Text style={[s.emptySub, { color: theme.textM }]}>{sub}</Text>
-    </View>
-  );
+    </View>);
+
 }
 
 export default function EducationScreen({ navigation }) {
@@ -62,14 +62,14 @@ export default function EducationScreen({ navigation }) {
 
   const load = async () => {
     const requests = [
-      educationAPI.getVideos().catch(() => ({ data: [] })),
-      isWorker ? Promise.resolve({ data: [] }) : educationAPI.getExams().catch(() => ({ data: [] })),
-      educationAPI.getGovernmentJobs({ status: jobStatus, q: jobQuery || undefined }).catch(() => ({ data: { data: [] } })),
-      educationAPI.getGovernmentJobSummary().catch(() => ({ data: jobSummary })),
-      educationAPI.getJobAnalytics().catch(() => ({ data: null })),
-      educationAPI.getJobLeaderboard().catch(() => ({ data: [] })),
-      educationAPI.getAdaptivePractice().catch(() => ({ data: null })),
-    ];
+    educationAPI.getVideos().catch(() => ({ data: [] })),
+    isWorker ? Promise.resolve({ data: [] }) : educationAPI.getExams().catch(() => ({ data: [] })),
+    educationAPI.getGovernmentJobs({ status: jobStatus, q: jobQuery || undefined }).catch(() => ({ data: { data: [] } })),
+    educationAPI.getGovernmentJobSummary().catch(() => ({ data: jobSummary })),
+    educationAPI.getJobAnalytics().catch(() => ({ data: null })),
+    educationAPI.getJobLeaderboard().catch(() => ({ data: [] })),
+    educationAPI.getAdaptivePractice().catch(() => ({ data: null }))];
+
     const [vRes, eRes, jRes, summaryRes, analyticsRes, leaderboardRes, adaptiveRes] = await Promise.all(requests);
     setVideos(Array.isArray(vRes.data) ? vRes.data : []);
     setExams(Array.isArray(eRes.data) ? eRes.data : []);
@@ -91,11 +91,11 @@ export default function EducationScreen({ navigation }) {
     setRefreshing(false);
   };
 
-  const tabs = useMemo(() => ([
-    { key: 'videos', label: 'Videos', count: videos.length },
-    ...(!isWorker ? [{ key: 'exams', label: 'Mock Tests', count: exams.length }] : []),
-    { key: 'jobs', label: 'Govt Jobs', count: jobSummary.live + jobSummary.upcoming + jobSummary.previous },
-  ]), [videos.length, exams.length, isWorker, jobSummary]);
+  const tabs = useMemo(() => [
+  { key: 'videos', label: 'Videos', count: videos.length },
+  ...(!isWorker ? [{ key: 'exams', label: 'Mock Tests', count: exams.length }] : []),
+  { key: 'jobs', label: 'Govt Jobs', count: jobSummary.live + jobSummary.upcoming + jobSummary.previous }],
+  [videos.length, exams.length, isWorker, jobSummary]);
 
   const openVideo = (video) => {
     if (video.videoUrl) {
@@ -107,7 +107,7 @@ export default function EducationScreen({ navigation }) {
   const applyJob = async (job, status = 'applied') => {
     try {
       const { data } = await educationAPI.applyGovernmentJob(job.id, { status });
-      setJobs((list) => list.map((item) => (item.id === job.id ? data : item)));
+      setJobs((list) => list.map((item) => item.id === job.id ? data : item));
       setJobSummary((prev) => ({ ...prev, applications: prev.applications + (job.myApplication ? 0 : 1) }));
       Alert.alert(status === 'saved' ? 'Saved' : 'Application tracked', `${job.title} has been updated in your jobs list.`);
     } catch {
@@ -121,28 +121,28 @@ export default function EducationScreen({ navigation }) {
       <TouchableOpacity style={[s.card, { backgroundColor: theme.bgCard, borderColor: theme.border }]} onPress={() => openVideo(item)} activeOpacity={0.86}>
         <View style={[s.videoThumb, { backgroundColor: meta.bg }]}>
           <Text style={[s.thumbText, { color: meta.color }]}>{meta.icon}</Text>
-          <View style={s.playBtn}><Text style={s.playTxt}>Play</Text></View>
+          <View style={s.playBtn}><Text style={s.playTxt}>{literalT("Play")}</Text></View>
         </View>
         <View style={s.cardBody}>
           <Text style={[s.title, { color: theme.text }]} numberOfLines={2}>{item.title}</Text>
-          <Text style={[s.meta, { color: theme.textM }]}>{item.category} · {(item.views || 0).toLocaleString()} views</Text>
+          <Text style={[s.meta, { color: theme.textM }]}>{item.category} · {(item.views || 0).toLocaleString()}{literalT("views")}</Text>
         </View>
-      </TouchableOpacity>
-    );
+      </TouchableOpacity>);
+
   };
 
-  const renderExam = ({ item }) => (
-    <TouchableOpacity style={[s.examCard, { backgroundColor: theme.bgCard, borderColor: theme.border }]} onPress={() => navigation.navigate('Exam', { examId: item.id, title: item.title })} activeOpacity={0.86}>
-      <View style={[s.roundIcon, { backgroundColor: theme.maroon + '18' }]}><Text style={[s.roundIconTxt, { color: theme.maroon }]}>MCQ</Text></View>
+  const renderExam = ({ item }) =>
+  <TouchableOpacity style={[s.examCard, { backgroundColor: theme.bgCard, borderColor: theme.border }]} onPress={() => navigation.navigate('Exam', { examId: item.id, title: item.title })} activeOpacity={0.86}>
+      <View style={[s.roundIcon, { backgroundColor: theme.maroon + '18' }]}><Text style={[s.roundIconTxt, { color: theme.maroon }]}>{literalT("MCQ")}</Text></View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[s.title, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
-        <Text style={[s.meta, { color: theme.textM }]}>{item.questions} questions · {item.duration} · {item.taken} attempts</Text>
+        <Text style={[s.meta, { color: theme.textM }]}>{item.questions}{literalT("questions ·")}{item.duration} · {item.taken}{literalT("attempts")}</Text>
       </View>
       <LinearGradient colors={[theme.maroon, theme.maroonL]} style={s.smallButton}>
-        <Text style={s.smallButtonTxt}>Start</Text>
+        <Text style={s.smallButtonTxt}>{literalT("Start")}</Text>
       </LinearGradient>
-    </TouchableOpacity>
-  );
+    </TouchableOpacity>;
+
 
   const renderJob = ({ item }) => {
     const due = item.applyBy ? new Date(item.applyBy).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'To be announced';
@@ -159,62 +159,62 @@ export default function EducationScreen({ navigation }) {
           </View>
         </View>
         <View style={s.jobInfoGrid}>
-          <Text style={[s.jobInfo, { color: theme.textL }]}>Vacancies: {item.vacancies || 0}</Text>
-          <Text style={[s.jobInfo, { color: theme.textL }]}>Apply by: {due}</Text>
-          <Text style={[s.jobInfo, { color: theme.textL }]}>Eligibility: {item.qualification}</Text>
-          <Text style={[s.jobInfo, { color: theme.textL }]}>Year: {item.year || 'Current'}</Text>
+          <Text style={[s.jobInfo, { color: theme.textL }]}>{literalT("Vacancies:")}{item.vacancies || 0}</Text>
+          <Text style={[s.jobInfo, { color: theme.textL }]}>{literalT("Apply by:")}{due}</Text>
+          <Text style={[s.jobInfo, { color: theme.textL }]}>{literalT("Eligibility:")}{item.qualification}</Text>
+          <Text style={[s.jobInfo, { color: theme.textL }]}>{literalT("Year:")}{item.year || 'Current'}</Text>
         </View>
         <View style={s.jobActions}>
           <TouchableOpacity style={[s.outlineBtn, { borderColor: theme.border }]} onPress={() => applyJob(item, 'saved')}>
-            <Text style={[s.outlineTxt, { color: theme.text }]}>Save</Text>
+            <Text style={[s.outlineTxt, { color: theme.text }]}>{literalT("Save")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[s.primaryBtn, { backgroundColor: theme.maroon }]} onPress={() => applyJob(item, 'applied')}>
             <Text style={s.primaryTxt}>{item.myApplication?.status === 'applied' ? 'Applied' : 'Track Apply'}</Text>
           </TouchableOpacity>
-          {!!item.applicationUrl && (
-            <TouchableOpacity style={[s.outlineBtn, { borderColor: theme.border }]} onPress={() => Linking.openURL(item.applicationUrl)}>
-              <Text style={[s.outlineTxt, { color: theme.maroon }]}>Open</Text>
+          {!!item.applicationUrl &&
+          <TouchableOpacity style={[s.outlineBtn, { borderColor: theme.border }]} onPress={() => Linking.openURL(item.applicationUrl)}>
+              <Text style={[s.outlineTxt, { color: theme.maroon }]}>{literalT("Open")}</Text>
             </TouchableOpacity>
-          )}
+          }
         </View>
-      </View>
-    );
+      </View>);
+
   };
 
-  const Header = (
-    <>
+  const Header =
+  <>
       <StatusBar backgroundColor={theme.maroon} barStyle="light-content" />
       <LinearGradient colors={[theme.maroonD, theme.maroon, theme.maroonL]} style={s.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
           <Text style={s.backTxt}>‹</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Education Hub</Text>
-        <Text style={s.headerSub}>Learn · Practice · Apply</Text>
+        <Text style={s.headerTitle}>{literalT("Education Hub")}</Text>
+        <Text style={s.headerSub}>{literalT("Learn · Practice · Apply")}</Text>
         <View style={s.statsRow}>
-          <Stat label="Videos" value={videos.length} theme={theme} />
-          {!isWorker && <><View style={s.statDivider} /><Stat label="Tests" value={exams.length} theme={theme} /></>}
+          <Stat label={literalT("Videos")} value={videos.length} theme={theme} />
+          {!isWorker && <><View style={s.statDivider} /><Stat label={literalT("Tests")} value={exams.length} theme={theme} /></>}
           <View style={s.statDivider} />
-          <Stat label="Live Jobs" value={jobSummary.live} theme={theme} />
+          <Stat label={literalT("Live Jobs")} value={jobSummary.live} theme={theme} />
         </View>
       </LinearGradient>
       <View style={[s.tabRow, { backgroundColor: theme.bgCard, borderBottomColor: theme.border }]}>
-        {tabs.map((item) => (
-          <TouchableOpacity key={item.key} style={[s.tab, { borderColor: theme.border, backgroundColor: theme.bg }, tab === item.key && { backgroundColor: theme.maroon, borderColor: theme.maroon }]} onPress={() => setTab(item.key)}>
+        {tabs.map((item) =>
+      <TouchableOpacity key={item.key} style={[s.tab, { borderColor: theme.border, backgroundColor: theme.bg }, tab === item.key && { backgroundColor: theme.maroon, borderColor: theme.maroon }]} onPress={() => setTab(item.key)}>
             <Text style={[s.tabTxt, { color: tab === item.key ? '#fff' : theme.textL }]}>{item.label}</Text>
             <Text style={[s.tabCount, { color: tab === item.key ? '#fff' : theme.textM }]}>{item.count}</Text>
           </TouchableOpacity>
-        ))}
+      )}
       </View>
-    </>
-  );
+    </>;
+
 
   if (loading) {
     return (
       <View style={[s.center, { backgroundColor: theme.bg }]}>
         <ActivityIndicator color={theme.maroon} size="large" />
-        <Text style={{ color: theme.textM, marginTop: 10 }}>Loading education module...</Text>
-      </View>
-    );
+        <Text style={{ color: theme.textM, marginTop: 10 }}>{literalT("Loading education module...")}</Text>
+      </View>);
+
   }
 
   if (tab === 'jobs') {
@@ -228,72 +228,72 @@ export default function EducationScreen({ navigation }) {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.maroon} colors={[theme.maroon]} />}
           contentContainerStyle={s.list}
           ListHeaderComponent={
-            <View>
+          <View>
               <View style={[s.panel, { backgroundColor: theme.bgCard, borderColor: theme.border }]}>
-                <Text style={[s.panelTitle, { color: theme.text }]}>Recruitment Command Center</Text>
+                <Text style={[s.panelTitle, { color: theme.text }]}>{literalT("Recruitment Command Center")}</Text>
                 <View style={s.kpiRow}>
-                  <Text style={[s.kpi, { color: theme.green }]}>{jobSummary.live} live</Text>
-                  <Text style={[s.kpi, { color: theme.blue }]}>{jobSummary.upcoming} upcoming</Text>
-                  <Text style={[s.kpi, { color: theme.textM }]}>{jobSummary.applications} tracked</Text>
+                  <Text style={[s.kpi, { color: theme.green }]}>{jobSummary.live}{literalT("live")}</Text>
+                  <Text style={[s.kpi, { color: theme.blue }]}>{jobSummary.upcoming}{literalT("upcoming")}</Text>
+                  <Text style={[s.kpi, { color: theme.textM }]}>{jobSummary.applications}{literalT("tracked")}</Text>
                 </View>
                 <View style={[s.searchBox, { backgroundColor: theme.bg, borderColor: theme.border }]}>
                   <TextInput
-                    value={jobQuery}
-                    onChangeText={setJobQuery}
-                    onSubmitEditing={onRefresh}
-                    placeholder="Search department, exam, qualification"
-                    placeholderTextColor={theme.textM}
-                    style={[s.searchInput, { color: theme.text }]}
-                    returnKeyType="search"
-                  />
+                  value={jobQuery}
+                  onChangeText={setJobQuery}
+                  onSubmitEditing={onRefresh}
+                  placeholder={literalT("Search department, exam, qualification")}
+                  placeholderTextColor={theme.textM}
+                  style={[s.searchInput, { color: theme.text }]}
+                  returnKeyType="search" />
+                
                   <TouchableOpacity onPress={onRefresh} style={[s.searchBtn, { backgroundColor: theme.maroon }]}>
-                    <Text style={s.searchTxt}>Search</Text>
+                    <Text style={s.searchTxt}>{literalT("Search")}</Text>
                   </TouchableOpacity>
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
-                  {JOB_STATUS.map((item) => (
-                    <TouchableOpacity key={item.key} style={[s.filterChip, { borderColor: theme.border, backgroundColor: theme.bg }, jobStatus === item.key && { backgroundColor: theme.maroon, borderColor: theme.maroon }]} onPress={() => setJobStatus(item.key)}>
+                  {JOB_STATUS.map((item) =>
+                <TouchableOpacity key={item.key} style={[s.filterChip, { borderColor: theme.border, backgroundColor: theme.bg }, jobStatus === item.key && { backgroundColor: theme.maroon, borderColor: theme.maroon }]} onPress={() => setJobStatus(item.key)}>
                       <Text style={[s.filterTxt, { color: jobStatus === item.key ? '#fff' : theme.textL }]}>{item.label}</Text>
                     </TouchableOpacity>
-                  ))}
+                )}
                 </ScrollView>
               </View>
 
               <View style={s.twoCol}>
                 <View style={[s.infoCard, { backgroundColor: theme.bgCard, borderColor: theme.border }]}>
-                  <Text style={[s.panelTitle, { color: theme.text }]}>Performance</Text>
+                  <Text style={[s.panelTitle, { color: theme.text }]}>{literalT("Performance")}</Text>
                   <Text style={[s.bigMetric, { color: theme.maroon }]}>{analytics?.averageScore || 0}%</Text>
-                  <Text style={[s.meta, { color: theme.textM }]}>{analytics?.attempts || 0} attempts · streak {analytics?.streak || 0}</Text>
+                  <Text style={[s.meta, { color: theme.textM }]}>{analytics?.attempts || 0}{literalT("attempts · streak")}{analytics?.streak || 0}</Text>
                   <View style={s.badgeWrap}>
                     {(analytics?.badges || ['Start Practice']).map((badge) => <Text key={badge} style={[s.badge, { color: theme.maroon, backgroundColor: theme.goldP }]}>{badge}</Text>)}
                   </View>
                 </View>
                 <View style={[s.infoCard, { backgroundColor: theme.bgCard, borderColor: theme.border }]}>
-                  <Text style={[s.panelTitle, { color: theme.text }]}>Adaptive Practice</Text>
-                  <Text style={[s.meta, { color: theme.textM }]}>Level: {adaptive?.nextDifficulty || 'foundation'}</Text>
-                  {(adaptive?.focusAreas || ['General Knowledge']).slice(0, 3).map((area) => (
-                    <Text key={area} style={[s.focusArea, { color: theme.text }]}>{area}</Text>
-                  ))}
+                  <Text style={[s.panelTitle, { color: theme.text }]}>{literalT("Adaptive Practice")}</Text>
+                  <Text style={[s.meta, { color: theme.textM }]}>{literalT("Level:")}{adaptive?.nextDifficulty || 'foundation'}</Text>
+                  {(adaptive?.focusAreas || ['General Knowledge']).slice(0, 3).map((area) =>
+                <Text key={area} style={[s.focusArea, { color: theme.text }]}>{area}</Text>
+                )}
                 </View>
               </View>
 
               <View style={[s.panel, { backgroundColor: theme.bgCard, borderColor: theme.border }]}>
-                <Text style={[s.panelTitle, { color: theme.text }]}>Leaderboard</Text>
-                {leaderboard.slice(0, 5).map((row) => (
-                  <View key={`${row.rank}-${row.name}`} style={s.leaderRow}>
+                <Text style={[s.panelTitle, { color: theme.text }]}>{literalT("Leaderboard")}</Text>
+                {leaderboard.slice(0, 5).map((row) =>
+              <View key={`${row.rank}-${row.name}`} style={s.leaderRow}>
                     <Text style={[s.rank, { color: theme.maroon }]}>#{row.rank}</Text>
                     <Text style={[s.leaderName, { color: theme.text }]} numberOfLines={1}>{row.name}</Text>
                     <Text style={[s.meta, { color: theme.textM }]}>{row.accuracy}%</Text>
                   </View>
-                ))}
-                {leaderboard.length === 0 && <Text style={[s.meta, { color: theme.textM }]}>Leaderboard starts after mock test submissions.</Text>}
+              )}
+                {leaderboard.length === 0 && <Text style={[s.meta, { color: theme.textM }]}>{literalT("Leaderboard starts after mock test submissions.")}</Text>}
               </View>
             </View>
           }
-          ListEmptyComponent={<Empty title="No jobs found" sub="Live, upcoming, and previous year jobs will appear here." theme={theme} />}
-        />
-      </View>
-    );
+          ListEmptyComponent={<Empty title={literalT("No jobs found")} sub={literalT("Live, upcoming, and previous year jobs will appear here.")} theme={theme} />} />
+        
+      </View>);
+
   }
 
   return (
@@ -305,10 +305,10 @@ export default function EducationScreen({ navigation }) {
         contentContainerStyle={s.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.maroon} colors={[theme.maroon]} />}
         renderItem={tab === 'videos' ? renderVideo : renderExam}
-        ListEmptyComponent={<Empty title={tab === 'videos' ? 'No videos yet' : 'No mock tests yet'} sub="New learning content will appear here." theme={theme} />}
-      />
-    </View>
-  );
+        ListEmptyComponent={<Empty title={tab === 'videos' ? 'No videos yet' : 'No mock tests yet'} sub={literalT("New learning content will appear here.")} theme={theme} />} />
+      
+    </View>);
+
 }
 
 const s = StyleSheet.create({
@@ -376,5 +376,5 @@ const s = StyleSheet.create({
   primaryTxt: { color: '#fff', fontSize: 12, fontWeight: '900' },
   empty: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 16 },
   emptyTitle: { fontSize: 18, fontWeight: '900', marginBottom: 6 },
-  emptySub: { fontSize: 13, textAlign: 'center', lineHeight: 18 },
+  emptySub: { fontSize: 13, textAlign: 'center', lineHeight: 18 }
 });

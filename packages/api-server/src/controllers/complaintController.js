@@ -76,6 +76,7 @@ const findRoutingAgents = async ({ ward, wardNo, thokuthi, pincode, district }) 
 const fmt = (c) => ({
   id:               c._id,
   category:         c.category,
+  customCategory:   c.customCategory,
   description:      c.description,
   user:             c.user?.name    || 'Unknown',
   userId:           c.user?._id,
@@ -169,7 +170,7 @@ const getComplaints = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────────────────────────
 const createComplaint = asyncHandler(async (req, res) => {
   const {
-    category, description, ward, wardNo, thokuthi, district,
+    category, customCategory, description, ward, wardNo, thokuthi, district,
     pincode, address, location, attachments, citizenPhone
   } = req.body;
 
@@ -195,6 +196,7 @@ const createComplaint = asyncHandler(async (req, res) => {
   const complaint = await Complaint.create({
     user:             req.user._id,
     category,
+    customCategory:   category === 'Others' ? customCategory : undefined,
     description,
     ward:             userWard,
     wardNo:           userWardNo,
