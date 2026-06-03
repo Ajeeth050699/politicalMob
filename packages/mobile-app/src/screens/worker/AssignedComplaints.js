@@ -277,9 +277,9 @@ export default function AssignedComplaints({ navigation }) {
           key={f}
           style={[s.chip, filter === f && s.chipActive]}
           onPress={() => setFilter(f)}
-          activeOpacity={0.8}>
+          activeOpacity={0.85}>
           
-            <Text style={[s.chipTxt, filter === f && { color: '#fff', fontWeight: '700' }]}>
+            <Text style={[s.chipTxt, filter === f && { color: '#fff', fontWeight: '800' }]}>
               {f === 'ALL' ? 'All' : f === 'IN PROGRESS' ? 'Working' : f.charAt(0) + f.slice(1).toLowerCase()}
             </Text>
           </TouchableOpacity>
@@ -348,9 +348,10 @@ const s = StyleSheet.create({
   pickerContainer: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 5 },
   pickerLabel: { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 4 },
   pickerWrap: { borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, overflow: 'hidden', height: 50, justifyContent: 'center' },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 50, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg },
+  chip: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 32, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 18, borderWidth: 1, borderColor: T.border, backgroundColor: '#fff', gap: 6 },
   chipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
-  chipTxt: { fontSize: 13, fontWeight: '600', color: T.textL },
+  chipTxt: { fontSize: 12, fontWeight: '800', color: T.textL },
+
 
   card: { backgroundColor: '#fff', borderRadius: 18, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: T.border, elevation: 3, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10 },
   cardLocked: { opacity: 0.7, borderStyle: 'dashed' },

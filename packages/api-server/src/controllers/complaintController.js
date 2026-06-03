@@ -305,6 +305,13 @@ const acceptComplaint = asyncHandler(async (req, res) => {
   );
   
 
+  // Notify admins
+  try {
+    const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
+    for (const admin of admins) {
+      await notify(admin._id, '? Complaint "' + updated.category + '" was accepted by Worker ' + req.user.name, 'complaint', updated._id);
+    }
+  } catch(e) {}
   const out = fmt(updated);
   emitComplaintEvent('accepted', out);
   res.json(out);
@@ -345,6 +352,10 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
     complaint.lockedToAgent = true;
     complaint.acceptedAt = complaint.acceptedAt || new Date();
     if (complaint.status === 'NEW') complaint.status = 'ACCEPTED';
+    const isNewAssignment = String(complaint.assignedWorker) !== String(req.body.assignedWorker);
+    if (isNewAssignment) {
+      await notify(req.body.assignedWorker, 'You have been assigned to a new complaint: "' + complaint.category + '"', 'complaint', complaint._id);
+    }
   }
   await complaint.save();
 
@@ -359,6 +370,12 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
     const workerId = typeof complaint.assignedWorker === 'object' ? complaint.assignedWorker._id : complaint.assignedWorker;
     if (msgs[complaint.status]) {
       await notify(citizenId, msgs[complaint.status], 'complaint', complaint._id, workerId);
+    }
+    if (complaint.status === 'COMPLETED') {
+      const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
+      for (const admin of admins) {
+         await notify(admin._id, '? Complaint "' + complaint.category + '" has been resolved.', 'complaint', complaint._id);
+      }
     }
   }
 
@@ -428,6 +445,10 @@ const uploadProof = asyncHandler(async (req, res) => {
 
   const citizenId = typeof complaint.user === 'object' ? complaint.user._id : complaint.user;
   await notify(citizenId, `🎉 "${complaint.category}" is resolved! Proof uploaded by worker.`, 'complaint');
+  const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
+  for (const admin of admins) {
+     await notify(admin._id, '? Complaint "' + complaint.category + '" has been resolved. Proof uploaded.', 'complaint', complaint._id);
+  }
 
   const populated = await Complaint.findById(complaint._id)
     .populate('user', 'name phone profilePhoto')

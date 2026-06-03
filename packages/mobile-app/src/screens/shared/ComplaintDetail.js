@@ -2,7 +2,7 @@ import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import Re
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
   TouchableOpacity, Platform, StatusBar, Image, Modal,
-  Dimensions, Linking, TextInput } from
+  Dimensions, Linking, TextInput, Alert } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -112,27 +112,53 @@ export default function ComplaintDetail({ route, navigation }) {
     }
   };
 
-  const uploadCompletionProof = async () => {
-    try {
-      const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
-      if (cameraPerm.status !== 'granted') return;
+  const promptUploadProof = () => {
+    Alert.alert(
+      'Upload Proof',
+      'Worker closing complaint proof photo (camera or gallery)',
+      [
+        { text: 'Take Photo', onPress: () => uploadCompletionProof(true) },
+        { text: 'Choose from Gallery', onPress: () => uploadCompletionProof(false) },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
 
+
+  const uploadCompletionProof = async (isCamera = true) => {
+    try {
       const locationPerm = await Location.requestForegroundPermissionsAsync();
-      if (locationPerm.status !== 'granted') return;
+      if (locationPerm.status !== 'granted') {
+        Alert.alert("Permission required", "Location permission is needed.");
+        return;
+      }
 
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High
       });
 
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.85
-      });
+      let result;
+      if (isCamera) {
+        const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+        if (cameraPerm.status !== 'granted') return;
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 0.85
+        });
+      } else {
+        const libraryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (libraryPerm.status !== 'granted') return;
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 0.85
+        });
+      }
       if (result.canceled) return;
 
       const asset = result.assets[0];
       setUploading(true);
       const payload = {
+        // Backend expects proof photo URL
         photoUrl: asset.uri,
         proofLocation: {
           lat: currentLocation.coords.latitude,
@@ -141,6 +167,7 @@ export default function ComplaintDetail({ route, navigation }) {
         }
       };
       const { data } = await complaintAPI.uploadProof(id, payload);
+
       setComplaint(data);
     } finally {
       setUploading(false);
@@ -241,8 +268,7 @@ export default function ComplaintDetail({ route, navigation }) {
           {(userInfo?.role === 'worker' || userInfo?.role === 'admin' || userInfo?.role === 'superadmin' || userInfo?.role === 'agent') &&
           renderContactCard('Citizen Details', complaint.user, complaint.userPhone, complaint.userProfilePhoto, '👤', 'Raised by Citizen')
           }
-          {(userInfo?.role === 'public' || userInfo?.role === 'citizen' || userInfo?.role === 'admin' || userInfo?.role === 'superadmin' || userInfo?.role === 'agent') &&
-          complaint.assignedWorker &&
+          {complaint.assignedWorker &&
           renderContactCard('Assigned Worker', complaint.assignedWorker, complaint.assignedWorkerPhone, complaint.assignedWorkerProfilePhoto, '👷', 'Handling this complaint')
           }
 
@@ -343,7 +369,7 @@ export default function ComplaintDetail({ route, navigation }) {
           {isAssignedWorker && complaint.status === 'IN PROGRESS' &&
           <TouchableOpacity
             style={[s.completeBtn, uploading && { opacity: 0.7 }]}
-            onPress={uploadCompletionProof}
+            onPress={promptUploadProof}
             disabled={uploading}
             activeOpacity={0.85}>
             
