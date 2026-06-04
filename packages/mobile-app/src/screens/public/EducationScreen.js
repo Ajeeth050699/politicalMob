@@ -72,7 +72,7 @@ export default function EducationScreen({ navigation }) {
 
     const [vRes, eRes, jRes, summaryRes, analyticsRes, leaderboardRes, adaptiveRes] = await Promise.all(requests);
     setVideos(Array.isArray(vRes.data) ? vRes.data : []);
-    setExams(Array.isArray(eRes.data) ? eRes.data : []);
+    setExams(Array.isArray(eRes.data?.data) ? eRes.data.data : Array.isArray(eRes.data) ? eRes.data : []);
     setJobs(Array.isArray(jRes.data?.data) ? jRes.data.data : []);
     setJobSummary(summaryRes.data || jobSummary);
     setAnalytics(analyticsRes.data);

@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     phone:    { type: String },
     password: { type: String, required: true },
     role:     { type: String, enum: ['superadmin', 'admin', 'worker', 'agent', 'public', 'citizen'], default: 'public' },
+    gender:   { type: String, enum: ['male', 'female', 'transgender', 'other', 'prefer_not_to_say'], default: 'prefer_not_to_say' },
     workCategory: { type: String },
     ward:     { type: String },
     wardNo:   { type: Number },

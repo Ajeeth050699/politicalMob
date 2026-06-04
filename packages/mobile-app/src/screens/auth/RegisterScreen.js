@@ -13,6 +13,14 @@ import { authAPI, systemAPI } from '../../services/api';
 import PopupToast from '../../components/PopupToast';
 import { T, TN_DISTRICTS } from '../../constants/theme';
 
+const APP_LOGO = require('../../../assets/images/icon.png');
+const GENDER_OPTIONS = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'transgender', label: 'Transgender' },
+  { value: 'other', label: 'Other' }
+];
+
 // ── Field ─────────────────────────────────────────────────────────
 function Field({ label, icon, value, onChange, placeholder, keyboard, secure, hint }) {
   const [show, setShow] = useState(false);
@@ -93,7 +101,7 @@ export default function RegisterScreen({ navigation }) {
   const [toast, setToast] = useState({ visible: false, message: '', type: 'error' });
   const [form, setForm] = useState({
     name: '', email: '', password: '', confirmPassword: '',
-    district: '', ward: '', wardNo: '', pincode: '', address: '', role: 'public', workCategory: ''
+    gender: '', district: '', ward: '', wardNo: '', pincode: '', address: '', role: 'public', workCategory: ''
   });
 
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
@@ -148,6 +156,7 @@ export default function RegisterScreen({ navigation }) {
   const handleStep1 = () => {
     if (!profilePhoto) {showToast('Please capture your profile photo.');return;}
     if (!form.name.trim() || form.name.trim().length < 2) {showToast('Please enter your full name.');return;}
+    if (!form.gender) {showToast('Please select your gender.');return;}
     if (form.password.length < 6) {showToast('Password must be at least 6 characters.');return;}
     if (form.password !== form.confirmPassword) {showToast('Passwords do not match.');return;}
     setStep(2);
@@ -211,7 +220,7 @@ export default function RegisterScreen({ navigation }) {
       await register({
         name: form.name, email: form.email || undefined,
         password: form.password, phone: verifiedPhone,
-        role: form.role, ward: form.ward, wardNo: Number(form.wardNo), district: form.district,
+        role: form.role, gender: form.gender, ward: form.ward, wardNo: Number(form.wardNo), district: form.district,
         address: form.address, pincode: form.pincode,
         workCategory: form.role === 'worker' ? form.workCategory.trim() : '',
         profilePhoto: profilePhoto
@@ -241,15 +250,15 @@ export default function RegisterScreen({ navigation }) {
 
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.topBg}>
         <TouchableOpacity onPress={() => step > 1 ? setStep((st) => st - 1) : navigation.goBack()} style={s.backBtn}>
-          <Text style={s.backTxt}>{literalT("← Back")}</Text>
+          <Text style={s.backTxt}>‹</Text>
         </TouchableOpacity>
-        <View style={s.logoCircle}><Text style={{ fontSize: 30 }}>🏛️</Text></View>
+        <View style={s.logoCircle}><Image source={APP_LOGO} style={s.logoImg} /></View>
         <Text style={s.appName}>{literalT("People Connect")}</Text>
         <Text style={s.tagline}>{TITLES[step - 1].title}</Text>
       </LinearGradient>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
           <View style={s.card}>
             <StepBar step={step} />
             <Text style={s.cardTitle}>{TITLES[step - 1].title}</Text>
@@ -278,6 +287,14 @@ export default function RegisterScreen({ navigation }) {
 
                 <Field label={literalT("Full Name *")} icon="👤" value={form.name} onChange={set('name')} placeholder={literalT("Your full name")} />
                 <Field label={literalT("Email (optional)")} icon="✉️" value={form.email} onChange={set('email')} placeholder="your@email.com" keyboard="email-address" hint="Email is optional. Used for password reset." />
+                <Text style={fs.label}>{literalT("Gender *")}</Text>
+                <View style={s.genderGrid}>
+                  {GENDER_OPTIONS.map((g) =>
+                    <TouchableOpacity key={g.value} style={[s.genderChip, form.gender === g.value && s.genderChipActive]} onPress={() => set('gender')(g.value)} activeOpacity={0.85}>
+                      <Text style={[s.genderTxt, form.gender === g.value && { color: '#fff' }]}>{g.label}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
                 <Field label={literalT("Password *")} icon="🔒" value={form.password} onChange={set('password')} placeholder={literalT("Min 6 characters")} secure />
                 <Field label={literalT("Confirm Password *")} icon="🔒" value={form.confirmPassword} onChange={set('confirmPassword')} placeholder={literalT("Re-enter password")} secure />
                 <Text style={fs.label}>{literalT("I am registering as *")}</Text>
@@ -387,6 +404,7 @@ export default function RegisterScreen({ navigation }) {
                   <Text style={s.summaryTitle}>{literalT("📋 Registration Summary")}</Text>
                   {[
                 ['Name', form.name, '👤'],
+                ['Gender', GENDER_OPTIONS.find((g) => g.value === form.gender)?.label || '—', 'G'],
                 ['Phone', verifiedPhone, '📱'],
                 ['Email', form.email || '—', '✉️'],
                 ['Role', form.role === 'worker' ? 'Worker' : 'Citizen', '🎭'],
@@ -443,12 +461,13 @@ const fs = StyleSheet.create({
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: T.maroon },
   topBg: { alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 28, zIndex: 1 },
-  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', zIndex: 10, elevation: 10 },
-  backTxt: { color: '#fff', fontSize: 20, fontWeight: '800' },
+  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', alignItems: 'center', justifyContent: 'center', zIndex: 10, elevation: 10 },
+  backTxt: { color: '#fff', fontSize: 34, fontWeight: '800', lineHeight: 36, marginTop: -2 },
   logoCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  logoImg: { width: 56, height: 56, borderRadius: 28 },
   appName: { fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 4 },
   tagline: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
-  scroll: { flexGrow: 1 },
+  scroll: { flexGrow: 1, paddingBottom: 36 },
   card: { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 28, paddingTop: 32, minHeight: '100%' },
   cardTitle: { fontSize: 22, fontWeight: '800', color: T.text, marginBottom: 6 },
   cardSub: { fontSize: 14, color: T.textM, marginBottom: 24, lineHeight: 20 },
@@ -458,6 +477,10 @@ const s = StyleSheet.create({
   roleCardActive: { backgroundColor: T.maroon, borderColor: T.maroon },
   roleLabel: { fontSize: 14, fontWeight: '700', color: T.text },
   roleDesc: { fontSize: 11, color: T.textM },
+  genderGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  genderChip: { flexGrow: 1, minWidth: '46%', borderRadius: 14, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg, paddingVertical: 12, paddingHorizontal: 10, alignItems: 'center' },
+  genderChipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
+  genderTxt: { fontSize: 13, fontWeight: '800', color: T.textL },
   phoneBox: { backgroundColor: T.bg, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: T.border },
   phoneTitle: { fontSize: 16, fontWeight: '800', color: T.text, marginBottom: 8, textAlign: 'center' },
   phoneSub: { fontSize: 13, color: T.textM, textAlign: 'center', marginBottom: 20, lineHeight: 19 },

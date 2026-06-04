@@ -17,7 +17,7 @@ const resetOtpStore        = {};  // for forgot-password flow
 const register = asyncHandler(async (req, res) => {
   const {
     name, email, password, phone, role,
-    ward, wardNo, thokuthi, district, address, pincode, profilePhoto, tamilNaduAccess, workCategory,
+    ward, wardNo, thokuthi, district, address, pincode, profilePhoto, tamilNaduAccess, workCategory, gender,
   } = req.body;
 
   const digits = phone ? String(phone).replace(/\D/g, '') : '';
@@ -55,6 +55,7 @@ const register = asyncHandler(async (req, res) => {
   const user = await User.create({
     name, email: normalizedEmail, password, phone,
     role:    requestedRole,
+    gender:  gender || 'prefer_not_to_say',
     ward:    matchedWard?.name || '',
     wardNo:  wardNo ? Number(wardNo) : undefined,
     thokuthi:   matchedWard?.name || '',
@@ -99,6 +100,7 @@ const register = asyncHandler(async (req, res) => {
       email:           user.email,
       phone:           user.phone,
       role:            user.role,
+      gender:          user.gender,
       ward:            user.ward,
       wardNo:          user.wardNo,
       thokuthi:           user.thokuthi,
@@ -137,6 +139,7 @@ const login = asyncHandler(async (req, res) => {
       email:           user.email,
       phone:           user.phone,
       role:            user.role,
+      gender:          user.gender,
       ward:            user.ward,
       wardNo:          user.wardNo,
       thokuthi:           user.thokuthi,
@@ -168,6 +171,7 @@ const getProfile = asyncHandler(async (req, res) => {
     email:           user.email,
     phone:           user.phone,
     role:            user.role,
+    gender:          user.gender,
     ward:            user.ward,
     wardNo:          user.wardNo,
     thokuthi:           user.thokuthi,
@@ -193,6 +197,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   user.name     = req.body.name     || user.name;
   user.email    = req.body.email    || user.email;
   user.phone    = req.body.phone    || user.phone;
+  user.gender   = req.body.gender   !== undefined ? req.body.gender : user.gender;
   if (req.body.ward !== undefined) {
     const matchedWard = findWard(req.body.ward);
     if (!matchedWard) { res.status(400); throw new Error('Valid Tamil Nadu assembly constituency/ward is required'); }
@@ -218,6 +223,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     email:    saved.email,
     phone:    saved.phone,
     role:     saved.role,
+    gender:   saved.gender,
     ward:     saved.ward,
     wardNo:   saved.wardNo,
     thokuthi:    saved.thokuthi,

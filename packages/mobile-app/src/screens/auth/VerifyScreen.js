@@ -117,6 +117,7 @@ export default function VerifyScreen({ route, navigation }) {
         <TouchableOpacity
           style={s.backBtn}
           onPress={handleBack}>
+          <Text style={s.backIcon}>‹</Text>
           
           <Text style={s.backTxt}>{literalT("← Back")}</Text>
         </TouchableOpacity>
@@ -193,8 +194,9 @@ const ot = StyleSheet.create({
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: T.maroon },
   topBg: { alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 28, zIndex: 1 },
-  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', zIndex: 10, elevation: 10 },
-  backTxt: { color: '#fff', fontSize: 20, fontWeight: '800' },
+  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', alignItems: 'center', justifyContent: 'center', zIndex: 10, elevation: 10 },
+  backIcon: { color: '#fff', fontSize: 34, fontWeight: '800', lineHeight: 36, marginTop: -2 },
+  backTxt: { display: 'none' },
   logoCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   appName: { fontSize: 21, fontWeight: '900', color: '#fff' },
   tagline: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, textAlign: 'center', paddingHorizontal: 20 },

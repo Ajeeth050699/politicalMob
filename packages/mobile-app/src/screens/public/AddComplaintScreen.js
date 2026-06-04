@@ -12,7 +12,8 @@ import {
   Image,
   Linking,
   Modal,
-  Alert } from
+  Alert,
+  KeyboardAvoidingView } from
 "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
@@ -528,11 +529,13 @@ export default function AddComplaintScreen({ navigation }) {
         <Text style={s.headerSub}>{literalT("Photos, videos & documents as proof")}</Text>
       </LinearGradient>
 
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24} style={{ flex: 1 }}>
       <ScrollView
         style={s.scroll}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 64 }}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled">
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag">
         
         {/* Category */}
         <View style={s.section}>
@@ -823,6 +826,7 @@ export default function AddComplaintScreen({ navigation }) {
         </TouchableOpacity>
         <View style={{ height: 32 }} />
       </ScrollView>
+      </KeyboardAvoidingView>
 
       <AttachPickerSheet
         visible={sheetVisible}

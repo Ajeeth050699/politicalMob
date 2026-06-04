@@ -2,7 +2,7 @@ import { literalT } from "../../i18n/runtimeTamil";import React, { useEffect, us
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   RefreshControl, Linking, Platform, StatusBar, Animated,
-  Dimensions, FlatList } from
+  Dimensions, FlatList, Image } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +11,9 @@ import { T } from '../../constants/theme';
 import { useLang } from '../../context/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
+const APP_LOGO = require('../../../assets/images/icon.png');
+const QA_CARD_WIDTH = Math.floor((width - 52) / 3);
+const EMER_CARD_WIDTH = Math.min(138, Math.floor((width - 56) / 3));
 
 const EMER_ICONS = { police: '🚔', ambulance: '🚑', fire: '🚒', women: '👩', child: '👶', district: '🏢' };
 const EMER_GRADS = {
@@ -182,7 +185,7 @@ function ActionCard({ item, index, onPress }) {
   const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.12] });
 
   return (
-    <Animated.View style={{ opacity, transform: [{ scale: Animated.multiply(scale, pressScl) }], width: '30%' }}>
+    <Animated.View style={{ opacity, transform: [{ perspective: 900 }, { scale: Animated.multiply(scale, pressScl) }], width: QA_CARD_WIDTH }}>
       <TouchableOpacity
         style={[s.qCard]}
         onPress={onPress}
@@ -195,6 +198,8 @@ function ActionCard({ item, index, onPress }) {
 
         {/* Animated card glow */}
         <Animated.View style={[StyleSheet.absoluteFill, s.qCardGlow, { backgroundColor: item.color, opacity: glowOpacity }]} />
+        <View style={s.qCardTopLight} />
+        <View style={s.qCardBottomShade} />
 
         <View style={[s.qIconBox, { backgroundColor: item.bg }]}>
           <Text style={{ fontSize: 24 }}>{item.icon}</Text>
@@ -273,7 +278,7 @@ function EmerCard({ e, index, onPress }) {
   return (
     <Animated.View style={{
       opacity: anim,
-      transform: [{ scale: Animated.multiply(anim, pressScl) }, { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }]
+      transform: [{ perspective: 900 }, { scale: Animated.multiply(anim, pressScl) }, { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }]
     }}>
       <TouchableOpacity onPress={onPress} onPressIn={onIn} onPressOut={onOut} activeOpacity={1} style={s.emerCardWrap}>
         <LinearGradient colors={grads} start={{ x: 0, y: 0 }} end={{ x: 0.5, y: 1 }} style={s.emerCard}>
@@ -434,6 +439,7 @@ export default function HomeScreen({ navigation }) {
             {/* Top bar */}
             <View style={s.heroTop}>
               <View style={s.appPill}>
+                <Image source={APP_LOGO} style={s.appLogo} />
                 <View style={s.onlineBlip} />
                 <Text style={s.appPillTxt}>{t('appName')}</Text>
               </View>
@@ -473,7 +479,10 @@ export default function HomeScreen({ navigation }) {
             }}>
               <Text style={s.greetLabel}>{greetEmoji} {greeting},</Text>
               <Text style={s.greetName}>{userInfo?.name?.split(' ')[0] || 'Citizen'}</Text>
-              <Text style={s.greetSub}>📍 {userInfo?.district || 'Tamil Nadu'}{literalT("· Thokuthi")}{userInfo?.thokuthi || '—'}</Text>
+              <View style={s.locationRow}>
+                <Text style={s.locationChip}>📍 {userInfo?.district || 'Tamil Nadu'}</Text>
+                <Text style={s.locationChip}>{literalT("Thokuthi")} {userInfo?.thokuthi || userInfo?.ward || '—'}</Text>
+              </View>
             </Animated.View>
 
             {/* Floating stats */}
@@ -643,6 +652,7 @@ const s = StyleSheet.create({
 
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 },
   appPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.13)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', borderRadius: 50, paddingHorizontal: 14, paddingVertical: 8 },
+  appLogo: { width: 22, height: 22, borderRadius: 11 },
   onlineBlip: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ade80' },
   appPillTxt: { fontSize: 12, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
   avatarBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
@@ -658,6 +668,8 @@ const s = StyleSheet.create({
   greetLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '600', letterSpacing: 0.3, marginBottom: 4 },
   greetName: { fontSize: 30, fontWeight: '900', color: '#fff', marginBottom: 6 },
   greetSub: { fontSize: 12, color: 'rgba(255,255,255,0.55)', marginBottom: 22 },
+  locationRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4, marginBottom: 22 },
+  locationChip: { fontSize: 12, color: 'rgba(255,255,255,0.78)', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, overflow: 'hidden' },
 
   statsCard: { borderRadius: 20, overflow: 'hidden' },
   statsCardInner: { flexDirection: 'row', paddingVertical: 18, paddingHorizontal: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
@@ -675,12 +687,14 @@ const s = StyleSheet.create({
   seeAll: { fontSize: 12, color: T.maroon, fontWeight: '700', backgroundColor: 'rgba(139,26,26,0.08)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
 
   // QA card
-  qGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  qCard: { backgroundColor: '#fff', borderRadius: 18, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: T.border, elevation: 4, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 12, overflow: 'hidden' },
+  qGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'stretch' },
+  qCard: { width: '100%', height: 112, backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 10, paddingTop: 18, paddingBottom: 12, alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
   qAccentBar: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, borderRadius: 18 },
   qCardGlow: { borderRadius: 18 },
-  qIconBox: { width: 50, height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  qLabel: { fontSize: 10, fontWeight: '700', color: T.text, textAlign: 'center' },
+  qCardTopLight: { position: 'absolute', top: 4, left: 8, right: 8, height: 22, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.55)' },
+  qCardBottomShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 32, backgroundColor: 'rgba(0,0,0,0.025)' },
+  qIconBox: { width: 50, height: 50, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 6, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+  qLabel: { minHeight: 26, fontSize: 10, lineHeight: 13, fontWeight: '800', color: T.text, textAlign: 'center', textAlignVertical: 'center' },
 
   // QA animated bg
   // (styles moved to `qa` below)
@@ -695,18 +709,18 @@ const s = StyleSheet.create({
   reportArrow: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
 
   // Emergency horizontal scroll
-  emerListContent: { paddingHorizontal: 16, paddingVertical: 4, gap: 12 },
-  emerCardWrap: { width: 130, borderRadius: 20, overflow: 'hidden', elevation: 6, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } },
-  emerCard: { width: '100%', minHeight: 168, paddingTop: 4, paddingBottom: 14, paddingHorizontal: 12, alignItems: 'center', position: 'relative' },
+  emerListContent: { paddingHorizontal: 16, paddingVertical: 6, gap: 12 },
+  emerCardWrap: { width: EMER_CARD_WIDTH, borderRadius: 20, overflow: 'hidden', elevation: 10, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  emerCard: { width: '100%', height: 190, paddingTop: 4, paddingBottom: 14, paddingHorizontal: 10, alignItems: 'center', position: 'relative' },
   emerTopBar: { width: '100%', height: 4, borderRadius: 20, marginBottom: 10, opacity: 0.8 },
   emerGlowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, height: 80, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 20 },
   emerIconWrap: { position: 'relative', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   emerRingOuter: { position: 'absolute', inset: -8, borderRadius: 36, borderWidth: 1.5 },
   emerIconCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  emerName: { fontSize: 11, fontWeight: '700', color: '#fff', textAlign: 'center', lineHeight: 15, marginBottom: 4 },
-  emerNum: { fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 10 },
-  emerCallBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 50, borderWidth: 1 },
-  emerCallTxt: { fontSize: 10, fontWeight: '800', color: '#fff' },
+  emerName: { minHeight: 34, fontSize: 11, fontWeight: '800', color: '#fff', textAlign: 'center', lineHeight: 16, marginBottom: 4 },
+  emerNum: { minHeight: 28, fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 10 },
+  emerCallBtn: { minHeight: 32, paddingHorizontal: 8, paddingVertical: 7, borderRadius: 50, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  emerCallTxt: { fontSize: 10, fontWeight: '800', color: '#fff', textAlign: 'center' },
 
   seeMoreBtn: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginTop: 12, backgroundColor: 'rgba(139,26,26,0.06)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(139,26,26,0.18)' },
   seeMoreInner: { flex: 1 },

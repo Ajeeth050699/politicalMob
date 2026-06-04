@@ -78,7 +78,10 @@ export default function WorkerDashboard({ navigation }) {
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={s.greetingTxt}>{greeting},</Text>
               <Text style={s.workerName}>{userInfo?.name}</Text>
-              <Text style={s.thokuthiTxt}>{literalT("🏠 Thokuthi")}{userInfo?.thokuthi || 'N/A'} · 📍 {userInfo?.district || 'N/A'}</Text>
+              <View style={s.locationRow}>
+                <Text style={s.locationChip}>{literalT("🏠 Thokuthi")} {userInfo?.thokuthi || userInfo?.ward || 'N/A'}</Text>
+                <Text style={s.locationChip}>📍 {userInfo?.district || 'N/A'}</Text>
+              </View>
             </View>
             <TouchableOpacity onPress={handleLogout} style={s.logoutBtn}>
               <Text style={s.logoutTxt}>🚪</Text>
@@ -94,6 +97,8 @@ export default function WorkerDashboard({ navigation }) {
             { label: 'Done', count: doneCnt, color: '#86efac', icon: '✅' }].
             map(({ label, count, color, icon }) =>
             <View key={label} style={s.statCard}>
+                <View style={s.cardTopLight} />
+                <View style={s.cardBottomShade} />
                 <Text style={{ fontSize: 18, marginBottom: 4 }}>{icon}</Text>
                 <Text style={[s.statNum, { color }]}>{count}</Text>
                 <Text style={s.statLabel}>{label}</Text>
@@ -176,6 +181,8 @@ export default function WorkerDashboard({ navigation }) {
             { icon: '👤', label: 'My Profile', color: T.blue, onPress: () => navigation.navigate('Profile') }].
             map(({ icon, label, color, onPress }) =>
             <TouchableOpacity key={label} style={s.qCard} onPress={onPress} activeOpacity={0.8}>
+                <View style={s.cardTopLight} />
+                <View style={s.cardBottomShade} />
                 <View style={[s.qIcon, { backgroundColor: color + '15' }]}>
                   <Text style={{ fontSize: 24 }}>{icon}</Text>
                 </View>
@@ -199,6 +206,8 @@ export default function WorkerDashboard({ navigation }) {
           <View style={s.mixGrid}>
               {categoryStats.map(([category, count]) =>
             <View key={category} style={s.mixCard}>
+                  <View style={s.cardTopLight} />
+                  <View style={s.cardBottomShade} />
                   <Text style={s.mixIcon}>{CATEGORY_ICONS[category] || '📝'}</Text>
                   <Text style={s.mixName} numberOfLines={2}>{complaintCategoryT(category)}</Text>
                   <Text style={s.mixCount}>{count}</Text>
@@ -257,19 +266,21 @@ const s = StyleSheet.create({
 
   header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 24, paddingHorizontal: 20 },
   headerTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  workerAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  workerAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   greetingTxt: { fontSize: 12, color: 'rgba(255,255,255,0.7)' },
   workerName: { fontSize: 18, fontWeight: '900', color: '#fff' },
   thokuthiTxt: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
-  logoutBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
+  locationRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 },
+  locationChip: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
+  logoutBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', elevation: 6, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
   logoutTxt: { fontSize: 18 },
 
   statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  statCard: { flex: 1, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  statCard: { flex: 1, height: 96, backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 16, padding: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
   statNum: { fontSize: 20, fontWeight: '900' },
   statLabel: { fontSize: 9, color: 'rgba(255,255,255,0.7)', marginTop: 2, fontWeight: '600' },
 
-  rateCard: { backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  rateCard: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
   rateLeft: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   rateTitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
   rateNum: { fontSize: 14, fontWeight: '900', color: '#86efac' },
@@ -282,39 +293,41 @@ const s = StyleSheet.create({
   sectionHint: { fontSize: 12, color: T.textM, fontWeight: '700' },
   seeAll: { fontSize: 13, color: T.maroon, fontWeight: '700' },
 
-  focusCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8 },
+  focusCard: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 9 } },
   focusTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   focusKicker: { fontSize: 11, color: T.textM, fontWeight: '800', textTransform: 'uppercase' },
   focusTitle: { fontSize: 20, color: T.text, fontWeight: '900', marginTop: 2 },
   focusPill: { backgroundColor: T.green + '18', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 50 },
   focusPillTxt: { color: '#15803d', fontSize: 11, fontWeight: '900' },
-  nextTask: { minHeight: 58, backgroundColor: T.bg, borderRadius: 14, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  nextIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border },
+  nextTask: { minHeight: 62, backgroundColor: T.bg, borderRadius: 16, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(0,0,0,0.04)' },
+  nextIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border, elevation: 3, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
   nextTitle: { fontSize: 13, fontWeight: '900', color: T.text },
   nextMeta: { fontSize: 11, color: T.textM, marginTop: 2, fontWeight: '600' },
   nextArrow: { fontSize: 22, color: T.maroon, fontWeight: '900' },
 
-  qGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
-  qCard: { width: '31.5%', minHeight: 106, backgroundColor: '#fff', borderRadius: 16, padding: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border, elevation: 2 },
-  qIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  qLabel: { fontSize: 12, fontWeight: '800', color: T.text, textAlign: 'center' },
+  qGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4, alignItems: 'stretch' },
+  qCard: { width: '31.5%', height: 112, backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 10, paddingTop: 16, paddingBottom: 12, alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
+  qIcon: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 6, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+  qLabel: { minHeight: 30, fontSize: 11, lineHeight: 14, fontWeight: '800', color: T.text, textAlign: 'center', textAlignVertical: 'center' },
 
   mixGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  mixCard: { width: '48.5%', minHeight: 104, backgroundColor: '#fff', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: T.border },
+  mixCard: { width: '48.5%', height: 116, backgroundColor: '#fff', borderRadius: 18, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
   mixIcon: { fontSize: 22, marginBottom: 8 },
   mixName: { color: T.text, fontSize: 12, fontWeight: '800', lineHeight: 16, minHeight: 32 },
   mixCount: { marginTop: 8, color: T.maroon, fontSize: 18, fontWeight: '900' },
-  mixEmpty: { backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.border },
+  mixEmpty: { backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
   mixEmptyTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
   mixEmptySub: { color: T.textM, fontSize: 12, marginTop: 4, fontWeight: '600' },
 
-  complaintCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
+  complaintCard: { backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15, shadowOffset: { width: 0, height: 7 } },
   complaintIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   complaintCat: { fontSize: 14, fontWeight: '700', color: T.text },
   complaintMeta: { fontSize: 11, color: T.textM, marginTop: 3 },
   complaintBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
   complaintBadgeTxt: { fontSize: 11, fontWeight: '700' },
 
+  cardTopLight: { position: 'absolute', top: 4, left: 8, right: 8, height: 22, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.48)' },
+  cardBottomShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 32, backgroundColor: 'rgba(0,0,0,0.025)' },
   empty: { alignItems: 'center', paddingVertical: 32 },
   emptyTxt: { fontSize: 14, color: T.textM, marginTop: 6 }
 });

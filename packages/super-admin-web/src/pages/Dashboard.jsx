@@ -2,6 +2,7 @@ import { literalT } from "../i18n/runtimeTamil";import { useState, useEffect, us
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import peopleConnectLogo from "../assets/people-connect-logo.svg";
 import {
   BarChart,
   Bar,
@@ -484,6 +485,8 @@ export default function AdminDashboard() {
   const [camps, setCamps] = useState([]);
   const [videos, setVideos] = useState([]);
   const [exams, setExams] = useState([]);
+  const [govJobs, setGovJobs] = useState([]);
+  const [jobSummary, setJobSummary] = useState({ live: 0, upcoming: 0, previous: 0, applications: 0 });
   const [notifications, setNotifications] = useState([]);
   const [analyticsStats, setAnalyticsStats] = useState({});
   const [certCount, setCertCount] = useState(0);
@@ -522,11 +525,13 @@ export default function AdminDashboard() {
     axios.get(`${API}/api/news`, cfg),
     axios.get(`${API}/api/news/camps`, cfg),
     axios.get(`${API}/api/education/videos`, cfg),
-    axios.get(`${API}/api/education/exams`, cfg),
+    axios.get(`${API}/api/education/mock-tests`, cfg),
     axios.get(`${API}/api/notifications`, cfg),
     axios.get(`${API}/api/analytics/stats`, cfg),
     axios.get(`${API}/api/education/certificates/count`, cfg),
-    axios.get(`${API}/api/users`, cfg)]
+    axios.get(`${API}/api/users`, cfg),
+    axios.get(`${API}/api/education/government-jobs`, cfg),
+    axios.get(`${API}/api/education/government-jobs/summary`, cfg)]
     );
     const ok = (i) =>
     results[i].status === "fulfilled" ? results[i].value.data : null;
@@ -539,11 +544,13 @@ export default function AdminDashboard() {
     if (ok(6)) setNewsItems(ok(6));
     if (ok(7)) setCamps(ok(7));
     if (ok(8)) setVideos(ok(8));
-    if (ok(9)) setExams(ok(9));
+    if (ok(9)) setExams(ok(9).data || ok(9));
     if (ok(10)) setNotifications(ok(10));
     if (ok(11)) setAnalyticsStats(ok(11));
     if (ok(12)) setCertCount(ok(12).count || 0);
     if (ok(13)) setUsers(ok(13));
+    if (ok(14)) setGovJobs(ok(14).data || []);
+    if (ok(15)) setJobSummary(ok(15));
   };
   useEffect(() => {
     fetchAll();
@@ -1096,22 +1103,13 @@ export default function AdminDashboard() {
       }
       setLoading(true);
       try {
+        const durationMinutes = Number(String(f.duration).match(/\d+/)?.[0]) || 30;
         const { data } = await axios.post(
-          `${API}/api/education/exams`,
-          f,
+          `${API}/api/education/mock-tests`,
+          { ...f, durationMinutes, examType: "Government Jobs" },
           getConfig()
         );
-        setExams((p) => [
-        ...p,
-        {
-          id: data._id,
-          title: data.title,
-          category: data.category,
-          questions: data.questions?.length || 0,
-          duration: data.duration,
-          taken: 0
-        }]
-        );
+        setExams((p) => [...p, data]);
         setModal(null);
         showToast("Exam created");
       } catch (err) {
@@ -1296,6 +1294,101 @@ export default function AdminDashboard() {
 
   };
 
+  const CreateJobModal = () => {
+    const [f, setF] = useState({
+      title: "",
+      department: "",
+      category: "General",
+      location: "Tamil Nadu",
+      qualification: "Any Degree",
+      vacancies: 0,
+      salary: "",
+      applicationUrl: "",
+      notificationUrl: "",
+      applyBy: "",
+      examDate: "",
+      year: new Date().getFullYear(),
+      status: "upcoming"
+    });
+    const [loading, setLoading] = useState(false);
+    const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+    const submit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      try {
+        const payload = {
+          ...f,
+          vacancies: Number(f.vacancies) || 0,
+          year: Number(f.year) || new Date().getFullYear(),
+          applyBy: f.applyBy || undefined,
+          examDate: f.examDate || undefined
+        };
+        const { data } = await axios.post(
+          `${API}/api/education/government-jobs`,
+          payload,
+          getConfig()
+        );
+        setGovJobs((p) => [data, ...p]);
+        setJobSummary((p) => ({ ...p, [data.status]: (p[data.status] || 0) + 1 }));
+        setModal(null);
+        showToast("Government job created");
+      } catch (err) {
+        alert(err?.response?.data?.message || "Failed");
+      } finally {
+        setLoading(false);
+      }
+    };
+    return (
+      <Modal title={literalT("Government Job")} onClose={() => setModal(null)} wide>
+        <form onSubmit={submit}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+            <Field label={literalT("Title")} icon="Job">
+              <input style={iSx} required value={f.title} onChange={set("title")} placeholder={literalT("Exam / job title")} />
+            </Field>
+            <Field label={literalT("Department")} icon="Dept">
+              <input style={iSx} required value={f.department} onChange={set("department")} placeholder={literalT("Department name")} />
+            </Field>
+            <Field label={literalT("Category")} icon="Cat">
+              <input style={iSx} value={f.category} onChange={set("category")} />
+            </Field>
+            <Field label={literalT("Location")} icon="Loc">
+              <input style={iSx} value={f.location} onChange={set("location")} />
+            </Field>
+            <Field label={literalT("Qualification")} icon="Edu">
+              <input style={iSx} value={f.qualification} onChange={set("qualification")} />
+            </Field>
+            <Field label={literalT("Vacancies")} icon="No">
+              <input style={iSx} type="number" min="0" value={f.vacancies} onChange={set("vacancies")} />
+            </Field>
+            <Field label={literalT("Status")} icon="St">
+              <select style={sSx} value={f.status} onChange={set("status")}>
+                {["upcoming", "live", "previous"].map((status) => <option key={status} value={status}>{status}</option>)}
+              </select>
+            </Field>
+            <Field label={literalT("Year")} icon="Yr">
+              <input style={iSx} type="number" value={f.year} onChange={set("year")} />
+            </Field>
+            <Field label={literalT("Apply By")} icon="Date">
+              <input style={iSx} type="date" value={f.applyBy} onChange={set("applyBy")} />
+            </Field>
+            <Field label={literalT("Exam Date")} icon="Date">
+              <input style={iSx} type="date" value={f.examDate} onChange={set("examDate")} />
+            </Field>
+            <Field label={literalT("Salary")} icon="Pay">
+              <input style={iSx} value={f.salary} onChange={set("salary")} />
+            </Field>
+            <Field label={literalT("Application URL")} icon="URL">
+              <input style={iSx} value={f.applicationUrl} onChange={set("applicationUrl")} placeholder="https://" />
+            </Field>
+            <Field label={literalT("Notification URL")} icon="URL">
+              <input style={iSx} value={f.notificationUrl} onChange={set("notificationUrl")} placeholder="https://" />
+            </Field>
+          </div>
+          <SubmitBtn loading={loading} label={literalT("Create Job")} />
+        </form>
+      </Modal>);
+  };
+
   const SendNotifModal = () => {
     const [f, setF] = useState({ msg: "", type: "announcement" });
     const [loading, setLoading] = useState(false);
@@ -1421,6 +1514,7 @@ export default function AdminDashboard() {
     addCamp: <AddCampModal />,
     uploadVideo: <UploadVideoModal />,
     createExam: <CreateExamModal />,
+    createJob: <CreateJobModal />,
     sendNotif: <SendNotifModal />,
     issueCert: <IssueCertModal />
   };
@@ -1485,8 +1579,10 @@ export default function AdminDashboard() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 20
+          fontSize: 0,
+          overflow: "hidden"
         }}>
+          <img src={peopleConnectLogo} alt="People Connect" style={{ width: 34, height: 34, objectFit: "cover", borderRadius: 9 }} />
         
           🏛️
         </div>
@@ -4014,6 +4110,95 @@ export default function AdminDashboard() {
           </div>
             </div>
         )}
+        </div>
+        <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: isMobile ? "16px" : "22px 24px",
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)"
+        }}>
+        
+          <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 18,
+            gap: 12
+          }}>
+          
+            <div>
+              <div
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontWeight: 700,
+                fontSize: isMobile ? 14 : 17,
+                color: T.text
+              }}>{literalT("Government Jobs")}</div>
+              <div
+              style={{
+                fontFamily: "'Source Sans 3',sans-serif",
+                fontSize: 11,
+                color: T.textM,
+                marginTop: 3
+              }}>
+                {jobSummary.live}{literalT("live")} · {jobSummary.upcoming}{literalT("upcoming")} · {jobSummary.previous}{literalT("previous")}
+              </div>
+            </div>
+            <ActionBtn label={literalT("+ Add Job")} onClick={() => setModal("createJob")} gold />
+          </div>
+          {govJobs.length === 0 ?
+          <div
+            style={{
+              textAlign: "center",
+              padding: "20px 0",
+              color: T.textM,
+              fontFamily: "'Source Sans 3',sans-serif"
+            }}>{literalT("No government jobs created yet")}</div> :
+          govJobs.slice(0, 6).map((job) =>
+          <div
+            key={job.id}
+            style={{
+              padding: "12px 14px",
+              marginBottom: 10,
+              borderRadius: 12,
+              background: T.bg,
+              border: `1px solid ${T.border}`
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: T.text,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}>{job.title}</div>
+                  <div
+                  style={{
+                    fontFamily: "'Source Sans 3',sans-serif",
+                    fontSize: 11,
+                    color: T.textM,
+                    marginTop: 4
+                  }}>{job.department} · {job.location}</div>
+                </div>
+                <span
+                style={{
+                  color: job.status === "live" ? T.green : job.status === "upcoming" ? T.blue : T.textM,
+                  fontFamily: "'Source Sans 3',sans-serif",
+                  fontSize: 11,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap"
+                }}>{job.status}</span>
+              </div>
+            </div>
+          )}
         </div>
         <div
         style={{

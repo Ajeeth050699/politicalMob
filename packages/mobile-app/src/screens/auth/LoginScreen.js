@@ -2,7 +2,7 @@ import { literalT } from "../../i18n/runtimeTamil";import React, { useState } fr
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ScrollView, ActivityIndicator, KeyboardAvoidingView,
-  Platform, StatusBar } from
+  Platform, StatusBar, Image } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,7 @@ import { T } from '../../constants/theme';
 import PopupToast from '../../components/PopupToast';
 
 const LOGIN_TIMEOUT_MS = 10000;
+const APP_LOGO = require('../../../assets/images/icon.png');
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -68,15 +69,15 @@ export default function LoginScreen({ navigation }) {
         <View style={s.decoCircle1} />
         <View style={s.decoCircle2} />
         <View style={s.logoCircle}>
-          <Text style={{ fontSize: 36 }}>🏛️</Text>
+          <Image source={APP_LOGO} style={s.logoImg} />
         </View>
         <Text style={s.appName}>{literalT("People Connect")}</Text>
         <Text style={s.tagline}>{literalT("Tamil Nadu Public Service Platform")}</Text>
       </LinearGradient>
 
       {/* White card */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
           <View style={s.card}>
             <Text style={s.cardTitle}>{literalT("Welcome Back 👋")}</Text>
             <Text style={s.cardSub}>{literalT("Sign in to your account")}</Text>
@@ -162,9 +163,10 @@ const s = StyleSheet.create({
   decoCircle1: { position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.07)' },
   decoCircle2: { position: 'absolute', bottom: -20, left: -50, width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(255,255,255,0.05)' },
   logoCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 14, borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)' },
+  logoImg: { width: 66, height: 66, borderRadius: 33 },
   appName: { fontSize: 24, fontWeight: '900', color: '#fff' },
   tagline: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 5 },
-  scroll: { flexGrow: 1 },
+  scroll: { flexGrow: 1, paddingBottom: 36 },
   card: { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 28, paddingTop: 32, minHeight: '100%' },
   cardTitle: { fontSize: 24, fontWeight: '800', color: T.text, marginBottom: 6 },
   cardSub: { fontSize: 14, color: T.textM, marginBottom: 24 },

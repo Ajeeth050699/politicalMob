@@ -33,6 +33,8 @@ function StatTile({ label, value, sub, color, icon, onPress }) {
       activeOpacity={onPress ? 0.82 : 1}
       disabled={!onPress}>
       
+      <View style={s.cardTopLight} />
+      <View style={s.cardBottomShade} />
       <View style={[s.statIconBox, { backgroundColor: color + '18' }]}>
         <Text style={s.statIcon}>{icon}</Text>
       </View>
@@ -182,7 +184,10 @@ export default function AdminDashboard({ navigation }) {
             <View style={s.headerCopy}>
               <Text style={s.greeting}>{greeting}</Text>
               <Text style={s.adminName} numberOfLines={1}>{userInfo?.name || 'Admin'}</Text>
-              <Text style={s.adminMeta} numberOfLines={1}>{userInfo?.district || 'Tamil Nadu'}{literalT("administration")}</Text>
+              <View style={s.adminMetaRow}>
+                <Text style={s.adminMetaChip}>📍 {userInfo?.district || 'Tamil Nadu'}</Text>
+                <Text style={s.adminMetaChip}>{literalT("Administration")}</Text>
+              </View>
             </View>
             <TouchableOpacity onPress={logout} style={s.headerButton} activeOpacity={0.75}>
               <Text style={s.headerButtonTxt}>⎋</Text>
@@ -214,11 +219,15 @@ export default function AdminDashboard({ navigation }) {
           <SectionHeader title={literalT("Operations")} />
           <View style={s.opsGrid}>
             <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminComplaints')} activeOpacity={0.82}>
+              <View style={s.cardTopLight} />
+              <View style={s.cardBottomShade} />
               <Text style={s.opsIcon}>🔎</Text>
               <Text style={s.opsTitle}>{literalT("Review Complaints")}</Text>
               <Text style={s.opsSub}>{literalT("Filter by thokuthi, status, and search.")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminWorkers')} activeOpacity={0.82}>
+              <View style={s.cardTopLight} />
+              <View style={s.cardBottomShade} />
               <Text style={s.opsIcon}>👷</Text>
               <Text style={s.opsTitle}>{literalT("Worker Coverage")}</Text>
               <Text style={s.opsSub}>{stats.activeWorkers}/{stats.totalWorkers}{literalT("active,")}{activeWorkerRate}{literalT("% coverage.")}</Text>
@@ -258,6 +267,8 @@ export default function AdminDashboard({ navigation }) {
             <View style={s.inlineEmpty}><Text style={s.emptyText}>{literalT("No category data.")}</Text></View> :
             categories.map((cat) =>
             <View key={cat.name} style={s.categoryCard}>
+                <View style={s.cardTopLight} />
+                <View style={s.cardBottomShade} />
                 <Text style={s.categoryIcon}>{CATEGORY_ICONS[cat.name] || '📝'}</Text>
                 <Text style={s.categoryName} numberOfLines={2}>{complaintCategoryT(cat.name)}</Text>
                 <Text style={s.categoryValue}>{cat.value}%</Text>
@@ -349,16 +360,18 @@ const s = StyleSheet.create({
 
   header: { paddingTop: Platform.OS === 'ios' ? 58 : 46, paddingHorizontal: 18, paddingBottom: 22 },
   headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
-  avatar: { width: 50, height: 50, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  avatar: { width: 50, height: 50, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   avatarTxt: { color: '#fff', fontSize: 20, fontWeight: '900' },
   headerCopy: { flex: 1, minWidth: 0 },
   greeting: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '700' },
   adminName: { color: '#fff', fontSize: 20, fontWeight: '900', marginTop: 1 },
   adminMeta: { color: 'rgba(255,255,255,0.72)', fontSize: 12, marginTop: 2 },
-  headerButton: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
+  adminMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 },
+  adminMetaChip: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
+  headerButton: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', elevation: 6, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
   headerButtonTxt: { color: '#fff', fontSize: 20, fontWeight: '800' },
 
-  healthPanel: { backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', flexDirection: 'row', alignItems: 'center', gap: 14 },
+  healthPanel: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', flexDirection: 'row', alignItems: 'center', gap: 14, elevation: 8, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
   healthLabel: { color: 'rgba(255,255,255,0.76)', fontSize: 12, fontWeight: '700' },
   healthValue: { color: T.goldL, fontSize: 34, fontWeight: '900', lineHeight: 38 },
   healthRight: { flex: 1, gap: 8 },
@@ -367,8 +380,8 @@ const s = StyleSheet.create({
   progressFill: { height: '100%', borderRadius: 5, backgroundColor: T.goldL },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 14, paddingTop: 14 },
-  statTile: { width: '48%', minHeight: 132, backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
-  statIconBox: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  statTile: { width: '48%', height: 136, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
+  statIconBox: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center', marginBottom: 10, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
   statIcon: { fontSize: 21 },
   statValue: { color: T.text, fontSize: 24, fontWeight: '900' },
   statLabel: { color: T.text, fontSize: 13, fontWeight: '800', marginTop: 2 },
@@ -380,12 +393,12 @@ const s = StyleSheet.create({
   sectionAction: { color: T.maroon, fontSize: 13, fontWeight: '800' },
 
   opsGrid: { flexDirection: 'row', gap: 10 },
-  opsCard: { flex: 1, minHeight: 126, backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.border },
+  opsCard: { flex: 1, height: 132, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
   opsIcon: { fontSize: 26, marginBottom: 8 },
   opsTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
   opsSub: { color: T.textM, fontSize: 11, lineHeight: 16, marginTop: 4 },
 
-  trendCard: { height: 142, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: T.border, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
+  trendCard: { height: 146, backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
   trendColumn: { alignItems: 'center', flex: 1 },
   barPair: { height: 88, flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
   bar: { width: 7, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
@@ -396,13 +409,13 @@ const s = StyleSheet.create({
   legendText: { color: T.maroon, fontSize: 11, fontWeight: '700' },
 
   categoryRow: { gap: 10, paddingRight: 14 },
-  categoryCard: { width: 118, minHeight: 126, backgroundColor: '#fff', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: T.border },
+  categoryCard: { width: 118, height: 128, backgroundColor: '#fff', borderRadius: 18, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
   categoryIcon: { fontSize: 24, marginBottom: 8 },
   categoryName: { color: T.text, fontSize: 12, fontWeight: '800', lineHeight: 16, minHeight: 32 },
   categoryValue: { color: T.maroon, fontSize: 20, fontWeight: '900', marginTop: 8 },
-  inlineEmpty: { width: '100%', backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.border },
+  inlineEmpty: { width: '100%', backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
 
-  tableCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: T.border, padding: 12 },
+  tableCard: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', padding: 12, elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
   districtRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: T.border },
   districtNameWrap: { width: 108 },
   districtName: { color: T.text, fontSize: 12, fontWeight: '800' },
@@ -411,7 +424,7 @@ const s = StyleSheet.create({
   districtFill: { height: '100%', backgroundColor: T.green, borderRadius: 4 },
   districtRate: { width: 38, textAlign: 'right', color: T.text, fontSize: 12, fontWeight: '900' },
 
-  complaintCard: { backgroundColor: '#fff', borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: T.border, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  complaintCard: { backgroundColor: '#fff', borderRadius: 18, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', flexDirection: 'row', alignItems: 'center', gap: 10, elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15, shadowOffset: { width: 0, height: 7 } },
   complaintIconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   complaintIcon: { fontSize: 20 },
   complaintInfo: { flex: 1, minWidth: 0 },
@@ -420,12 +433,14 @@ const s = StyleSheet.create({
   statusBadge: { paddingHorizontal: 9, paddingVertical: 5, borderRadius: 10 },
   statusText: { fontSize: 10, fontWeight: '900' },
 
-  notificationCard: { backgroundColor: '#fff', borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: T.border, flexDirection: 'row', gap: 10 },
+  notificationCard: { backgroundColor: '#fff', borderRadius: 18, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', flexDirection: 'row', gap: 10, elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15, shadowOffset: { width: 0, height: 7 } },
   notificationDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: T.maroon, marginTop: 5 },
   notificationBody: { flex: 1 },
   notificationMsg: { color: T.text, fontSize: 13, fontWeight: '700', lineHeight: 18 },
   notificationTime: { color: T.textM, fontSize: 10, marginTop: 4 },
 
-  emptyCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.border },
+  emptyCard: { backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
+  cardTopLight: { position: 'absolute', top: 4, left: 8, right: 8, height: 22, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.5)' },
+  cardBottomShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 32, backgroundColor: 'rgba(0,0,0,0.025)' },
   emptyText: { color: T.textM, fontSize: 12, textAlign: 'center' }
 });

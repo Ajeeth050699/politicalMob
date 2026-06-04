@@ -1,0 +1,46 @@
+<svg width="100%" viewBox="0 0 680 280" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>People Connect logo</title>
+  <desc>People Connect app logo — icon mark with two connected people figures, app name in red and gold</desc>
+
+  <!-- icon background circle -->
+  <circle cx="170" cy="130" r="108" fill="#C62828"/>
+
+  <!-- outer ring accent -->
+  <circle cx="170" cy="130" r="108" fill="none" stroke="#FFB300" stroke-width="6"/>
+  <circle cx="170" cy="130" r="101" fill="none" stroke="#FFB300" stroke-width="2" opacity="0.4"/>
+
+  <!-- left person — gold -->
+  <circle cx="140" cy="100" r="22" fill="#FFB300"/>
+  <path d="M100,162 Q100,138 140,138 Q180,138 180,162 L180,170 Q180,178 140,178 Q100,178 100,170 Z" fill="#FFB300"/>
+
+  <!-- right person — white -->
+  <circle cx="202" cy="100" r="22" fill="#FFFFFF"/>
+  <path d="M162,162 Q162,138 202,138 Q242,138 242,162 L242,170 Q242,178 202,178 Q162,178 162,170 Z" fill="#FFFFFF"/>
+
+  <!-- connection bridge — overlap area tinted -->
+  <ellipse cx="171" cy="101" rx="14" ry="14" fill="#A01010"/>
+
+  <!-- centre node dot -->
+  <circle cx="171" cy="101" r="9" fill="#FFB300"/>
+  <circle cx="171" cy="101" r="4.5" fill="#FFFFFF"/>
+
+  <!-- signal arc 1 -->
+  <path d="M145,80 Q171,62 197,80" fill="none" stroke="#FFB300" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- signal arc 2 -->
+  <path d="M134,68 Q171,44 208,68" fill="none" stroke="#FFB300" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  <!-- signal arc 3 -->
+  <path d="M123,57 Q171,26 219,57" fill="none" stroke="#FFB300" stroke-width="1" stroke-linecap="round" opacity="0.25"/>
+
+  <!-- app name: People -->
+  <text x="302" y="108" font-size="68" fill="#C62828" font-family="Arial Black, Arial, sans-serif" font-weight="900" letter-spacing="-2">People</text>
+
+  <!-- app name: Connect — gold -->
+  <text x="302" y="178" font-size="68" fill="#FFB300" font-family="Arial Black, Arial, sans-serif" font-weight="900" letter-spacing="-2">Connect</text>
+
+  <!-- tagline -->
+  <text x="305" y="218" font-size="14" fill="#7B1A1A" font-family="Arial, sans-serif">YOUR VOICE · YOUR CITY</text>
+
+  <!-- bottom stripe under tagline -->
+  <rect x="305" y="230" width="330" height="4" rx="2" fill="#C62828"/>
+  <rect x="305" y="236" width="330" height="2.5" rx="1" fill="#FFB300"/>
+</svg>

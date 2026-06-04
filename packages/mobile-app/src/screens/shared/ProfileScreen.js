@@ -2,7 +2,7 @@ import { literalT } from "../../i18n/runtimeTamil";import { useTranslation } fro
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, Alert, ActivityIndicator, Platform, StatusBar } from
+  ScrollView, Alert, ActivityIndicator, Platform, StatusBar, KeyboardAvoidingView } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
@@ -15,6 +15,14 @@ const ROLE_META = {
   agent: { label: 'AGENT', icon: '👷', color: '#0ea5e9' },
   admin: { label: 'ADMIN', icon: '🛡️', color: '#8b5cf6' }
 };
+const GENDER_OPTIONS = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'transgender', label: 'Transgender' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' }
+];
+const genderLabel = (value) => GENDER_OPTIONS.find((g) => g.value === value)?.label || '—';
 
 export default function ProfileScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -22,6 +30,7 @@ export default function ProfileScreen({ navigation }) {
 
   const [name, setName] = useState(userInfo?.name || '');
   const [email, setEmail] = useState(userInfo?.email || '');
+  const [gender, setGender] = useState(userInfo?.gender || 'prefer_not_to_say');
   const [phone, setPhone] = useState(userInfo?.phone || '');
   const [district, setDistrict] = useState(userInfo?.district || '');
   const [thokuthi, setThokuthi] = useState(userInfo?.ward || userInfo?.thokuthi || '');
@@ -44,7 +53,7 @@ export default function ProfileScreen({ navigation }) {
     }
     setSaving(true);
     try {
-      const payload = { name, email, phone, ward: thokuthi, wardNo, pincode, address, district };
+      const payload = { name, email, gender, phone, ward: thokuthi, wardNo, pincode, address, district };
       if (userInfo?.role === 'worker' || userInfo?.role === 'agent') {
         payload.workCategory = workCategory.trim();
       }
@@ -66,7 +75,8 @@ export default function ProfileScreen({ navigation }) {
   return (
     <View style={s.root}>
       <StatusBar backgroundColor={T.maroon} barStyle="light-content" />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24} style={{ flex: 1 }}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={{ paddingBottom: 24 }}>
 
         {/* ── Hero Header ── */}
         <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
@@ -111,6 +121,15 @@ export default function ProfileScreen({ navigation }) {
           {/* ── Edit section ── */}
           <View style={s.section}>
             <Text style={s.sectionTitle}>{literalT("✏️ Edit Profile")}</Text>
+
+            <Text style={s.label}>{literalT("Gender")}</Text>
+            <View style={s.genderGrid}>
+              {GENDER_OPTIONS.map((g) =>
+              <TouchableOpacity key={g.value} style={[s.genderChip, gender === g.value && s.genderChipActive]} onPress={() => setGender(g.value)} activeOpacity={0.85}>
+                  <Text style={[s.genderTxt, gender === g.value && { color: '#fff' }]}>{g.label}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             {[
             { label: 'Full Name', icon: '👤', value: name, setter: setName, placeholder: 'Enter your name', kb: 'default' },
@@ -172,6 +191,7 @@ export default function ProfileScreen({ navigation }) {
             <Text style={s.sectionTitle}>{literalT("📋 Account Info")}</Text>
             {[
             { label: 'Role', value: userInfo?.role?.toUpperCase(), icon: role.icon },
+            { label: 'Gender', value: genderLabel(userInfo?.gender), icon: 'G' },
             ...(userInfo?.role === 'worker' || userInfo?.role === 'agent' ?
             [{ label: 'Work Category', value: userInfo?.workCategory || '—', icon: '#' }] :
             []),
@@ -242,6 +262,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={{ height: 32 }} />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>);
 
 }
@@ -271,6 +292,10 @@ const s = StyleSheet.create({
   inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14 },
   inputIcon: { fontSize: 16, marginRight: 10 },
   input: { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
+  genderGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
+  genderChip: { flexGrow: 1, minWidth: '46%', borderRadius: 14, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg, paddingVertical: 12, paddingHorizontal: 10, alignItems: 'center' },
+  genderChipActive: { backgroundColor: T.maroon, borderColor: T.maroon },
+  genderTxt: { fontSize: 12, fontWeight: '800', color: T.textL },
 
   saveBtn: { borderRadius: 50, overflow: 'hidden', marginTop: 4, elevation: 4, shadowColor: T.maroon, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
   saveBtnGrad: { paddingVertical: 16, alignItems: 'center' },

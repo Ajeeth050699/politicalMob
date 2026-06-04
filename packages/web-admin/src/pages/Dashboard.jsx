@@ -2,6 +2,7 @@ import { literalT } from "../i18n/runtimeTamil";import { useState, useEffect, us
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import peopleConnectLogo from "../assets/people-connect-logo.svg";
 import {
   BarChart,
   Bar,
@@ -1676,8 +1677,10 @@ export default function AdminDashboard() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 20
+          fontSize: 0,
+          overflow: "hidden"
         }}>
+          <img src={peopleConnectLogo} alt="People Connect" style={{ width: 34, height: 34, objectFit: "cover", borderRadius: 9 }} />
         
           🏛️
         </div>

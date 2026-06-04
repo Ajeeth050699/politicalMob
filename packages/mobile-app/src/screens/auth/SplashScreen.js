@@ -1,11 +1,12 @@
 import { literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, Animated, Dimensions, StatusBar, Platform } from
+  View, Text, StyleSheet, Animated, Dimensions, StatusBar, Platform, Image } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { T } from '../../constants/theme';
 
 const { width, height } = Dimensions.get('window');
+const APP_LOGO = require('../../../assets/images/icon.png');
 
 export default function SplashScreen({ onFinish }) {
   // Animation values
@@ -123,7 +124,7 @@ export default function SplashScreen({ onFinish }) {
         {/* Logo circle */}
         <Animated.View style={[s.logoWrap, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}>
           <LinearGradient colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.1)']} style={s.logoCircle}>
-            <Text style={s.logoEmoji}>🏛️</Text>
+            <Image source={APP_LOGO} style={s.logoImg} />
           </LinearGradient>
           {/* Gold ring */}
           <View style={s.goldRing} />
@@ -192,6 +193,7 @@ const s = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoWrap: { alignItems: 'center', justifyContent: 'center' },
   logoCircle: { width: LOGO_SIZE, height: LOGO_SIZE, borderRadius: LOGO_SIZE / 2, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
+  logoImg: { width: LOGO_SIZE - 18, height: LOGO_SIZE - 18, borderRadius: (LOGO_SIZE - 18) / 2 },
   logoEmoji: { fontSize: 50 },
   goldRing: { position: 'absolute', width: LOGO_SIZE + 16, height: LOGO_SIZE + 16, borderRadius: (LOGO_SIZE + 16) / 2, borderWidth: 2, borderColor: T.gold, opacity: 0.6 },
 
