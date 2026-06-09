@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     email:    { type: String, required: true, unique: true },
     phone:    { type: String },
     password: { type: String, required: true },
-    role:     { type: String, enum: ['superadmin', 'admin', 'worker', 'agent', 'public', 'citizen'], default: 'public' },
+    role:     { type: String, enum: ['developer', 'superadmin', 'admin', 'worker', 'agent', 'public', 'citizen'], default: 'public' },
     gender:   { type: String, enum: ['male', 'female', 'transgender', 'other', 'prefer_not_to_say'], default: 'prefer_not_to_say' },
     workCategory: { type: String },
     ward:     { type: String },
@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
     fcmToken: { type: String },
 
     subscription: {
-      planRole:           { type: String, enum: ['public', 'citizen', 'worker', 'agent', 'admin', 'superadmin'] },
+      planRole:           { type: String, enum: ['public', 'citizen', 'worker', 'agent', 'admin', 'superadmin', 'developer'] },
       amount:             { type: Number },
       currency:           { type: String, default: 'INR' },
       interval:           { type: String, default: 'month' },

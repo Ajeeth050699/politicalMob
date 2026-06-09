@@ -16,7 +16,7 @@ const extra =
   Constants.manifest2?.extra?.expoClient?.extra ||
   {};
 
-const BASE_URL = __DEV__
+export const BASE_URL = __DEV__
   ? process.env.EXPO_PUBLIC_API_URL_DEV || extra.API_URL_DEV || 'http://127.0.0.1:5003'
   : process.env.EXPO_PUBLIC_API_URL_PROD || extra.API_URL_PROD || 'https://politicalmob.onrender.com';
 // export const BASE_URL = 'http://localhost:5003';

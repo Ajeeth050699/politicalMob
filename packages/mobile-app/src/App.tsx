@@ -1,4 +1,8 @@
 import React, { useEffect,useState } from 'react';
+import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from './services/api';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -24,6 +28,47 @@ ExpoSplash.preventAutoHideAsync().catch(() => {});
 
 export default function App() {
   const [showCustomSplash, setShowCustomSplash] = useState(true);
+  const [debug, setDebug] = useState(false);
+
+
+  const [maintenance, setMaintenance] = useState(false);
+  const [maintenanceMsg, setMaintenanceMsg] = useState("");
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    console.log('[App] start system check');
+    const checkSystem = async () => {
+      try {
+
+        let isDev = false;
+        try {
+          const raw = await AsyncStorage.getItem('userInfo');
+          if (raw) {
+            const u = JSON.parse(raw);
+            if (u && u.role === 'developer') isDev = true;
+          }
+        } catch(e) {}
+        if (isDev) {
+          console.log('[App] isDev bypass => skip maintenance');
+          setChecking(false);
+          return;
+        }
+
+        const { data } = await axios.get(BASE_URL + '/api/system/public-settings');
+        if (data && data.maintenanceMode && data.maintenanceMode.mobileApp) {
+          setMaintenance(true);
+          setMaintenanceMsg(data.maintenanceMode.message || "System is under maintenance. Please try again later.");
+        }
+      } catch (err) {
+        console.log('[App] system check error', err?.message || err);
+      } finally {
+        console.log('[App] system check finished');
+        setChecking(false);
+      }
+
+    };
+    checkSystem();
+  }, []);
 
   useEffect(() => {
     // Hide the native expo splash immediately
@@ -31,16 +76,42 @@ export default function App() {
     ExpoSplash.hideAsync().catch(() => {});
   }, []);
 
-  // While custom splash is showing, render it fullscreen
-  if (showCustomSplash) {
+  if (checking) {
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={T.maroon} /></View>;
+  }
+
+  if (maintenance) {
     return (
-      <SplashScreen onFinish={() => setShowCustomSplash(false)} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20 }}>
+        <Text style={{ fontSize: 60, marginBottom: 20 }}>??</Text>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: T.maroon, marginBottom: 10 }}>Under Maintenance</Text>
+        <Text style={{ fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 30 }}>{maintenanceMsg}</Text>
+        <TouchableOpacity onPress={() => setMaintenance(false)}>
+           <Text style={{ color: T.maroon, fontSize: 14 }}>Developer Bypass</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
+
+
+
+  // While custom splash is showing, render it fullscreen
+  if (showCustomSplash) {
+    return (
+      <SplashScreen
+        onFinish={() => {
+          console.log('[App] custom splash finished');
+          setShowCustomSplash(false);
+        }}
+      />
+    );
+  }
+
+
   return (
    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
+      <SafeAreaProvider> 
         <LanguageProvider>
           <AuthProvider>
             <StatusBar backgroundColor={T.maroon} barStyle="light-content" />

@@ -1,3 +1,4 @@
+
 import { literalT } from "../i18n/runtimeTamil";import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -17,11 +18,33 @@ import {
   Cell } from
 "recharts";
 import { API_URL } from "../config";
+import PageDeveloper from "./PageDeveloper";
 
 const API = API_URL;
+const getStoredUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("userInfo") || "{}") || {};
+  } catch {
+    localStorage.removeItem("userInfo");
+    return {};
+  }
+};
 const getConfig = () => {
-  const u = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const u = getStoredUser();
   return { headers: { Authorization: `Bearer ${u.token}` } };
+};
+const asArray = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
+};
+const parseNotifications = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.notifications)) return payload.notifications;
+  if (Array.isArray(payload?.notifications?.data)) return payload.notifications.data;
+  return [];
 };
 
 const TN_DISTRICTS = [
@@ -454,8 +477,9 @@ const ExportMenu = ({ onCSV, onHTML, onWord }) => {
 // ════════════════════════════════════════════════════════════════════
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const currentUser = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const currentUser = getStoredUser();
   const isSuperAdmin = currentUser.role === "superadmin";
+  const isDeveloper = currentUser.role === "developer";
   const [page, setPage] = useState("dashboard");
   const [sideOpen, setSideOpen] = useState(true);
   const [mobileSideOpen, setMobileSideOpen] = useState(false);
@@ -466,7 +490,7 @@ export default function AdminDashboard() {
   const adminLang = adminI18n.language || "en";
   const changeAdminLang = (l) => adminI18n.changeLanguage(l);
   const [attachViewer, setAttachViewer] = useState(null);
-  const { isMobile, isTablet, isDesktop, bp } = useBreakpoint();
+  const { isMobile, isTablet } = useBreakpoint();
 
   const [stats, setStats] = useState({
 
@@ -531,26 +555,32 @@ export default function AdminDashboard() {
     axios.get(`${API}/api/education/certificates/count`, cfg),
     axios.get(`${API}/api/users`, cfg),
     axios.get(`${API}/api/education/government-jobs`, cfg),
-    axios.get(`${API}/api/education/government-jobs/summary`, cfg)]
+  axios.get(`${API}/api/education/government-jobs/summary`, cfg)]
     );
     const ok = (i) =>
     results[i].status === "fulfilled" ? results[i].value.data : null;
+
     if (ok(0)) setStats(ok(0));
-    if (ok(1)) setWeeklyData(ok(1));
-    if (ok(2)) setCategoryData(ok(2));
-    if (ok(3)) setDistrictData(ok(3));
-    if (ok(4)) setComplaints(ok(4));
-    if (ok(5)) setWorkers(ok(5));
-    if (ok(6)) setNewsItems(ok(6));
-    if (ok(7)) setCamps(ok(7));
-    if (ok(8)) setVideos(ok(8));
-    if (ok(9)) setExams(ok(9).data || ok(9));
-    if (ok(10)) setNotifications(ok(10));
+    setWeeklyData(asArray(ok(1)));
+    setCategoryData(asArray(ok(2)));
+    setDistrictData(asArray(ok(3)));
+    setComplaints(asArray(ok(4)));
+    setWorkers(asArray(ok(5)));
+    setNewsItems(asArray(ok(6)));
+    setCamps(asArray(ok(7)));
+    setVideos(asArray(ok(8)));
+    setExams(asArray(ok(9)));
+
+    setNotifications(parseNotifications(ok(10)));
+
+
     if (ok(11)) setAnalyticsStats(ok(11));
     if (ok(12)) setCertCount(ok(12).count || 0);
-    if (ok(13)) setUsers(ok(13));
-    if (ok(14)) setGovJobs(ok(14).data || []);
-    if (ok(15)) setJobSummary(ok(15));
+    setUsers(asArray(ok(13)));
+    setGovJobs(asArray(ok(14)));
+  if (ok(15)) setJobSummary(ok(15));
+
+    // no-op: keep hook order stable
   };
   useEffect(() => {
     fetchAll();
@@ -1527,7 +1557,8 @@ export default function AdminDashboard() {
   { id: "education", label: "Education", icon: "📚" },
   { id: "analytics", label: "Analytics", icon: "📈" },
   { id: "notifications", label: "Notifications", icon: "🔔" },
-  ...(isSuperAdmin ? [{ id: "superadmin", label: "Super Admin", icon: "SA" }] : [])];
+  ...(isSuperAdmin ? [{ id: "superadmin", label: "Super Admin", icon: "SA" }] : []),
+  ...(isDeveloper ? [{ id: "developer", label: "Developer", icon: "⚰️" }] : [])];
 
 
   const navigateTo = (id) => {
@@ -1772,13 +1803,12 @@ export default function AdminDashboard() {
       <div
         style={{
           width: sidebarWidth,
-          minHeight: "100vh",
+          height: "100vh",
           background: T.sidebar,
           display: "flex",
           flexDirection: "column",
           transition: "width 0.3s",
-          position: "sticky",
-          top: 0,
+          position: "relative",
           flexShrink: 0,
           zIndex: 50
         }}>
@@ -2270,7 +2300,7 @@ export default function AdminDashboard() {
   // ════════════════════════════════════════════════════════════════════
   // PAGE: DASHBOARD
   // ════════════════════════════════════════════════════════════════════
-  const PageDashboard = () =>
+  const PageDashboardLegacy = () =>
   <div
     style={{
       display: "flex",
@@ -2802,6 +2832,152 @@ export default function AdminDashboard() {
 
 
   // ════════════════════════════════════════════════════════════════════
+  const PageDashboard = () => {
+    const openComplaints = Math.max(0, (stats.totalComplaints || 0) - (stats.completed || 0));
+    const urgentComplaints = complaints.filter((c) => c.priority === "HIGH" || c.status === "NEW").length;
+    const activeWorkerCount = workers.filter((w) => w.status === "active" || w.isActive).length || stats.activeWorkers || 0;
+    const maxWeekly = Math.max(1, ...weeklyData.map((w) => Math.max(w.complaints || 0, w.resolved || 0)));
+    const topDistricts = districtData.slice(0, 5);
+    const recent = complaints.slice(0, 6);
+    const actionItems = [
+      { label: "New Complaint", sub: "Create and assign a public issue", page: "complaints", modal: "addComplaint", accent: T.maroon },
+      { label: "Add Worker", sub: "Expand field coverage", page: "workers", modal: "addWorker", accent: T.blue },
+      { label: "Post News", sub: "Publish public updates", page: "news", modal: "addNews", accent: T.gold },
+      { label: "Send Notice", sub: "Broadcast an announcement", page: "notifications", modal: "sendNotif", accent: T.green }
+    ];
+    const metricCards = [
+      { label: "Total complaints", value: stats.totalComplaints || 0, sub: `${openComplaints} open`, accent: T.maroon, page: "complaints" },
+      { label: "Pending review", value: stats.pending || 0, sub: `${urgentComplaints} need triage`, accent: T.gold, page: "complaints" },
+      { label: "Resolved", value: stats.completed || 0, sub: `${completionRate}% completion`, accent: T.green, page: "complaints" },
+      { label: "Active workers", value: activeWorkerCount, sub: `${workers.length || 0} registered`, accent: T.blue, page: "workers" }
+    ];
+    const card = {
+      background: "#fff",
+      border: `1px solid ${T.border}`,
+      borderRadius: 14,
+      boxShadow: "0 10px 26px rgba(33,23,18,0.06)"
+    };
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 14 : 18 }}>
+        <div style={{ background: `linear-gradient(135deg,${T.maroonD},${T.maroon},#B03A3A)`, borderRadius: 16, padding: isMobile ? 18 : 24, color: "#fff", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.35fr 1fr", gap: isMobile ? 16 : 24, overflow: "hidden", position: "relative" }}>
+          <div style={{ position: "absolute", right: -70, top: -80, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "rgba(255,255,255,0.68)" }}>Command overview</div>
+            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: isMobile ? 30 : 42, fontWeight: 900, lineHeight: 1.08, marginTop: 8 }}>Admin control center</div>
+            <div style={{ color: "rgba(255,255,255,0.72)", fontSize: 14, maxWidth: 620, marginTop: 10 }}>Track complaints, worker coverage, public updates, and announcements from one operating view.</div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
+              <button onClick={() => navigateTo("complaints")} style={{ border: "none", borderRadius: 10, padding: "10px 14px", background: "#fff", color: T.maroon, fontWeight: 800, cursor: "pointer" }}>Review complaints</button>
+              <button onClick={() => setModal("sendNotif")} style={{ border: "1px solid rgba(255,255,255,0.32)", borderRadius: 10, padding: "10px 14px", background: "rgba(255,255,255,0.12)", color: "#fff", fontWeight: 800, cursor: "pointer" }}>Send announcement</button>
+            </div>
+          </div>
+          <div style={{ position: "relative", ...card, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", padding: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.74)", fontWeight: 800 }}>Resolution rate</span>
+              <span style={{ fontSize: 28, color: T.goldL, fontWeight: 900 }}>{completionRate}%</span>
+            </div>
+            <div style={{ height: 10, borderRadius: 999, background: "rgba(255,255,255,0.2)", overflow: "hidden", marginTop: 12 }}>
+              <div style={{ height: "100%", width: `${completionRate}%`, background: T.goldL, borderRadius: 999 }} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
+              <div><div style={{ fontSize: 22, fontWeight: 900 }}>{openComplaints}</div><div style={{ fontSize: 12, color: "rgba(255,255,255,0.64)" }}>Open complaints</div></div>
+              <div><div style={{ fontSize: 22, fontWeight: 900 }}>{notifications.length}</div><div style={{ fontSize: 12, color: "rgba(255,255,255,0.64)" }}>Notifications</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 12 }}>
+          {metricCards.map((m) => (
+            <button key={m.label} onClick={() => navigateTo(m.page)} style={{ ...card, padding: 16, textAlign: "left", cursor: "pointer" }}>
+              <div style={{ width: 34, height: 4, borderRadius: 999, background: m.accent, marginBottom: 12 }} />
+              <div style={{ fontSize: isMobile ? 24 : 30, fontWeight: 900, color: T.text }}>{m.value}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: T.text, marginTop: 2 }}>{m.label}</div>
+              <div style={{ fontSize: 12, color: T.textM, marginTop: 4 }}>{m.sub}</div>
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.15fr 1fr", gap: 14 }}>
+          <div style={{ ...card, padding: isMobile ? 14 : 18 }}>
+            <div style={{ fontSize: 17, fontWeight: 900, color: T.text }}>Quick actions</div>
+            <div style={{ fontSize: 12, color: T.textM, marginBottom: 14 }}>Common admin workflows</div>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+              {actionItems.map((a) => (
+                <button key={a.label} onClick={() => { navigateTo(a.page); if (a.modal) setModal(a.modal); }} style={{ border: `1px solid ${T.border}`, background: T.bg, borderRadius: 12, padding: 14, textAlign: "left", cursor: "pointer" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: a.accent, flexShrink: 0 }} />
+                    <span style={{ fontSize: 14, fontWeight: 900, color: T.text }}>{a.label}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: T.textM, marginTop: 7 }}>{a.sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ ...card, padding: isMobile ? 14 : 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
+              <div><div style={{ fontSize: 17, fontWeight: 900, color: T.text }}>7-day activity</div><div style={{ fontSize: 12, color: T.textM }}>Complaints vs resolved</div></div>
+              <button onClick={() => navigateTo("analytics")} style={{ border: "none", background: "transparent", color: T.maroon, fontWeight: 800, cursor: "pointer" }}>Analytics</button>
+            </div>
+            <div style={{ height: 170, display: "flex", alignItems: "end", gap: 8 }}>
+              {weeklyData.slice(0, 7).map((w) => (
+                <div key={w.day} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                  <div style={{ height: 112, display: "flex", alignItems: "end", gap: 3 }}>
+                    <span style={{ width: 8, height: Math.max(8, ((w.complaints || 0) / maxWeekly) * 112), background: T.maroon, borderRadius: "6px 6px 0 0" }} />
+                    <span style={{ width: 8, height: Math.max(8, ((w.resolved || 0) / maxWeekly) * 112), background: T.green, borderRadius: "6px 6px 0 0" }} />
+                  </div>
+                  <span style={{ fontSize: 11, color: T.textM }}>{w.day}</span>
+                </div>
+              ))}
+              {weeklyData.length === 0 && <div style={{ color: T.textM, fontSize: 13 }}>Weekly data will appear here.</div>}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.35fr 1fr", gap: 14 }}>
+          <div style={{ ...card, padding: isMobile ? 14 : 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+              <div><div style={{ fontSize: 17, fontWeight: 900, color: T.text }}>Recent complaints</div><div style={{ fontSize: 12, color: T.textM }}>Latest public issues</div></div>
+              <button onClick={() => navigateTo("complaints")} style={{ border: "none", background: "transparent", color: T.maroon, fontWeight: 800, cursor: "pointer" }}>View all</button>
+            </div>
+            {recent.length === 0 && <div style={{ padding: 22, textAlign: "center", color: T.textM }}>No complaints yet.</div>}
+            {recent.map((c) => {
+              const status = ss(c.status);
+              return (
+                <div key={c.id || c._id} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${T.border}` }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 900, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.category || "Complaint"}</div>
+                    <div style={{ fontSize: 12, color: T.textM, marginTop: 3 }}>{c.thokuthi || "Thokuthi"} - {c.district || "District"}</div>
+                  </div>
+                  <span style={{ background: status.bg, color: status.color, borderRadius: 999, padding: "5px 9px", fontSize: 11, fontWeight: 900 }}>{c.status || "NEW"}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ ...card, padding: isMobile ? 14 : 18 }}>
+            <div style={{ fontSize: 17, fontWeight: 900, color: T.text }}>District health</div>
+            <div style={{ fontSize: 12, color: T.textM, marginBottom: 12 }}>Top districts by resolution</div>
+            {topDistricts.length === 0 && <div style={{ padding: 22, textAlign: "center", color: T.textM }}>District data will appear here.</div>}
+            {topDistricts.map((d) => {
+              const pct = d.total > 0 ? Math.round((d.resolved || 0) / d.total * 100) : 0;
+              return (
+                <div key={d.district} style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 800, color: T.text }}>
+                    <span>{d.district}</span><span>{pct}%</span>
+                  </div>
+                  <div style={{ height: 8, borderRadius: 999, background: T.bg, overflow: "hidden", marginTop: 6 }}>
+                    <div style={{ height: "100%", width: `${pct}%`, borderRadius: 999, background: pct > 80 ? T.green : pct > 50 ? T.gold : T.maroon }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // PAGE: COMPLAINTS
   // ════════════════════════════════════════════════════════════════════
   const PageComplaints = () =>
@@ -5076,14 +5252,16 @@ export default function AdminDashboard() {
     education: <PageEducation />,
     analytics: <PageAnalytics />,
     notifications: <PageNotifications />,
-    superadmin: isSuperAdmin ? <PageSuperAdmin /> : <PageDashboard />
+    superadmin: isSuperAdmin ? <PageSuperAdmin /> : <PageDashboard />,
+    developer: isDeveloper ? <PageDeveloper /> : <PageDashboard />
   };
 
   return (
     <div
       style={{
         display: "flex",
-        minHeight: "100vh",
+        height: "100vh",
+        overflow: "hidden",
         background: T.bg,
         fontFamily: "'Source Sans 3',sans-serif"
       }}>
@@ -5107,7 +5285,9 @@ export default function AdminDashboard() {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          minWidth: 0
+          minWidth: 0,
+          height: "100vh",
+          overflow: "hidden"
         }}>
         
         <Topbar />
@@ -5119,7 +5299,8 @@ export default function AdminDashboard() {
             isTablet ?
             "22px 20px" :
             "32px 28px",
-            overflowY: "auto"
+            overflowY: "auto",
+            minHeight: 0
           }}>
           
           {pages[page]}

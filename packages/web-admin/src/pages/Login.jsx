@@ -19,7 +19,7 @@ function Login() {
         return;
       }
       localStorage.setItem('userInfo', JSON.stringify(data));
-      navigate('/dashboard/overview');
+      navigate('/dashboard');
     } catch (error) {
       alert(
         error.response?.data?.message || (

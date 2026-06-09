@@ -25,7 +25,7 @@ const protect = asyncHandler(async (req, res, next) => {
 
 // Admin only
 const adminOnly = (req, res, next) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'developer' || req.user.role === 'superadmin')) {
     next();
   } else {
     res.status(403);
@@ -34,7 +34,7 @@ const adminOnly = (req, res, next) => {
 };
 
 const superAdminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'superadmin') {
+  if (req.user && req.user.role === 'developer' || req.user.role === 'superadmin') {
     next();
   } else {
     res.status(403);
@@ -44,7 +44,7 @@ const superAdminOnly = (req, res, next) => {
 
 // Admin or Worker
 const workerOrAdmin = (req, res, next) => {
-  if (req.user && (req.user.role === 'superadmin' || req.user.role === 'admin' || req.user.role === 'worker' || req.user.role === 'agent')) {
+  if (req.user && (req.user.role === 'developer' || req.user.role === 'superadmin' || req.user.role === 'admin' || req.user.role === 'worker' || req.user.role === 'agent')) {
     next();
   } else {
     res.status(403);
@@ -52,4 +52,25 @@ const workerOrAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly, superAdminOnly, workerOrAdmin };
+// Developer only
+const developerOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'developer') {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Access denied: Developers only');
+  }
+};
+
+// Authorize by roles
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || (!roles.includes(req.user.role) && req.user.role !== 'developer')) {
+      res.status(403);
+      throw new Error(`User role ${req.user ? req.user.role : 'unknown'} is not authorized`);
+    }
+    next();
+  };
+};
+
+module.exports = { protect, adminOnly, superAdminOnly, workerOrAdmin, developerOnly, authorize };

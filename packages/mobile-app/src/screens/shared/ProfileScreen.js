@@ -5,15 +5,17 @@ import {
   ScrollView, Alert, ActivityIndicator, Platform, StatusBar, KeyboardAvoidingView } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { T } from '../../constants/theme';
 import { useLang } from '../../context/LanguageContext';
 
 const ROLE_META = {
-  public: { label: 'CITIZEN', icon: '👤', color: T.gold },
-  worker: { label: 'WORKER', icon: '👷', color: '#3b82f6' },
-  agent: { label: 'AGENT', icon: '👷', color: '#0ea5e9' },
-  admin: { label: 'ADMIN', icon: '🛡️', color: '#8b5cf6' }
+  public: { label: 'CITIZEN', icon: 'account-circle-outline', color: T.gold },
+  worker: { label: 'WORKER', icon: 'account-hard-hat', color: '#3b82f6' },
+  agent: { label: 'AGENT', icon: 'account-hard-hat', color: '#0ea5e9' },
+  admin: { label: 'ADMIN', icon: 'shield-account-outline', color: '#8b5cf6' },
+  superadmin: { label: 'SUPER ADMIN', icon: 'shield-account-outline', color: T.maroon }
 };
 const GENDER_OPTIONS = [
   { value: 'male', label: 'Male' },
@@ -22,7 +24,7 @@ const GENDER_OPTIONS = [
   { value: 'other', label: 'Other' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' }
 ];
-const genderLabel = (value) => GENDER_OPTIONS.find((g) => g.value === value)?.label || '—';
+const genderLabel = (value) => GENDER_OPTIONS.find((g) => g.value === value)?.label || '-';
 
 export default function ProfileScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -58,7 +60,7 @@ export default function ProfileScreen({ navigation }) {
         payload.workCategory = workCategory.trim();
       }
       await updateProfile(payload);
-      Alert.alert('✅ Updated!', 'Your profile has been saved successfully.');
+      Alert.alert('Updated', 'Your profile has been saved successfully.');
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -78,18 +80,18 @@ export default function ProfileScreen({ navigation }) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24} style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={{ paddingBottom: 24 }}>
 
-        {/* ── Hero Header ── */}
+        {/* Hero Header */}
         <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
           {navigation?.canGoBack && navigation.canGoBack() && navigation?.getState?.()?.index > 0 &&
           <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-              <Text style={s.backTxt}>{literalT("← Back")}</Text>
+              <Text style={s.backTxt}>{literalT("Back")}</Text>
             </TouchableOpacity>
           }
 
           {/* Avatar */}
           <View style={s.avatarRing}>
             <View style={s.avatar}>
-              <Text style={{ fontSize: 36 }}>{role.icon}</Text>
+              <Icon name={role.icon} size={38} color="#fff" />
             </View>
           </View>
 
@@ -105,12 +107,14 @@ export default function ProfileScreen({ navigation }) {
           <View style={s.pillRow}>
             {userInfo?.district &&
             <View style={s.pill}>
-                <Text style={s.pillTxt}>📍 {userInfo.district}</Text>
+                <Icon name="map-marker-outline" size={14} color="#fff" />
+                <Text style={s.pillTxt}>{userInfo.district}</Text>
               </View>
             }
             {userInfo?.thokuthi &&
             <View style={s.pill}>
-                <Text style={s.pillTxt}>🏠 {userInfo.ward || userInfo.thokuthi}</Text>
+                <Icon name="home-map-marker" size={14} color="#fff" />
+                <Text style={s.pillTxt}>{userInfo.ward || userInfo.thokuthi}</Text>
               </View>
             }
           </View>
@@ -118,9 +122,9 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={s.body}>
 
-          {/* ── Edit section ── */}
+          {/* Edit section */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>{literalT("✏️ Edit Profile")}</Text>
+            <Text style={s.sectionTitle}>{literalT("Edit Profile")}</Text>
 
             <Text style={s.label}>{literalT("Gender")}</Text>
             <View style={s.genderGrid}>
@@ -132,22 +136,22 @@ export default function ProfileScreen({ navigation }) {
             </View>
 
             {[
-            { label: 'Full Name', icon: '👤', value: name, setter: setName, placeholder: 'Enter your name', kb: 'default' },
-            { label: 'Email Address', icon: '✉️', value: email, setter: setEmail, placeholder: 'Enter your email', kb: 'email-address' },
-            { label: 'Phone Number', icon: '📱', value: phone, setter: null, placeholder: 'Enter phone number', kb: 'phone-pad', readonly: true },
-            { label: 'District', icon: '📍', value: district, setter: setDistrict, placeholder: 'District', kb: 'default', readonly: !!userInfo?.district },
-            { label: 'Thokuthi / Constituency', icon: '🏛️', value: thokuthi, setter: setThokuthi, placeholder: 'Enter Thokuthi', kb: 'default', readonly: !!userInfo?.ward },
-            { label: 'Ward No', icon: '🔢', value: wardNo, setter: setWardNo, placeholder: 'Enter ward no.', kb: 'numeric', readonly: !!userInfo?.wardNo },
-            { label: 'Pincode', icon: '📮', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
-            { label: 'Address / Area', icon: '📌', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
+            { label: 'Full Name', icon: 'account-outline', value: name, setter: setName, placeholder: 'Enter your name', kb: 'default' },
+            { label: 'Email Address', icon: 'email-outline', value: email, setter: setEmail, placeholder: 'Enter your email', kb: 'email-address' },
+            { label: 'Phone Number', icon: 'cellphone', value: phone, setter: null, placeholder: 'Enter phone number', kb: 'phone-pad', readonly: true },
+            { label: 'District', icon: 'map-marker-outline', value: district, setter: setDistrict, placeholder: 'District', kb: 'default', readonly: !!userInfo?.district },
+            { label: 'Thokuthi / Constituency', icon: 'bank-outline', value: thokuthi, setter: setThokuthi, placeholder: 'Enter Thokuthi', kb: 'default', readonly: !!userInfo?.ward },
+            { label: 'Ward No', icon: 'numeric', value: wardNo, setter: setWardNo, placeholder: 'Enter ward no.', kb: 'numeric', readonly: !!userInfo?.wardNo },
+            { label: 'Pincode', icon: 'mailbox-outline', value: pincode, setter: setPincode, placeholder: 'Enter pincode', kb: 'numeric' },
+            { label: 'Address / Area', icon: 'map-marker-radius-outline', value: address, setter: setAddress, placeholder: 'Enter address or area', kb: 'default' },
             ...(userInfo?.role === 'worker' || userInfo?.role === 'agent' ?
-            [{ label: 'Work Category', icon: '#', value: workCategory, setter: setWorkCategory, placeholder: 'e.g. Electrician, Plumber', kb: 'default' }] :
+            [{ label: 'Work Category', icon: 'briefcase-outline', value: workCategory, setter: setWorkCategory, placeholder: 'e.g. Electrician, Plumber', kb: 'default' }] :
             [])].
             map(({ label, icon, value, setter, placeholder, kb, readonly }) =>
             <View key={label} style={{ marginBottom: 14 }}>
                 <Text style={s.label}>{label}</Text>
                 <View style={[s.inputRow, readonly && { backgroundColor: '#f3f4f6' }]}>
-                  <Text style={s.inputIcon}>{icon}</Text>
+                  <Icon name={icon} size={19} color={T.textM} style={s.inputIcon} />
                   <TextInput
                   style={[s.input, readonly && { color: T.textM }]}
                   value={value}
@@ -164,7 +168,7 @@ export default function ProfileScreen({ navigation }) {
                         <Text style={{ color: T.gold, fontWeight: 'bold' }}>{literalT("Verify")}</Text>
                       </TouchableOpacity> :
 
-                <Text style={{ color: 'green', fontWeight: 'bold' }}>{literalT("✓ Verified")}</Text>)
+                <Text style={{ color: 'green', fontWeight: 'bold' }}>{literalT("Verified")}</Text>)
 
                 }
                 </View>
@@ -180,42 +184,42 @@ export default function ProfileScreen({ navigation }) {
               <LinearGradient colors={[T.maroon, T.maroonL]} style={s.saveBtnGrad}>
                 {saving ?
                 <ActivityIndicator color="#fff" /> :
-                <Text style={s.saveBtnTxt}>{literalT("💾 Save Changes")}</Text>
+                <Text style={s.saveBtnTxt}>{literalT("Save Changes")}</Text>
                 }
               </LinearGradient>
             </TouchableOpacity>
           </View>
 
-          {/* ── Account info (read-only) ── */}
+          {/* Account info */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>{literalT("📋 Account Info")}</Text>
+            <Text style={s.sectionTitle}>{literalT("Account Info")}</Text>
             {[
             { label: 'Role', value: userInfo?.role?.toUpperCase(), icon: role.icon },
-            { label: 'Gender', value: genderLabel(userInfo?.gender), icon: 'G' },
+            { label: 'Gender', value: genderLabel(userInfo?.gender), icon: 'gender-male-female' },
             ...(userInfo?.role === 'worker' || userInfo?.role === 'agent' ?
-            [{ label: 'Work Category', value: userInfo?.workCategory || '—', icon: '#' }] :
+            [{ label: 'Work Category', value: userInfo?.workCategory || '-', icon: 'briefcase-outline' }] :
             []),
-            { label: 'District', value: userInfo?.district || '—', icon: '📍' },
-            { label: 'Thokuthi', value: userInfo?.ward || userInfo?.thokuthi || '—', icon: '🏠' },
-            { label: 'Ward No', value: userInfo?.wardNo || '—', icon: '🔢' },
-            { label: 'Pincode', value: userInfo?.pincode || '—', icon: '📮' },
-            { label: 'Address', value: userInfo?.address || '—', icon: '📌' }].
+            { label: 'District', value: userInfo?.district || '-', icon: 'map-marker-outline' },
+            { label: 'Thokuthi', value: userInfo?.ward || userInfo?.thokuthi || '-', icon: 'home-map-marker' },
+            { label: 'Ward No', value: userInfo?.wardNo || '-', icon: 'numeric' },
+            { label: 'Pincode', value: userInfo?.pincode || '-', icon: 'mailbox-outline' },
+            { label: 'Address', value: userInfo?.address || '-', icon: 'map-marker-radius-outline' }].
             map(({ label, value, icon }) =>
             <View key={label} style={s.infoRow}>
-                <Text style={s.infoIcon}>{icon}</Text>
+                <Icon name={icon} size={19} color={T.textM} style={s.infoIcon} />
                 <Text style={s.infoLabel}>{label}</Text>
                 <Text style={s.infoVal}>{value}</Text>
               </View>
             )}
           </View>
 
-          {/* ── Language ── */}
+          {/* Language */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>{literalT("🌐 Language / மொழி")}</Text>
+            <Text style={s.sectionTitle}>{literalT("Language")}</Text>
             <View style={langS.row}>
               {[
               { code: 'en', label: 'English', sub: 'English' },
-              { code: 'ta', label: 'தமிழ்', sub: 'Tamil' }].
+              { code: 'ta', label: 'Tamil', sub: 'Tamil' }].
               map(({ code, label, sub }) => {
                 const active = lang === code;
                 return (
@@ -227,38 +231,41 @@ export default function ProfileScreen({ navigation }) {
                     
                     <Text style={[langS.label, active && { color: '#fff' }]}>{label}</Text>
                     <Text style={[langS.sub, active && { color: 'rgba(255,255,255,0.75)' }]}>{sub}</Text>
-                    {active && <View style={langS.checkBadge}><Text style={{ fontSize: 12 }}>✓</Text></View>}
+                    {active && <View style={langS.checkBadge}><Icon name="check" size={14} color="#fff" /></View>}
                   </TouchableOpacity>);
 
               })}
             </View>
           </View>
 
-          {/* ── Pricing & Billing ── */}
+          {/* Pricing & Billing */}
           <TouchableOpacity
             style={[s.section, { flexDirection: 'row', alignItems: 'center' }]}
             onPress={() => navigation.navigate('Billing')}
             activeOpacity={0.85}>
             
-            <Text style={{ fontSize: 24, marginRight: 12 }}>💳</Text>
+            <Icon name="credit-card-outline" size={25} color={T.maroon} style={{ marginRight: 12 }} />
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 16, fontWeight: '800', color: T.text }}>{literalT("Pricing & Billing")}</Text>
               <Text style={{ fontSize: 13, color: T.textM, marginTop: 2 }}>{literalT("Manage your plan and invoices")}</Text>
             </View>
-            <Text style={{ fontSize: 20, color: T.textM }}>›</Text>
+            <Icon name="chevron-right" size={24} color={T.textM} />
           </TouchableOpacity>
 
-          {/* ── Logout ── */}
+          {/* Logout */}
           <TouchableOpacity
             style={[s.logoutBtn, loggingOut && { opacity: 0.6 }]}
             onPress={handleLogout}
             disabled={loggingOut}
             activeOpacity={0.85}>
             
-            <Text style={s.logoutTxt}>{loggingOut ? 'Logging out...' : '🚪 Logout'}</Text>
+            <View style={s.logoutInner}>
+              {!loggingOut && <Icon name="logout" size={20} color={T.red} />}
+              <Text style={s.logoutTxt}>{loggingOut ? 'Logging out...' : 'Logout'}</Text>
+            </View>
           </TouchableOpacity>
 
-          <Text style={s.version}>{literalT("People Connect v1.0 · Tamil Nadu")}</Text>
+          <Text style={s.version}>{literalT("People Connect v1.0 - Tamil Nadu")}</Text>
           <View style={{ height: 32 }} />
         </View>
       </ScrollView>
@@ -280,8 +287,8 @@ const s = StyleSheet.create({
   userEmail: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 12 },
   roleBadge: { paddingHorizontal: 18, paddingVertical: 6, borderRadius: 50, marginBottom: 14 },
   roleTxt: { fontSize: 12, fontWeight: '900', color: '#fff', letterSpacing: 1 },
-  pillRow: { flexDirection: 'row', gap: 10 },
-  pill: { backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   pillTxt: { color: '#fff', fontSize: 12, fontWeight: '600' },
 
   body: { padding: 16 },
@@ -290,7 +297,7 @@ const s = StyleSheet.create({
 
   label: { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 8 },
   inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14 },
-  inputIcon: { fontSize: 16, marginRight: 10 },
+  inputIcon: { width: 22, marginRight: 8 },
   input: { flex: 1, paddingVertical: 14, fontSize: 15, color: T.text },
   genderGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   genderChip: { flexGrow: 1, minWidth: '46%', borderRadius: 14, borderWidth: 1.5, borderColor: T.border, backgroundColor: T.bg, paddingVertical: 12, paddingHorizontal: 10, alignItems: 'center' },
@@ -302,11 +309,12 @@ const s = StyleSheet.create({
   saveBtnTxt: { fontSize: 16, fontWeight: '800', color: '#fff' },
 
   infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.border },
-  infoIcon: { fontSize: 18, width: 32 },
+  infoIcon: { width: 32 },
   infoLabel: { fontSize: 14, color: T.textM, flex: 1 },
   infoVal: { fontSize: 14, fontWeight: '700', color: T.text },
 
   logoutBtn: { backgroundColor: '#fff', borderRadius: 50, borderWidth: 2, borderColor: T.red + '60', paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
+  logoutInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoutTxt: { fontSize: 16, fontWeight: '800', color: T.red },
   version: { textAlign: 'center', fontSize: 12, color: T.textM }
 });
@@ -319,3 +327,4 @@ const langS = StyleSheet.create({
   sub: { fontSize: 12, color: T.textM },
   checkBadge: { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' }
 });
+

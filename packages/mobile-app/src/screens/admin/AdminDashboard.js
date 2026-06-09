@@ -1,12 +1,21 @@
-import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useMemo, useState } from 'react';
+import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
-  TouchableOpacity, ActivityIndicator, Platform, StatusBar } from
+  TouchableOpacity, ActivityIndicator, Platform, StatusBar, Animated, Image } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { complaintAPI, dashboardAPI, notificationAPI, workerAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+
+const APP_LOGO = require('../../../assets/images/icon.png');
+const asArray = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
+};
 
 const STATUS_META = {
   NEW: { label: 'New', color: T.amber, bg: '#FEF3C7' },
@@ -16,16 +25,33 @@ const STATUS_META = {
 };
 
 const CATEGORY_ICONS = {
-  'Street Light Problem': '💡',
-  'Road Damage': '🛣️',
-  'Garbage Issue': '🗑️',
-  'Water Supply Problem': '💧',
-  'Drainage Issue': '🚰',
-  'Public Safety Issue': '🚨',
-  Others: '📝'
+  'Street Light Problem': 'lightbulb-on-outline',
+  'Road Damage': 'road-variant',
+  'Garbage Issue': 'trash-can-outline',
+  'Water Supply Problem': 'water-outline',
+  'Drainage Issue': 'pipe-leak',
+  'Public Safety Issue': 'shield-alert-outline',
+  Others: 'file-document-outline'
 };
 
-function StatTile({ label, value, sub, color, icon, onPress }) {
+const categoryIconName = (category) => ({
+  'Street Light Problem': 'lightbulb-on-outline',
+  'Road Damage': 'road-variant',
+  'Garbage Issue': 'trash-can-outline',
+  'Water Supply Problem': 'water-outline',
+  'Drainage Issue': 'pipe-leak',
+  'Public Safety Issue': 'shield-alert-outline',
+  Others: 'file-document-outline'
+})[category] || 'file-document-outline';
+
+function StatTile({ label, value, sub, color, iconName, onPress }) {
+  const resolvedIcon = iconName || {
+    Total: 'clipboard-list-outline',
+    New: 'alert-circle-outline',
+    Progress: 'progress-clock',
+    Done: 'check-decagram-outline'
+  }[label] || 'chart-box-outline';
+
   return (
     <TouchableOpacity
       style={s.statTile}
@@ -36,7 +62,7 @@ function StatTile({ label, value, sub, color, icon, onPress }) {
       <View style={s.cardTopLight} />
       <View style={s.cardBottomShade} />
       <View style={[s.statIconBox, { backgroundColor: color + '18' }]}>
-        <Text style={s.statIcon}>{icon}</Text>
+        <Icon name={resolvedIcon} size={22} color={color} />
       </View>
       <Text style={s.statValue}>{value}</Text>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
@@ -59,7 +85,10 @@ function SectionHeader({ title, action, onPress }) {
 }
 
 export default function AdminDashboard({ navigation }) {
-  const { userInfo, logout } = useAuth();
+  const { userInfo } = useAuth();
+  const heroAnim = useRef(new Animated.Value(0)).current;
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
   const [stats, setStats] = useState({
     totalComplaints: 0,
     newComplaints: 0,
@@ -97,20 +126,21 @@ export default function AdminDashboard({ navigation }) {
       notificationAPI.getAll({ limit: 5, status: 'ALL' }).catch(() => ({ data: { data: [] } }))]
       );
 
-      let complaints = Array.isArray(recentRes?.data) ? recentRes.data : [];
+      let complaints = asArray(recentRes?.data);
+      const workerList = asArray(workerRes?.data);
       let computedStats = {
         totalComplaints: statRes?.data?.totalComplaints || 0,
         newComplaints: statRes?.data?.pending || 0,
         acceptedComplaints: 0,
         inProgressComplaints: statRes?.data?.inProgress || 0,
         completedComplaints: statRes?.data?.completed || 0,
-        totalWorkers: workerRes.data?.length || 0,
-        activeWorkers: statRes?.data?.activeWorkers || workerRes.data?.filter((w) => w.status === 'active').length || 0
+        totalWorkers: workerList.length,
+        activeWorkers: statRes?.data?.activeWorkers || workerList.filter((w) => w.status === 'active' || w.isActive).length || 0
       };
 
       if (!statRes || !recentRes) {
         const complaintRes = await complaintAPI.getAll().catch(() => ({ data: [] }));
-        const allComplaints = complaintRes.data || [];
+        const allComplaints = asArray(complaintRes.data);
         complaints = allComplaints.slice(0, 10);
         computedStats = {
           ...computedStats,
@@ -123,19 +153,27 @@ export default function AdminDashboard({ navigation }) {
       }
 
       setStats(computedStats);
-      setWeekly(Array.isArray(weeklyRes?.data) ? weeklyRes.data : []);
-      setCategories(Array.isArray(categoryRes?.data) ? categoryRes.data : []);
-      setDistricts(Array.isArray(districtRes?.data) ? districtRes.data : []);
+      setWeekly(asArray(weeklyRes?.data));
+      setCategories(asArray(categoryRes?.data));
+      setDistricts(asArray(districtRes?.data));
       setRecentComplaints(Array.isArray(complaints) ? complaints.slice(0, 6) : []);
 
-      const notifs = notifRes.data?.data || notifRes.data || [];
-      setRecentNotifications(Array.isArray(notifs) ? notifs.slice(0, 3) : []);
+      setRecentNotifications(asArray(notifRes?.data).slice(0, 3));
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {load();}, []);
+  useEffect(() => {
+    load();
+    Animated.timing(heroAnim, { toValue: 1, duration: 760, useNativeDriver: true }).start();
+    Animated.loop(
+      Animated.sequence([
+      Animated.timing(floatAnim, { toValue: 1, duration: 2200, useNativeDriver: true }),
+      Animated.timing(floatAnim, { toValue: 0, duration: 2200, useNativeDriver: true })]
+      )
+    ).start();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -158,6 +196,7 @@ export default function AdminDashboard({ navigation }) {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }, []);
+  const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });
 
   if (loading) {
     return (
@@ -171,13 +210,31 @@ export default function AdminDashboard({ navigation }) {
   return (
     <View style={s.root}>
       <StatusBar backgroundColor={T.maroonD} barStyle="light-content" />
-      <ScrollView
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={s.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} colors={[T.maroon]} />}>
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} colors={[T.maroon]} />}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+        scrollEventThrottle={16}>
         
-        <LinearGradient colors={[T.maroonD, T.maroon, '#B23A2F']} style={s.header}>
-          <View style={s.headerTop}>
+        <LinearGradient colors={['#4a0a0a', '#8B1A1A', '#A52020', '#6B1212']} locations={[0, 0.35, 0.7, 1]} style={s.header}>
+          <View style={s.heroGrid} />
+          <View style={s.heroOrb1} />
+          <View style={s.heroOrb2} />
+          <View style={s.heroRingsWrap}>
+            {[0, 1, 2].map((i) => <View key={i} style={[s.heroRing, { opacity: 0.15 - i * 0.04 }]} />)}
+          </View>
+          <View style={s.heroTop}>
+            <View style={s.appPill}>
+              <Image source={APP_LOGO} style={s.appLogo} />
+              <View style={s.onlineBlip} />
+              <Text style={s.appPillTxt}>{literalT("Admin Dashboard")}</Text>
+            </View>
+          </View>
+          <Animated.View style={[s.headerTop, {
+            opacity: heroAnim,
+            transform: [{ translateY: heroAnim.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }]
+          }]}>
             <View style={s.avatar}>
               <Text style={s.avatarTxt}>{(userInfo?.name || 'A').charAt(0).toUpperCase()}</Text>
             </View>
@@ -185,16 +242,13 @@ export default function AdminDashboard({ navigation }) {
               <Text style={s.greeting}>{greeting}</Text>
               <Text style={s.adminName} numberOfLines={1}>{userInfo?.name || 'Admin'}</Text>
               <View style={s.adminMetaRow}>
-                <Text style={s.adminMetaChip}>📍 {userInfo?.district || 'Tamil Nadu'}</Text>
-                <Text style={s.adminMetaChip}>{literalT("Administration")}</Text>
+                <View style={s.adminMetaChip}><Icon name="map-marker-outline" size={12} color="rgba(255,255,255,0.82)" /><Text style={s.adminMetaChipTxt}>{userInfo?.district || 'Tamil Nadu'}</Text></View>
+                <View style={s.adminMetaChip}><Text style={s.adminMetaChipTxt}>{literalT("Administration")}</Text></View>
               </View>
             </View>
-            <TouchableOpacity onPress={logout} style={s.headerButton} activeOpacity={0.75}>
-              <Text style={s.headerButtonTxt}>⎋</Text>
-            </TouchableOpacity>
-          </View>
+          </Animated.View>
 
-          <View style={s.healthPanel}>
+          <Animated.View style={[s.healthPanel, { transform: [{ translateY: floatY }] }]}>
             <View>
               <Text style={s.healthLabel}>{literalT("Resolution rate")}</Text>
               <Text style={s.healthValue}>{completionRate}%</Text>
@@ -205,14 +259,34 @@ export default function AdminDashboard({ navigation }) {
                 <View style={[s.progressFill, { width: `${completionRate}%` }]} />
               </View>
             </View>
-          </View>
+          </Animated.View>
         </LinearGradient>
 
+        {/* ════ WEATHER & ALERTS ════ */}
+        <View style={s.miniWidgetsRow}>
+          <View style={s.weatherWidget}>
+            <Icon name="weather-partly-cloudy" size={28} color="#38bdf8" />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={s.weatherTemp}>32°C</Text>
+              <Text style={s.weatherDesc}>{literalT("Partly Cloudy")}</Text>
+            </View>
+          </View>
+          <View style={s.alertWidget}>
+            <View style={s.alertIconWrap}>
+              <Icon name="bullhorn-variant-outline" size={20} color="#ea580c" />
+            </View>
+            <View style={{ marginLeft: 10, flex: 1 }}>
+              <Text style={s.alertTitle}>{literalT("City Alert")}</Text>
+              <Text style={s.alertDesc} numberOfLines={1}>{literalT("Heavy rain expected today.")}</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={s.statGrid}>
-          <StatTile label={literalT("Total")} value={stats.totalComplaints} sub={literalT("Complaints")} color={T.maroon} icon="📋" onPress={() => navigation.navigate('AdminComplaints')} />
-          <StatTile label={literalT("New")} value={stats.newComplaints} sub={literalT("Unassigned")} color={T.amber} icon="🆕" onPress={() => navigation.navigate('AdminComplaints', { status: 'NEW' })} />
-          <StatTile label={literalT("Progress")} value={stats.inProgressComplaints} sub={literalT("Active work")} color="#8b5cf6" icon="⚙️" onPress={() => navigation.navigate('AdminComplaints', { status: 'IN PROGRESS' })} />
-          <StatTile label={literalT("Done")} value={stats.completedComplaints} sub={literalT("Resolved")} color={T.green} icon="✓" onPress={() => navigation.navigate('AdminComplaints', { status: 'COMPLETED' })} />
+          <StatTile label={literalT("Total")} value={stats.totalComplaints} sub={literalT("Complaints")} color={T.maroon} iconName="clipboard-list-outline" onPress={() => navigation.navigate('AdminComplaints')} />
+          <StatTile label={literalT("New")} value={stats.newComplaints} sub={literalT("Unassigned")} color={T.amber} iconName="alert-circle-outline" onPress={() => navigation.navigate('AdminComplaints', { status: 'NEW' })} />
+          <StatTile label={literalT("Progress")} value={stats.inProgressComplaints} sub={literalT("Active work")} color="#8b5cf6" iconName="progress-clock" onPress={() => navigation.navigate('AdminComplaints', { status: 'IN PROGRESS' })} />
+          <StatTile label={literalT("Done")} value={stats.completedComplaints} sub={literalT("Resolved")} color={T.green} iconName="check-decagram-outline" onPress={() => navigation.navigate('AdminComplaints', { status: 'COMPLETED' })} />
         </View>
 
         <View style={s.section}>
@@ -221,14 +295,14 @@ export default function AdminDashboard({ navigation }) {
             <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminComplaints')} activeOpacity={0.82}>
               <View style={s.cardTopLight} />
               <View style={s.cardBottomShade} />
-              <Text style={s.opsIcon}>🔎</Text>
+              <View style={s.opsIconBox}><Icon name="magnify" size={25} color={T.maroon} /></View>
               <Text style={s.opsTitle}>{literalT("Review Complaints")}</Text>
               <Text style={s.opsSub}>{literalT("Filter by thokuthi, status, and search.")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminWorkers')} activeOpacity={0.82}>
               <View style={s.cardTopLight} />
               <View style={s.cardBottomShade} />
-              <Text style={s.opsIcon}>👷</Text>
+              <View style={s.opsIconBox}><Icon name="account-hard-hat" size={25} color={T.blue} /></View>
               <Text style={s.opsTitle}>{literalT("Worker Coverage")}</Text>
               <Text style={s.opsSub}>{stats.activeWorkers}/{stats.totalWorkers}{literalT("active,")}{activeWorkerRate}{literalT("% coverage.")}</Text>
             </TouchableOpacity>
@@ -255,8 +329,8 @@ export default function AdminDashboard({ navigation }) {
             })}
           </View>
           <View style={s.legendRow}>
-            <Text style={s.legendText}>{literalT("● Complaints")}</Text>
-            <Text style={[s.legendText, { color: T.green }]}>{literalT("● Resolved")}</Text>
+            <Text style={s.legendText}>{literalT("Complaints")}</Text>
+            <Text style={[s.legendText, { color: T.green }]}>{literalT("Resolved")}</Text>
           </View>
         </View>
 
@@ -269,7 +343,7 @@ export default function AdminDashboard({ navigation }) {
             <View key={cat.name} style={s.categoryCard}>
                 <View style={s.cardTopLight} />
                 <View style={s.cardBottomShade} />
-                <Text style={s.categoryIcon}>{CATEGORY_ICONS[cat.name] || '📝'}</Text>
+                <View style={s.categoryIconBox}><Icon name={categoryIconName(cat.name)} size={24} color={T.maroon} /></View>
                 <Text style={s.categoryName} numberOfLines={2}>{complaintCategoryT(cat.name)}</Text>
                 <Text style={s.categoryValue}>{cat.value}%</Text>
               </View>
@@ -301,7 +375,7 @@ export default function AdminDashboard({ navigation }) {
         </View>
 
         <View style={s.section}>
-          <SectionHeader title={literalT("Recent Complaints")} action={literalT("See all →")} onPress={() => navigation.navigate('AdminComplaints')} />
+          <SectionHeader title={literalT("Recent Complaints")} action={literalT("See all")} onPress={() => navigation.navigate('AdminComplaints')} />
           {recentComplaints.length === 0 ?
           <View style={s.emptyCard}><Text style={s.emptyText}>{literalT("No complaints yet.")}</Text></View> :
           recentComplaints.map((item) => {
@@ -314,11 +388,11 @@ export default function AdminDashboard({ navigation }) {
                 activeOpacity={0.84}>
                 
                 <View style={[s.complaintIconBox, { backgroundColor: meta.bg }]}>
-                  <Text style={s.complaintIcon}>{CATEGORY_ICONS[item.category] || '📝'}</Text>
+                  <Icon name={categoryIconName(item.category)} size={22} color={meta.color} />
                 </View>
                 <View style={s.complaintInfo}>
                   <Text style={s.complaintTitle} numberOfLines={1}>{complaintCategoryT(item.category, item.customCategory)}</Text>
-                  <Text style={s.complaintMeta} numberOfLines={1}>{item.thokuthi || item.ward || 'Thokuthi'} · {item.district || 'District'}</Text>
+                  <Text style={s.complaintMeta} numberOfLines={1}>{item.thokuthi || item.ward || 'Thokuthi'} - {item.district || 'District'}</Text>
                 </View>
                 <View style={[s.statusBadge, { backgroundColor: meta.bg }]}>
                   <Text style={[s.statusText, { color: meta.color }]}>{meta.label}</Text>
@@ -329,14 +403,14 @@ export default function AdminDashboard({ navigation }) {
         </View>
 
         <View style={s.section}>
-          <SectionHeader title={literalT("Notifications")} action={literalT("See all →")} onPress={() => navigation.navigate('AdminNotifications')} />
+          <SectionHeader title={literalT("Notifications")} action={literalT("See all")} onPress={() => navigation.navigate('AdminNotifications')} />
           {recentNotifications.length === 0 ?
           <View style={s.emptyCard}><Text style={s.emptyText}>{literalT("No recent notifications.")}</Text></View> :
           recentNotifications.map((notif) =>
           <TouchableOpacity
-            key={String(notif.id)}
+            key={String(notif.id || notif._id)}
             style={s.notificationCard}
-            onPress={() => navigation.navigate('NotificationDetail', { id: notif.id })}
+            onPress={() => navigation.navigate('NotificationDetail', { id: notif.id || notif._id })}
             activeOpacity={0.84}>
             
               <View style={s.notificationDot} />
@@ -347,7 +421,7 @@ export default function AdminDashboard({ navigation }) {
             </TouchableOpacity>
           )}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>);
 
 }
@@ -358,7 +432,17 @@ const s = StyleSheet.create({
   loadingText: { color: T.textM, marginTop: 10, fontSize: 13 },
   scrollContent: { paddingBottom: 34 },
 
-  header: { paddingTop: Platform.OS === 'ios' ? 58 : 46, paddingHorizontal: 18, paddingBottom: 22 },
+  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingHorizontal: 20, paddingBottom: 30, position: 'relative', overflow: 'hidden' },
+  heroGrid: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05 },
+  heroOrb1: { position: 'absolute', top: -60, right: -50, width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,100,60,0.13)' },
+  heroOrb2: { position: 'absolute', bottom: 10, left: -60, width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(212,160,23,0.10)' },
+  heroRingsWrap: { position: 'absolute', top: 24, right: 24, width: 100, height: 100 },
+  heroRing: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 50, borderWidth: 1, borderColor: '#fff' },
+  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 },
+  appPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.13)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', borderRadius: 50, paddingHorizontal: 14, paddingVertical: 8 },
+  appLogo: { width: 22, height: 22, borderRadius: 11 },
+  onlineBlip: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ade80' },
+  appPillTxt: { fontSize: 12, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
   headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   avatar: { width: 50, height: 50, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   avatarTxt: { color: '#fff', fontSize: 20, fontWeight: '900' },
@@ -367,10 +451,8 @@ const s = StyleSheet.create({
   adminName: { color: '#fff', fontSize: 20, fontWeight: '900', marginTop: 1 },
   adminMeta: { color: 'rgba(255,255,255,0.72)', fontSize: 12, marginTop: 2 },
   adminMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 },
-  adminMetaChip: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
-  headerButton: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', elevation: 6, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
-  headerButtonTxt: { color: '#fff', fontSize: 20, fontWeight: '800' },
-
+  adminMetaChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
+  adminMetaChipTxt: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '700' },
   healthPanel: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', flexDirection: 'row', alignItems: 'center', gap: 14, elevation: 8, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
   healthLabel: { color: 'rgba(255,255,255,0.76)', fontSize: 12, fontWeight: '700' },
   healthValue: { color: T.goldL, fontSize: 34, fontWeight: '900', lineHeight: 38 },
@@ -378,6 +460,16 @@ const s = StyleSheet.create({
   healthNote: { color: 'rgba(255,255,255,0.82)', fontSize: 12, fontWeight: '700', textAlign: 'right' },
   progressTrack: { height: 9, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 5, backgroundColor: T.goldL },
+
+  miniWidgetsRow: { flexDirection: 'row', paddingHorizontal: 16, marginTop: 16, marginBottom: 4, gap: 12 },
+  weatherWidget: { flex: 0.8, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  weatherTemp: { fontSize: 16, fontWeight: '900', color: '#0f172a' },
+  weatherDesc: { fontSize: 11, fontWeight: '600', color: '#64748b' },
+  
+  alertWidget: { flex: 1.2, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fffaf0', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#fef08a', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  alertIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#fef9c3', alignItems: 'center', justifyContent: 'center' },
+  alertTitle: { fontSize: 13, fontWeight: '800', color: '#9a3412' },
+  alertDesc: { fontSize: 11, fontWeight: '500', color: '#b45309' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 14, paddingTop: 14 },
   statTile: { width: '48%', height: 136, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
@@ -394,7 +486,7 @@ const s = StyleSheet.create({
 
   opsGrid: { flexDirection: 'row', gap: 10 },
   opsCard: { flex: 1, height: 132, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
-  opsIcon: { fontSize: 26, marginBottom: 8 },
+  opsIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   opsTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
   opsSub: { color: T.textM, fontSize: 11, lineHeight: 16, marginTop: 4 },
 
@@ -410,7 +502,7 @@ const s = StyleSheet.create({
 
   categoryRow: { gap: 10, paddingRight: 14 },
   categoryCard: { width: 118, height: 128, backgroundColor: '#fff', borderRadius: 18, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
-  categoryIcon: { fontSize: 24, marginBottom: 8 },
+  categoryIconBox: { width: 42, height: 42, borderRadius: 13, backgroundColor: T.maroon + '12', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   categoryName: { color: T.text, fontSize: 12, fontWeight: '800', lineHeight: 16, minHeight: 32 },
   categoryValue: { color: T.maroon, fontSize: 20, fontWeight: '900', marginTop: 8 },
   inlineEmpty: { width: '100%', backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },

@@ -15,6 +15,13 @@ const getConfig = () => {
   const u = JSON.parse(localStorage.getItem("userInfo") || "{}");
   return { headers: { Authorization: `Bearer ${u.token}` } };
 };
+const parseNotifications = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.notifications)) return payload.notifications;
+  if (Array.isArray(payload?.notifications?.data)) return payload.notifications.data;
+  return [];
+};
 
 // ── ALL 38 TAMIL NADU DISTRICTS ─────────────────────────────────────
 const TN_DISTRICTS = [
@@ -397,7 +404,7 @@ export default function AdminDashboard() {
     if (ok(7)) setCamps(ok(7));
     if (ok(8)) setVideos(ok(8));
     if (ok(9)) setExams(ok(9));
-    if (ok(10)) setNotifications(ok(10));
+    setNotifications(parseNotifications(ok(10)));
     if (ok(11)) setAnalyticsStats(ok(11));
     if (ok(12)) setCertCount(ok(12).count || 0);
   };

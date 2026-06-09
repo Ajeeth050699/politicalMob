@@ -9,6 +9,8 @@ const { width, height } = Dimensions.get('window');
 const APP_LOGO = require('../../../assets/images/icon.png');
 
 export default function SplashScreen({ onFinish }) {
+  const hasFinishedRef = useRef(false);
+
   // Animation values
   const logoScale = useRef(new Animated.Value(0.3)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -26,6 +28,18 @@ export default function SplashScreen({ onFinish }) {
 
   useEffect(() => {
     StatusBar.setHidden(true);
+
+    // Safety fallback: if animation callback never fires, finish anyway.
+    const fallbackTimer = setTimeout(() => {
+      if (hasFinishedRef.current) return;
+      hasFinishedRef.current = true;
+      try {
+        StatusBar.setHidden(false);
+        if (Platform.OS === 'android') StatusBar.setBarStyle('light-content');
+      } catch (e) {}
+      setTimeout(() => onFinish?.(), 0);
+    }, 6000);
+
 
     // Pulse rings
     Animated.loop(
@@ -86,11 +100,16 @@ export default function SplashScreen({ onFinish }) {
     })]
     ).start(() => {
       // Done
+      if (hasFinishedRef.current) return;
+      hasFinishedRef.current = true;
       StatusBar.setHidden(false);
       if (Platform.OS === 'android') StatusBar.setBarStyle('light-content');
       setTimeout(() => onFinish?.(), 300);
     });
+
+    return () => clearTimeout(fallbackTimer);
   }, []);
+
 
   return (
     <View style={s.root}>

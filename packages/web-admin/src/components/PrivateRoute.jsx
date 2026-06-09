@@ -2,7 +2,12 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const PrivateRoute = () => {
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+  let userInfo = null;
+  try {
+    userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+  } catch {
+    localStorage.removeItem('userInfo');
+  }
   return ['admin', 'superadmin'].includes(userInfo?.role) ? <Outlet /> : <Navigate to="/login" replace />;
 };
 

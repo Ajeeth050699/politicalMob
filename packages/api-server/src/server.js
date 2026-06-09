@@ -21,6 +21,8 @@ const emergencyRoutes    = require('./routes/emergencyRoutes');
 const systemRoutes       = require('./routes/systemRoutes');
 const billingRoutes      = require('./routes/billingRoutes');
 const realtimeRoutes     = require('./routes/realtimeRoutes');
+const developerRoutes    = require('./routes/developerRoutes');
+const SystemSettings     = require('./models/systemSettingsModel');
 
 const app = express();
 
@@ -54,6 +56,43 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static('uploads'));
 
+
+// Global Maintenance Middleware
+const jwt = require('jsonwebtoken');
+const User = require('./models/userModel');
+
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api/system/public-settings') || req.path.startsWith('/api/developer')) {
+    return next();
+  }
+  try {
+    const settings = await SystemSettings.findOne();
+    if (settings && settings.maintenanceMode && settings.maintenanceMode.api) {
+      if (req.path === '/api/auth/login') {
+        return next();
+      }
+      
+      // Allow developer bypass
+      if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+          const token = req.headers.authorization.split(' ')[1];
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          const user = await User.findById(decoded.id);
+          if (user && user.role === 'developer') {
+             return next();
+          }
+        } catch (e) {
+          // ignore error, fall through to 503
+        }
+      }
+
+      return res.status(503).json({ message: settings.maintenanceMode.message || 'API is under maintenance' });
+    }
+    next();
+  } catch (err) {
+    next();
+  }
+});
 app.use('/api/auth',          authRoutes);
 app.use('/api/users',         userRoutes);
 app.use('/api/dashboard',     dashboardRoutes);
@@ -65,6 +104,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics',     analyticsRoutes);
 app.use('/api/emergency',     emergencyRoutes);
 app.use('/api/system',        systemRoutes);
+app.use('/api/developer',     developerRoutes);
 app.use('/api/billing',       billingRoutes);
 app.use('/api/realtime',      realtimeRoutes);
 

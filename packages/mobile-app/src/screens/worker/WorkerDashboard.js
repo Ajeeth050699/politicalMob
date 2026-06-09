@@ -1,37 +1,230 @@
-import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useState } from 'react';
+import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, RefreshControl,
-  TouchableOpacity, ActivityIndicator, Platform, StatusBar } from
-'react-native';
+  View, Text, StyleSheet, RefreshControl,
+  TouchableOpacity, ActivityIndicator, Platform, StatusBar, Animated, Image, Dimensions
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { complaintAPI } from '../../services/api';
 import { T, STATUS_COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 
-const CATEGORY_ICONS = {
-  'Street Light Problem': '💡',
-  'Road Damage': '🛣️',
-  'Garbage Issue': '🗑️',
-  'Water Supply Problem': '💧',
-  'Drainage Issue': '🚰',
-  'Public Safety Issue': '🚨',
-  'Others': '📝'
+const { width } = Dimensions.get('window');
+const APP_LOGO = require('../../../assets/images/icon.png');
+const QA_CARD_WIDTH = Math.floor((width - 52) / 3);
+
+const asArray = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
 };
 
+const CATEGORY_ICONS = {
+  'Street Light Problem': 'lightbulb-on-outline',
+  'Road Damage': 'road-variant',
+  'Garbage Issue': 'trash-can-outline',
+  'Water Supply Problem': 'water-outline',
+  'Drainage Issue': 'pipe-leak',
+  'Public Safety Issue': 'shield-alert-outline',
+  Others: 'file-document-outline'
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PULSE DOT
+// ─────────────────────────────────────────────────────────────────────────────
+function PulseDot({ color }) {
+  const pulse = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1.5, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true })
+      ])
+    ).start();
+  }, []);
+  return <Animated.View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color, transform: [{ scale: pulse }] }} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANIMATED LOOP BG
+// ─────────────────────────────────────────────────────────────────────────────
+function QuickActionBg() {
+  const orb1X = useRef(new Animated.Value(0)).current;
+  const orb1Y = useRef(new Animated.Value(0)).current;
+  const orb2X = useRef(new Animated.Value(0)).current;
+  const orb2Y = useRef(new Animated.Value(0)).current;
+  const orb3X = useRef(new Animated.Value(0)).current;
+  const orb3Y = useRef(new Animated.Value(0)).current;
+  const shimmer = useRef(new Animated.Value(0)).current;
+  const wave = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(Animated.sequence([
+      Animated.parallel([
+        Animated.timing(orb1X, { toValue: 18, duration: 3500, useNativeDriver: true }),
+        Animated.timing(orb1Y, { toValue: -14, duration: 3500, useNativeDriver: true })
+      ]),
+      Animated.parallel([
+        Animated.timing(orb1X, { toValue: -10, duration: 3500, useNativeDriver: true }),
+        Animated.timing(orb1Y, { toValue: 10, duration: 3500, useNativeDriver: true })
+      ])
+    ])).start();
+
+    Animated.loop(Animated.sequence([
+      Animated.parallel([
+        Animated.timing(orb2X, { toValue: -20, duration: 2800, useNativeDriver: true }),
+        Animated.timing(orb2Y, { toValue: 12, duration: 2800, useNativeDriver: true })
+      ]),
+      Animated.parallel([
+        Animated.timing(orb2X, { toValue: 14, duration: 2800, useNativeDriver: true }),
+        Animated.timing(orb2Y, { toValue: -10, duration: 2800, useNativeDriver: true })
+      ])
+    ])).start();
+
+    Animated.loop(Animated.sequence([
+      Animated.parallel([
+        Animated.timing(orb3X, { toValue: 12, duration: 4000, useNativeDriver: true }),
+        Animated.timing(orb3Y, { toValue: 8, duration: 4000, useNativeDriver: true })
+      ]),
+      Animated.parallel([
+        Animated.timing(orb3X, { toValue: -8, duration: 4000, useNativeDriver: true }),
+        Animated.timing(orb3Y, { toValue: -12, duration: 4000, useNativeDriver: true })
+      ])
+    ])).start();
+
+    Animated.loop(Animated.sequence([
+      Animated.timing(shimmer, { toValue: 1, duration: 2400, useNativeDriver: true }),
+      Animated.timing(shimmer, { toValue: 0, duration: 2400, useNativeDriver: true })
+    ])).start();
+
+    Animated.loop(Animated.sequence([
+      Animated.timing(wave, { toValue: 1, duration: 3000, useNativeDriver: true }),
+      Animated.timing(wave, { toValue: 0, duration: 3000, useNativeDriver: true })
+    ])).start();
+  }, []);
+
+  const shimmerOpacity = shimmer.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.04, 0.10, 0.04] });
+  const shimmerX = shimmer.interpolate({ inputRange: [0, 1], outputRange: [-width, width * 0.6] });
+  const waveScale = wave.interpolate({ inputRange: [0, 1], outputRange: [1, 1.15] });
+  const waveOpacity = wave.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.08, 0.18, 0.08] });
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <LinearGradient colors={['#FFF5F0', '#FEF0E8', '#FDE8E0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      <View style={qa.dotGrid} pointerEvents="none">
+        {Array.from({ length: 48 }).map((_, i) => <View key={i} style={qa.dot} />)}
+      </View>
+      <Animated.View style={[qa.orb, qa.orb1, { transform: [{ translateX: orb1X }, { translateY: orb1Y }] }]}>
+        <LinearGradient colors={['rgba(139,26,26,0.18)', 'transparent']} style={StyleSheet.absoluteFill} />
+      </Animated.View>
+      <Animated.View style={[qa.orb, qa.orb2, { transform: [{ translateX: orb2X }, { translateY: orb2Y }] }]}>
+        <LinearGradient colors={['rgba(212,160,23,0.14)', 'transparent']} style={StyleSheet.absoluteFill} />
+      </Animated.View>
+      <Animated.View style={[qa.orb, qa.orb3, { transform: [{ translateX: orb3X }, { translateY: orb3Y }] }]}>
+        <LinearGradient colors={['rgba(236,72,153,0.08)', 'transparent']} style={StyleSheet.absoluteFill} />
+      </Animated.View>
+      <Animated.View style={[qa.ripple, { transform: [{ scale: waveScale }], opacity: waveOpacity }]} />
+      <Animated.View style={[qa.shimmerLine, { transform: [{ translateX: shimmerX }], opacity: shimmerOpacity }]} />
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANIMATED CARDS
+// ─────────────────────────────────────────────────────────────────────────────
+function ActionCard({ item, index, onPress }) {
+  const scale = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const pressScl = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scale, { toValue: 1, tension: 80, friction: 6, delay: index * 80, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 300, delay: index * 80, useNativeDriver: true })
+    ]).start();
+
+    Animated.loop(Animated.sequence([
+      Animated.timing(glowAnim, { toValue: 1, duration: 2000 + index * 300, delay: index * 200, useNativeDriver: true }),
+      Animated.timing(glowAnim, { toValue: 0, duration: 2000 + index * 300, useNativeDriver: true })
+    ])).start();
+  }, []);
+
+  const onIn = () => Animated.spring(pressScl, { toValue: 0.91, useNativeDriver: true }).start();
+  const onOut = () => Animated.spring(pressScl, { toValue: 1, useNativeDriver: true }).start();
+  const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.12] });
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ perspective: 900 }, { scale }], width: QA_CARD_WIDTH }}>
+      <Animated.View style={{ transform: [{ scale: pressScl }] }}>
+        <TouchableOpacity style={s.qCard} onPress={onPress} onPressIn={onIn} onPressOut={onOut} activeOpacity={1}>
+          <View style={[s.qAccentBar, { backgroundColor: item.color }]} />
+          <Animated.View style={[StyleSheet.absoluteFill, s.qCardGlow, { backgroundColor: item.color, opacity: glowOpacity }]} />
+          <View style={s.qCardTopLight} />
+          <View style={s.qCardBottomShade} />
+          <View style={[s.qIconBox, { backgroundColor: item.bg }]}>
+            <Icon name={item.icon} size={28} color={item.color} />
+          </View>
+          <Text style={s.qLabel}>{item.label}</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
+function StatCard({ value, label, color, icon, delay, bg }) {
+  const anim = useRef(new Animated.Value(0)).current;
+  const count = useRef(new Animated.Value(0)).current;
+  const [displayVal, setDisplayVal] = useState(0);
+
+  useEffect(() => {
+    Animated.timing(anim, { toValue: 1, duration: 600, delay, useNativeDriver: true }).start();
+    Animated.timing(count, { toValue: value, duration: 1200, delay: delay + 200, useNativeDriver: false }).start();
+    const id = count.addListener(({ value: v }) => setDisplayVal(Math.round(v)));
+    return () => count.removeListener(id);
+  }, [value, delay]);
+
+  return (
+    <Animated.View style={[s.newStatCard, { backgroundColor: bg || '#fff', opacity: anim, transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
+      <View style={s.newStatTop}>
+        <View style={[s.newStatIconWrap, { backgroundColor: '#fff' }]}>
+          <Icon name={icon} size={20} color={color} />
+        </View>
+        <Text style={[s.newStatValue, { color }]}>{displayVal}</Text>
+      </View>
+      <Text style={s.newStatLabel}>{label}</Text>
+    </Animated.View>
+  );
+}
+
 export default function WorkerDashboard({ navigation }) {
-  const { userInfo, logout } = useAuth();
+  const { userInfo } = useAuth();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const heroAnim = useRef(new Animated.Value(0)).current;
+  const floatAnim = useRef(new Animated.Value(0)).current;
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   const load = async () => {
     try {
       const { data } = await complaintAPI.getAll();
-      setComplaints(data);
+      setComplaints(asArray(data));
     } catch {/* silent */} finally {setLoading(false);}
   };
 
-  useEffect(() => {load();}, []);
+  useEffect(() => {
+    load();
+    Animated.timing(heroAnim, { toValue: 1, duration: 800, useNativeDriver: true }).start();
+    Animated.loop(Animated.sequence([
+      Animated.timing(floatAnim, { toValue: 1, duration: 2200, useNativeDriver: true }),
+      Animated.timing(floatAnim, { toValue: 0, duration: 2200, useNativeDriver: true })
+    ])).start();
+  }, []);
+
   const onRefresh = async () => {setRefreshing(true);await load();setRefreshing(false);};
 
   const newCnt = complaints.filter((c) => c.status === 'NEW').length;
@@ -51,283 +244,400 @@ export default function WorkerDashboard({ navigation }) {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const greetEmoji = hour < 12 ? '🌅' : hour < 17 ? '☀️' : '🌙';
 
-  const handleLogout = () => {
-    logout();
-  };
+  const headerOpacity = scrollY.interpolate({ inputRange: [0, 80], outputRange: [1, 0.75], extrapolate: 'clamp' });
+  const headerTransY = scrollY.interpolate({ inputRange: [0, 120], outputRange: [0, -30], extrapolate: 'clamp' });
+  const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });
 
   if (loading) return (
     <View style={s.center}>
       <ActivityIndicator color={T.maroon} size="large" />
-    </View>);
-
+    </View>
+  );
 
   return (
     <View style={s.root}>
       <StatusBar backgroundColor={T.maroon} barStyle="light-content" />
-      <ScrollView
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} />}>
+        contentContainerStyle={s.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} />}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+        scrollEventThrottle={16}>
         
-        {/* ── Hero Header ── */}
-        <LinearGradient colors={[T.maroon, T.maroonL, '#B03A3A']} style={s.header}>
-          <View style={s.headerTop}>
-            <View style={s.workerAvatar}>
-              <Text style={{ fontSize: 24 }}>👷</Text>
+        {/* ════ HERO HEADER ════ */}
+        <LinearGradient colors={['#4a0a0a', '#8B1A1A', '#A52020', '#6B1212']} locations={[0, 0.35, 0.7, 1]} style={s.hero}>
+          <View style={s.heroGrid} />
+          <View style={s.heroOrb1} />
+          <View style={s.heroOrb2} />
+          <View style={s.heroRingsWrap}>
+            {[0, 1, 2].map((i) => <View key={i} style={[s.heroRing, { opacity: 0.15 - i * 0.04 }]} />)}
+          </View>
+
+          <Animated.View style={{ opacity: headerOpacity, transform: [{ translateY: headerTransY }] }}>
+            <View style={s.heroTop}>
+              <View style={s.appPill}>
+                <Image source={APP_LOGO} style={s.appLogo} />
+                <View style={[s.onlineBlip, { backgroundColor: isOnline ? '#4ade80' : '#9ca3af' }]} />
+                <Text style={s.appPillTxt}>{literalT("Worker Dashboard")}</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <TouchableOpacity onPress={() => setIsOnline(!isOnline)} style={[s.dutyToggle, !isOnline && s.dutyToggleOff]}>
+                  <View style={[s.dutyDot, { backgroundColor: isOnline ? '#4ade80' : '#f87171' }]} />
+                  <Text style={s.dutyToggleTxt}>{isOnline ? 'Online' : 'Offline'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={s.avatarBtn}>
+                  <Icon name="account-hard-hat" size={22} color="#fff" />
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={s.greetingTxt}>{greeting},</Text>
-              <Text style={s.workerName}>{userInfo?.name}</Text>
+
+            <Animated.View style={{ opacity: heroAnim, transform: [{ translateY: heroAnim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }}>
+              <Text style={s.greetLabel}>{greetEmoji} {greeting},</Text>
+              <Text style={s.greetName} numberOfLines={1}>{userInfo?.name || 'Worker'}</Text>
               <View style={s.locationRow}>
-                <Text style={s.locationChip}>{literalT("🏠 Thokuthi")} {userInfo?.thokuthi || userInfo?.ward || 'N/A'}</Text>
-                <Text style={s.locationChip}>📍 {userInfo?.district || 'N/A'}</Text>
+                <Text style={s.locationChip}>📍 {userInfo?.district || 'No District'}</Text>
+                <Text style={s.locationChip}>{literalT("Thokuthi")} {userInfo?.thokuthi || userInfo?.ward || '—'}</Text>
               </View>
-            </View>
-            <TouchableOpacity onPress={handleLogout} style={s.logoutBtn}>
-              <Text style={s.logoutTxt}>🚪</Text>
-            </TouchableOpacity>
-          </View>
+            </Animated.View>
 
-          {/* Stats grid */}
-          <View style={s.statsGrid}>
-            {[
-            { label: 'New', count: newCnt, color: '#fca5a5', icon: '🆕' },
-            { label: 'Accepted', count: acceptedCnt, color: '#fde68a', icon: '✓' },
-            { label: 'Progress', count: progressCnt, color: '#93c5fd', icon: '⚙️' },
-            { label: 'Done', count: doneCnt, color: '#86efac', icon: '✅' }].
-            map(({ label, count, color, icon }) =>
-            <View key={label} style={s.statCard}>
-                <View style={s.cardTopLight} />
-                <View style={s.cardBottomShade} />
-                <Text style={{ fontSize: 18, marginBottom: 4 }}>{icon}</Text>
-                <Text style={[s.statNum, { color }]}>{count}</Text>
-                <Text style={s.statLabel}>{label}</Text>
+            {/* NEW GRID STATS CARD */}
+            <Animated.View style={[s.newStatsWrapper, { transform: [{ translateY: floatY }] }]}>
+              {/* RESOLUTION RATE */}
+              <View style={s.newProgressCard}>
+                <View style={s.newProgressTextRow}>
+                  <Text style={s.newProgressTitle}>{literalT("Overall Resolution")}</Text>
+                  <Text style={s.newProgressValue}>{rate}%</Text>
+                </View>
+                <View style={s.newProgressBarWrap}>
+                  <LinearGradient colors={['#fbbf24', '#22c55e']} start={{x:0, y:0}} end={{x:1, y:0}} style={[s.newProgressBarFill, { width: `${rate}%` }]} />
+                </View>
               </View>
-            )}
-          </View>
 
-          {/* Resolution rate */}
-          <View style={s.rateCard}>
-            <View style={s.rateLeft}>
-              <Text style={s.rateTitle}>{literalT("Resolution Rate")}</Text>
-              <Text style={s.rateNum}>{rate}%</Text>
-            </View>
-            <View style={s.rateBarBg}>
-              <View style={[s.rateBarFill, { width: `${rate}%` }]} />
-            </View>
-          </View>
+              <View style={s.newStatsGrid}>
+                <StatCard value={newCnt} label={literalT("New")} color="#ef4444" icon="alert-circle-outline" delay={200} bg="#fef2f2" />
+                <StatCard value={acceptedCnt} label={literalT("Accepted")} color="#eab308" icon="check-circle-outline" delay={300} bg="#fefce8" />
+                <StatCard value={progressCnt} label={literalT("Progress")} color="#3b82f6" icon="progress-clock" delay={400} bg="#eff6ff" />
+                <StatCard value={doneCnt} label={literalT("Done")} color="#22c55e" icon="check-decagram-outline" delay={500} bg="#f0fdf4" />
+              </View>
+            </Animated.View>
+          </Animated.View>
         </LinearGradient>
 
         {(!userInfo?.district || !userInfo?.ward || !userInfo?.thokuthi) &&
         <TouchableOpacity
-          style={{ backgroundColor: '#FEF3C7', marginHorizontal: 16, marginTop: 16, padding: 16, borderRadius: 14, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#F59E0B40' }}
+          style={s.warningAlert}
           onPress={() => navigation.navigate('Profile')}
           activeOpacity={0.8}>
-          
             <Text style={{ fontSize: 24, marginRight: 12 }}>⚠️</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontWeight: '800', color: '#92400e', marginBottom: 2 }}>{literalT("Complete your profile")}</Text>
-              <Text style={{ fontSize: 12, color: '#92400e' }}>{literalT("Tap here to update your Ward, Thokuthi, and District to receive proper complaint assignments.")}</Text>
+              <Text style={s.warningTitle}>{literalT("Complete your profile")}</Text>
+              <Text style={s.warningDesc}>{literalT("Tap here to update your Ward, Thokuthi, and District to receive proper assignments.")}</Text>
             </View>
-            <Text style={{ fontSize: 20, color: '#92400e' }}>›</Text>
-          </TouchableOpacity>
+            <Text style={{ fontSize: 20, color: '#9a3412' }}>›</Text>
+        </TouchableOpacity>
         }
 
+        {/* ════ WEATHER & ALERTS ════ */}
+        <View style={s.miniWidgetsRow}>
+          <View style={s.weatherWidget}>
+            <Icon name="weather-partly-cloudy" size={28} color="#38bdf8" />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={s.weatherTemp}>32°C</Text>
+              <Text style={s.weatherDesc}>{literalT("Partly Cloudy")}</Text>
+            </View>
+          </View>
+          <View style={s.alertWidget}>
+            <View style={s.alertIconWrap}>
+              <Icon name="bullhorn-variant-outline" size={20} color="#ea580c" />
+            </View>
+            <View style={{ marginLeft: 10, flex: 1 }}>
+              <Text style={s.alertTitle}>{literalT("City Alert")}</Text>
+              <Text style={s.alertDesc} numberOfLines={1}>{literalT("Heavy rain expected today.")}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ════ QUICK ACTIONS ════ */}
+        <View style={[s.section, s.qaSection]}>
+          <QuickActionBg />
+          <View style={s.sectionHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <PulseDot color={T.maroon} />
+              <Text style={s.sectionTitle}>{literalT("Quick Actions")}</Text>
+            </View>
+            <View style={s.sectionLine} />
+          </View>
+          <View style={s.qGrid}>
+            {[
+              { icon: 'clipboard-list-outline', label: 'All Tasks', color: '#ec4899', route: 'Complaints', bg: '#fce7f3' },
+              { icon: 'map-marker-radius-outline', label: 'Map View', color: '#8b5cf6', route: 'Complaints', bg: '#ede9fe' },
+              { icon: 'account-cog-outline', label: 'Settings', color: '#3b82f6', route: 'Profile', bg: '#dbeafe' }
+            ].map((action, i) => (
+              <ActionCard key={action.label} item={action} index={i} onPress={() => navigation.navigate(action.route)} />
+            ))}
+          </View>
+        </View>
+
+        {/* ════ TODAY'S FOCUS ════ */}
         <View style={s.section}>
           <View style={s.focusCard}>
-            <View style={s.focusTop}>
-              <View>
-                <Text style={s.focusKicker}>{literalT("Today focus")}</Text>
-                <Text style={s.focusTitle}>{openCnt}{literalT("open task")}{openCnt === 1 ? '' : 's'}</Text>
-              </View>
-              <View style={s.focusPill}>
-                <Text style={s.focusPillTxt}>{rate}{literalT("% resolved")}</Text>
+            <View style={s.focusHeader}>
+              <Text style={s.focusTitle}>{openCnt} {literalT("Pending Tasks")}</Text>
+              <View style={s.focusBadge}>
+                <Text style={s.focusBadgeTxt}>{literalT("Priority")}</Text>
               </View>
             </View>
+
             {nextComplaint ?
             <TouchableOpacity
-              style={s.nextTask}
+              style={s.nextTaskBox}
               onPress={() => navigation.navigate('ComplaintDetail', { id: nextComplaint._id || nextComplaint.id })}
-              activeOpacity={0.86}>
-              
-                <View style={s.nextIcon}>
-                  <Text style={{ fontSize: 20 }}>{CATEGORY_ICONS[nextComplaint.category] || '📝'}</Text>
+              activeOpacity={0.8}>
+                <LinearGradient colors={[T.maroon + '15', 'transparent']} style={StyleSheet.absoluteFill} />
+                <View style={[s.nextIconBox, { backgroundColor: '#fff' }]}>
+                  <Icon name={CATEGORY_ICONS[nextComplaint.category] || CATEGORY_ICONS.Others} size={24} color={T.maroon} />
                 </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={s.nextTitle} numberOfLines={1}>{complaintCategoryT(nextComplaint.category, nextComplaint.customCategory)}</Text>
-                  <Text style={s.nextMeta} numberOfLines={1}>{nextComplaint.status} · {nextComplaint.thokuthi || 'Thokuthi'} · {nextComplaint.district || 'District'}</Text>
+                <View style={s.nextTaskInfo}>
+                  <Text style={s.nextTaskTitle} numberOfLines={1}>{complaintCategoryT(nextComplaint.category, nextComplaint.customCategory)}</Text>
+                  <Text style={s.nextTaskMeta} numberOfLines={1}>{nextComplaint.status} • {nextComplaint.thokuthi || 'Unknown'}</Text>
                 </View>
-                <Text style={s.nextArrow}>›</Text>
-              </TouchableOpacity> :
-
-            <View style={s.nextTask}>
-                <View style={s.nextIcon}><Text style={{ fontSize: 20 }}>✓</Text></View>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.nextTitle}>{literalT("No pending field work")}</Text>
-                  <Text style={s.nextMeta}>{literalT("New assignments will appear here.")}</Text>
+                <View style={s.nextArrowWrap}>
+                  <Text style={{ fontSize: 20, color: '#fff' }}>→</Text>
                 </View>
-              </View>
+            </TouchableOpacity> :
+            <View style={s.emptyFocusBox}>
+                <Icon name="check-circle" size={36} color="#22c55e" />
+                <Text style={s.emptyFocusTitle}>{literalT("All caught up!")}</Text>
+                <Text style={s.emptyFocusSub}>{literalT("No pending field work for now.")}</Text>
+            </View>
             }
           </View>
         </View>
 
-        {/* ── Quick actions ── */}
+        {/* ════ WEEKLY PERFORMANCE ════ */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>{literalT("Quick Actions")}</Text>
-          <View style={s.qGrid}>
-            {[
-            { icon: '📋', label: 'All Complaints', color: T.maroon, onPress: () => navigation.navigate('Complaints') },
-            { icon: '⚡', label: 'Start Work', color: '#8b5cf6', onPress: () => navigation.navigate('Complaints') },
-            { icon: '👤', label: 'My Profile', color: T.blue, onPress: () => navigation.navigate('Profile') }].
-            map(({ icon, label, color, onPress }) =>
-            <TouchableOpacity key={label} style={s.qCard} onPress={onPress} activeOpacity={0.8}>
-                <View style={s.cardTopLight} />
-                <View style={s.cardBottomShade} />
-                <View style={[s.qIcon, { backgroundColor: color + '15' }]}>
-                  <Text style={{ fontSize: 24 }}>{icon}</Text>
-                </View>
-                <Text style={s.qLabel}>{label}</Text>
-              </TouchableOpacity>
-            )}
+          <View style={s.performanceCard}>
+            <LinearGradient colors={['#6366f1', '#4f46e5']} start={{x:0, y:0}} end={{x:1, y:1}} style={StyleSheet.absoluteFill} />
+            <View style={s.perfIconWrap}>
+              <Icon name="trophy-award" size={36} color="#fbbf24" />
+            </View>
+            <View style={s.perfContent}>
+              <Text style={s.perfTitle}>{literalT("Great Job")}, {userInfo?.name?.split(' ')[0] || 'Worker'}! 🏆</Text>
+              <Text style={s.perfSub}>{literalT("You have resolved")} {doneCnt} {literalT("complaints this week.")}</Text>
+            </View>
           </View>
         </View>
 
+        {/* ════ WORK MIX ════ */}
         <View style={s.section}>
-          <View style={s.sectionRow}>
-            <Text style={s.sectionTitle}>{literalT("Work Mix")}</Text>
-            <Text style={s.sectionHint}>{complaints.length}{literalT("total")}</Text>
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>📊 {literalT("Work Mix")}</Text>
+            <Text style={s.sectionSubTitle}>{complaints.length} {literalT("Total")}</Text>
           </View>
+          
           {categoryStats.length === 0 ?
-          <View style={s.mixEmpty}>
-              <Text style={s.mixEmptyTitle}>{literalT("No category data yet")}</Text>
-              <Text style={s.mixEmptySub}>{literalT("Accepted complaints will build your work mix.")}</Text>
+            <View style={s.emptyCard}>
+              <Text style={s.emptyCardText}>{literalT("No category data yet")}</Text>
             </View> :
-
-          <View style={s.mixGrid}>
-              {categoryStats.map(([category, count]) =>
-            <View key={category} style={s.mixCard}>
-                  <View style={s.cardTopLight} />
-                  <View style={s.cardBottomShade} />
-                  <Text style={s.mixIcon}>{CATEGORY_ICONS[category] || '📝'}</Text>
-                  <Text style={s.mixName} numberOfLines={2}>{complaintCategoryT(category)}</Text>
-                  <Text style={s.mixCount}>{count}</Text>
+            <View style={s.mixGrid}>
+              {categoryStats.map(([category, count], idx) => (
+                <View key={idx} style={s.mixCard}>
+                  <View style={s.mixCardTopLight} />
+                  <View style={s.mixIcon}>
+                    <Icon name={CATEGORY_ICONS[category] || CATEGORY_ICONS.Others} size={24} color={T.maroon} />
+                  </View>
+                  <View style={s.mixInfo}>
+                    <Text style={s.mixCount}>{count}</Text>
+                    <Text style={s.mixName} numberOfLines={2}>{complaintCategoryT(category)}</Text>
+                  </View>
                 </View>
-            )}
+              ))}
             </View>
           }
         </View>
 
-        {/* ── Recent complaints ── */}
-        <View style={[s.section, { marginBottom: 32 }]}>
-          <View style={s.sectionRow}>
-            <Text style={s.sectionTitle}>{literalT("Recent Complaints")}</Text>
+        {/* ════ RECENT TASKS ════ */}
+        <View style={[s.section, { marginBottom: 40 }]}>
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>📋 {literalT("Recent Tasks")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Complaints')}>
-              <Text style={s.seeAll}>{literalT("See all →")}</Text>
+              <Text style={s.seeAllBtn}>{literalT("See all")}</Text>
             </TouchableOpacity>
           </View>
 
           {complaints.length === 0 ?
-          <View style={s.empty}>
-              <Text style={{ fontSize: 40, marginBottom: 10 }}>📭</Text>
-              <Text style={s.emptyTxt}>{literalT("No complaints assigned yet")}</Text>
+            <View style={s.emptyCard}>
+              <Icon name="clipboard-text-off-outline" size={36} color="#9ca3af" />
+              <Text style={s.emptyCardText}>{literalT("No tasks assigned yet")}</Text>
             </View> :
-          complaints.slice(0, 5).map((c) => {
-            const sc = STATUS_COLORS[c.status] || { bg: '#f3f4f6', color: '#6b7280' };
-            const catIcon = CATEGORY_ICONS[c.category] || '📝';
-            return (
-              <TouchableOpacity
-                key={c.id}
-                style={s.complaintCard}
-                onPress={() => navigation.navigate('ComplaintDetail', { id: c._id || c.id })}
-                activeOpacity={0.85}>
-                
-                <View style={[s.complaintIcon, { backgroundColor: T.maroon + '12' }]}>
-                  <Text style={{ fontSize: 20 }}>{catIcon}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.complaintCat} numberOfLines={1}>{complaintCategoryT(c.category, c.customCategory)}</Text>
-                  <Text style={s.complaintMeta}>📍 {c.thokuthi} · 🏙️ {c.district}</Text>
-                </View>
-                <View style={[s.complaintBadge, { backgroundColor: sc.bg || '#f3f4f6' }]}>
-                  <Text style={[s.complaintBadgeTxt, { color: sc.color }]}>{c.status}</Text>
-                </View>
-              </TouchableOpacity>);
-
-          })}
+            complaints.slice(0, 5).map((c, idx) => {
+              const sc = STATUS_COLORS[c.status] || { bg: '#f3f4f6', color: '#6b7280' };
+              const catIcon = CATEGORY_ICONS[c.category] || CATEGORY_ICONS.Others;
+              return (
+                <TouchableOpacity
+                  key={String(c.id || c._id)}
+                  style={s.taskCard}
+                  onPress={() => navigation.navigate('ComplaintDetail', { id: c._id || c.id })}
+                  activeOpacity={0.7}>
+                  <View style={s.taskCardTopLight} />
+                  <View style={[s.taskIcon, { backgroundColor: T.maroon + '15' }]}>
+                    <Icon name={catIcon} size={24} color={T.maroon} />
+                  </View>
+                  <View style={s.taskContent}>
+                    <Text style={s.taskCat} numberOfLines={1}>{complaintCategoryT(c.category, c.customCategory)}</Text>
+                    <Text style={s.taskLoc} numberOfLines={1}>{c.thokuthi || 'Unknown'} - {c.district || 'Unknown'}</Text>
+                  </View>
+                  <View style={[s.taskStatus, { backgroundColor: sc.bg || '#f3f4f6' }]}>
+                    <Text style={[s.taskStatusTxt, { color: sc.color }]}>{c.status}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          }
         </View>
-      </ScrollView>
-    </View>);
 
+      </Animated.ScrollView>
+    </View>
+  );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: T.bg },
+  root: { flex: 1, backgroundColor: '#F8FAFC' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  scrollContent: { paddingBottom: 20 },
 
-  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 24, paddingHorizontal: 20 },
-  headerTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  workerAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
-  greetingTxt: { fontSize: 12, color: 'rgba(255,255,255,0.7)' },
-  workerName: { fontSize: 18, fontWeight: '900', color: '#fff' },
-  thokuthiTxt: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
-  locationRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 },
-  locationChip: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
-  logoutBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', elevation: 6, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
-  logoutTxt: { fontSize: 18 },
+  // Hero
+  hero: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 36, paddingHorizontal: 20, position: 'relative', overflow: 'hidden' },
+  heroGrid: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05 },
+  heroOrb1: { position: 'absolute', top: -60, right: -50, width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,100,60,0.13)' },
+  heroOrb2: { position: 'absolute', bottom: 10, left: -60, width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(212,160,23,0.10)' },
+  heroRingsWrap: { position: 'absolute', top: 24, right: 24, width: 100, height: 100 },
+  heroRing: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 50, borderWidth: 1, borderColor: '#fff' },
 
-  statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  statCard: { flex: 1, height: 96, backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 16, padding: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
-  statNum: { fontSize: 20, fontWeight: '900' },
-  statLabel: { fontSize: 9, color: 'rgba(255,255,255,0.7)', marginTop: 2, fontWeight: '600' },
+  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 },
+  appPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.13)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', borderRadius: 50, paddingHorizontal: 14, paddingVertical: 8 },
+  appLogo: { width: 22, height: 22, borderRadius: 11 },
+  onlineBlip: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ade80' },
+  appPillTxt: { fontSize: 12, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
+  avatarBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
+  onlineDot: { position: 'absolute', top: 4, right: 4, width: 10, height: 10, borderRadius: 5, backgroundColor: '#4ade80', borderWidth: 2, borderColor: 'rgba(255,255,255,0.8)' },
 
-  rateCard: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
-  rateLeft: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  rateTitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
-  rateNum: { fontSize: 14, fontWeight: '900', color: '#86efac' },
-  rateBarBg: { height: 8, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 4, overflow: 'hidden' },
-  rateBarFill: { height: '100%', backgroundColor: '#86efac', borderRadius: 4 },
+  greetLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '600', letterSpacing: 0.3, marginBottom: 4 },
+  greetName: { fontSize: 30, fontWeight: '900', color: '#fff', marginBottom: 6 },
+  locationRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4, marginBottom: 22 },
+  locationChip: { fontSize: 12, color: 'rgba(255,255,255,0.78)', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, overflow: 'hidden' },
 
+  newStatsWrapper: { marginTop: 10, paddingBottom: 10 },
+  newProgressCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, elevation: 8, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, shadowOffset: { width: 0, height: 5 } },
+  newProgressTextRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  newProgressTitle: { fontSize: 13, fontWeight: '700', color: '#475569' },
+  newProgressValue: { fontSize: 18, fontWeight: '900', color: '#22c55e' },
+  newProgressBarWrap: { height: 8, backgroundColor: '#f1f5f9', borderRadius: 4, overflow: 'hidden' },
+  newProgressBarFill: { height: '100%', borderRadius: 4 },
+
+  newStatsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' },
+  newStatCard: { width: '48%', borderRadius: 16, padding: 14, elevation: 6, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
+  newStatTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  newStatIconWrap: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  newStatValue: { fontSize: 22, fontWeight: '900' },
+  newStatLabel: { fontSize: 12, fontWeight: '700', color: '#64748b' },
+
+  warningAlert: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffedd5', marginHorizontal: 16, marginTop: 16, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#fdba74' },
+  warningTitle: { fontSize: 14, fontWeight: '800', color: '#9a3412', marginBottom: 2 },
+  warningDesc: { fontSize: 12, color: '#9a3412', lineHeight: 16 },
+
+  dutyToggle: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+  dutyToggleOff: { backgroundColor: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.1)' },
+  dutyDot: { width: 8, height: 8, borderRadius: 4 },
+  dutyToggleTxt: { fontSize: 12, fontWeight: '700', color: '#fff' },
+
+  miniWidgetsRow: { flexDirection: 'row', paddingHorizontal: 16, marginTop: 16, marginBottom: 4, gap: 12 },
+  weatherWidget: { flex: 0.8, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  weatherTemp: { fontSize: 16, fontWeight: '900', color: '#0f172a' },
+  weatherDesc: { fontSize: 11, fontWeight: '600', color: '#64748b' },
+  
+  alertWidget: { flex: 1.2, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fffaf0', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#fef08a', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  alertIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#fef9c3', alignItems: 'center', justifyContent: 'center' },
+  alertTitle: { fontSize: 13, fontWeight: '800', color: '#9a3412' },
+  alertDesc: { fontSize: 11, fontWeight: '500', color: '#b45309' },
+
+  performanceCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: 18, overflow: 'hidden', elevation: 6, shadowColor: '#4f46e5', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 5 } },
+  perfIconWrap: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
+  perfContent: { flex: 1 },
+  perfTitle: { fontSize: 16, fontWeight: '800', color: '#fff', marginBottom: 4 },
+  perfSub: { fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 18 },
+
+  // Sections
+  qaSection: { paddingBottom: 20, overflow: 'hidden' },
   section: { paddingHorizontal: 16, paddingTop: 20 },
-  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: T.text },
-  sectionHint: { fontSize: 12, color: T.textM, fontWeight: '700' },
-  seeAll: { fontSize: 13, color: T.maroon, fontWeight: '700' },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: T.text },
+  sectionSubTitle: { fontSize: 13, fontWeight: '600', color: '#64748b' },
+  sectionLine: { flex: 1, height: 1, backgroundColor: T.border, marginLeft: 10 },
+  seeAllBtn: { fontSize: 12, color: T.maroon, fontWeight: '700', backgroundColor: 'rgba(139,26,26,0.08)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
 
-  focusCard: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 9 } },
-  focusTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  focusKicker: { fontSize: 11, color: T.textM, fontWeight: '800', textTransform: 'uppercase' },
-  focusTitle: { fontSize: 20, color: T.text, fontWeight: '900', marginTop: 2 },
-  focusPill: { backgroundColor: T.green + '18', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 50 },
-  focusPillTxt: { color: '#15803d', fontSize: 11, fontWeight: '900' },
-  nextTask: { minHeight: 62, backgroundColor: T.bg, borderRadius: 16, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(0,0,0,0.04)' },
-  nextIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border, elevation: 3, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
-  nextTitle: { fontSize: 13, fontWeight: '900', color: T.text },
-  nextMeta: { fontSize: 11, color: T.textM, marginTop: 2, fontWeight: '600' },
-  nextArrow: { fontSize: 22, color: T.maroon, fontWeight: '900' },
+  // QA Grid
+  qGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'stretch' },
+  qCard: { width: '100%', height: 112, backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 10, paddingTop: 18, paddingBottom: 12, alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
+  qAccentBar: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, borderRadius: 18 },
+  qCardGlow: { borderRadius: 18 },
+  qCardTopLight: { position: 'absolute', top: 4, left: 8, right: 8, height: 22, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.55)' },
+  qCardBottomShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 32, backgroundColor: 'rgba(0,0,0,0.025)' },
+  qIconBox: { width: 50, height: 50, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 6, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+  qLabel: { minHeight: 26, fontSize: 11, lineHeight: 14, fontWeight: '800', color: T.text, textAlign: 'center', textAlignVertical: 'center' },
 
-  qGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4, alignItems: 'stretch' },
-  qCard: { width: '31.5%', height: 112, backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 10, paddingTop: 16, paddingBottom: 12, alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
-  qIcon: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 6, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
-  qLabel: { minHeight: 30, fontSize: 11, lineHeight: 14, fontWeight: '800', color: T.text, textAlign: 'center', textAlignVertical: 'center' },
+  // Focus
+  focusCard: { backgroundColor: '#fff', borderRadius: 20, padding: 16, elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
+  focusHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  focusTitle: { fontSize: 16, fontWeight: '800', color: '#1e293b' },
+  focusBadge: { backgroundColor: '#fee2e2', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  focusBadgeTxt: { fontSize: 11, fontWeight: '800', color: '#ef4444' },
+  
+  nextTaskBox: { position: 'relative', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9' },
+  nextIconBox: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 14, elevation: 3, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8 },
+  nextTaskInfo: { flex: 1 },
+  nextTaskTitle: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 4 },
+  nextTaskMeta: { fontSize: 12, fontWeight: '600', color: '#64748b' },
+  nextArrowWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: T.maroon, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: T.maroon, shadowOpacity: 0.3, shadowRadius: 8 },
 
-  mixGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  mixCard: { width: '48.5%', height: 116, backgroundColor: '#fff', borderRadius: 18, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
-  mixIcon: { fontSize: 22, marginBottom: 8 },
-  mixName: { color: T.text, fontSize: 12, fontWeight: '800', lineHeight: 16, minHeight: 32 },
-  mixCount: { marginTop: 8, color: T.maroon, fontSize: 18, fontWeight: '900' },
-  mixEmpty: { backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
-  mixEmptyTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
-  mixEmptySub: { color: T.textM, fontSize: 12, marginTop: 4, fontWeight: '600' },
+  emptyFocusBox: { alignItems: 'center', paddingVertical: 20 },
+  emptyFocusTitle: { fontSize: 16, fontWeight: '800', color: '#1e293b', marginTop: 12 },
+  emptyFocusSub: { fontSize: 13, color: '#64748b', marginTop: 4 },
 
-  complaintCard: { backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15, shadowOffset: { width: 0, height: 7 } },
-  complaintIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  complaintCat: { fontSize: 14, fontWeight: '700', color: T.text },
-  complaintMeta: { fontSize: 11, color: T.textM, marginTop: 3 },
-  complaintBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 50 },
-  complaintBadgeTxt: { fontSize: 11, fontWeight: '700' },
+  // Work Mix
+  mixGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  mixCard: { position: 'relative', width: (width - 44) / 2, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 16, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', overflow: 'hidden' },
+  mixCardTopLight: { position: 'absolute', top: 2, left: 4, right: 4, height: 18, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.6)' },
+  mixIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  mixInfo: { flex: 1 },
+  mixCount: { fontSize: 18, fontWeight: '900', color: '#0f172a' },
+  mixName: { fontSize: 11, fontWeight: '700', color: '#64748b', marginTop: 2 },
 
-  cardTopLight: { position: 'absolute', top: 4, left: 8, right: 8, height: 22, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.48)' },
-  cardBottomShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 32, backgroundColor: 'rgba(0,0,0,0.025)' },
-  empty: { alignItems: 'center', paddingVertical: 32 },
-  emptyTxt: { fontSize: 14, color: T.textM, marginTop: 6 }
+  // Task Cards
+  taskCard: { position: 'relative', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 16, marginBottom: 12, borderRadius: 18, elevation: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.08, shadowRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
+  taskCardTopLight: { position: 'absolute', top: 2, left: 6, right: 6, height: 20, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.5)' },
+  taskIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  taskContent: { flex: 1 },
+  taskCat: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 4 },
+  taskLoc: { fontSize: 12, fontWeight: '600', color: '#64748b' },
+  taskStatus: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
+  taskStatusTxt: { fontSize: 11, fontWeight: '800' },
+
+  emptyCard: { backgroundColor: '#fff', borderRadius: 18, padding: 24, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowOpacity: 0.05 },
+  emptyCardText: { fontSize: 14, fontWeight: '700', color: '#64748b', marginTop: 8 }
 });
+
+// Quick Action BG styles (separate to avoid confusion)
+const qa = StyleSheet.create({
+  dotGrid: { position: 'absolute', top: 10, left: 10, right: 10, bottom: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 18, opacity: 0.35 },
+  dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: T.maroon },
+  orb: { position: 'absolute', borderRadius: 999, overflow: 'hidden' },
+  orb1: { width: 160, height: 160, top: -20, right: -20 },
+  orb2: { width: 120, height: 120, bottom: -10, left: 10 },
+  orb3: { width: 100, height: 100, top: 30, left: width * 0.4 },
+  ripple: { position: 'absolute', width: 200, height: 200, borderRadius: 100, borderWidth: 1.5, borderColor: T.maroon, top: '50%', left: '50%', marginLeft: -100, marginTop: -100 },
+  shimmerLine: { position: 'absolute', top: 0, bottom: 0, width: 80, backgroundColor: '#fff', transform: [{ skewX: '-20deg' }] }
+});
+

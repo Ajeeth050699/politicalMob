@@ -185,27 +185,29 @@ function ActionCard({ item, index, onPress }) {
   const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.12] });
 
   return (
-    <Animated.View style={{ opacity, transform: [{ perspective: 900 }, { scale: Animated.multiply(scale, pressScl) }], width: QA_CARD_WIDTH }}>
-      <TouchableOpacity
-        style={[s.qCard]}
-        onPress={onPress}
-        onPressIn={onIn}
-        onPressOut={onOut}
-        activeOpacity={1}>
-        
-        {/* Top accent bar */}
-        <View style={[s.qAccentBar, { backgroundColor: item.color }]} />
+    <Animated.View style={{ opacity, transform: [{ perspective: 900 }, { scale }], width: QA_CARD_WIDTH }}>
+      <Animated.View style={{ transform: [{ scale: pressScl }] }}>
+        <TouchableOpacity
+          style={[s.qCard]}
+          onPress={onPress}
+          onPressIn={onIn}
+          onPressOut={onOut}
+          activeOpacity={1}>
+          
+          {/* Top accent bar */}
+          <View style={[s.qAccentBar, { backgroundColor: item.color }]} />
 
-        {/* Animated card glow */}
-        <Animated.View style={[StyleSheet.absoluteFill, s.qCardGlow, { backgroundColor: item.color, opacity: glowOpacity }]} />
-        <View style={s.qCardTopLight} />
-        <View style={s.qCardBottomShade} />
+          {/* Animated card glow */}
+          <Animated.View style={[StyleSheet.absoluteFill, s.qCardGlow, { backgroundColor: item.color, opacity: glowOpacity }]} />
+          <View style={s.qCardTopLight} />
+          <View style={s.qCardBottomShade} />
 
-        <View style={[s.qIconBox, { backgroundColor: item.bg }]}>
-          <Text style={{ fontSize: 24 }}>{item.icon}</Text>
-        </View>
-        <Text style={s.qLabel}>{item.label}</Text>
-      </TouchableOpacity>
+          <View style={[s.qIconBox, { backgroundColor: item.bg }]}>
+            <Text style={{ fontSize: 24 }}>{item.icon}</Text>
+          </View>
+          <Text style={s.qLabel}>{item.label}</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </Animated.View>);
 
 }
@@ -513,6 +515,26 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         }
 
+        {/* ════ WEATHER & ALERTS ════ */}
+        <View style={s.miniWidgetsRow}>
+          <View style={s.weatherWidget}>
+            <Text style={{ fontSize: 24, marginRight: 8 }}>🌤️</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.weatherTemp}>32°C</Text>
+              <Text style={s.weatherDesc}>{literalT("Partly Cloudy")}</Text>
+            </View>
+          </View>
+          <View style={s.alertWidget}>
+            <View style={s.alertIconWrap}>
+              <Text style={{ fontSize: 16 }}>📣</Text>
+            </View>
+            <View style={{ marginLeft: 10, flex: 1 }}>
+              <Text style={s.alertTitle}>{literalT("City Alert")}</Text>
+              <Text style={s.alertDesc} numberOfLines={1}>{literalT("Heavy rain expected today.")}</Text>
+            </View>
+          </View>
+        </View>
+
         {/* ════ QUICK ACTIONS ════ */}
         <View style={[s.section, s.qaSection]}>
           {/* Animated loop background */}
@@ -643,12 +665,11 @@ const s = StyleSheet.create({
 
   // Hero
   hero: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 36, paddingHorizontal: 20, position: 'relative', overflow: 'hidden' },
-  heroGrid: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05,
-    backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,1) 39px,rgba(255,255,255,1) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,1) 39px,rgba(255,255,255,1) 40px)' },
+  heroGrid: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05 },
   heroOrb1: { position: 'absolute', top: -60, right: -50, width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,100,60,0.13)' },
   heroOrb2: { position: 'absolute', bottom: 10, left: -60, width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(212,160,23,0.10)' },
   heroRingsWrap: { position: 'absolute', top: 24, right: 24, width: 100, height: 100 },
-  heroRing: { position: 'absolute', inset: 0, borderRadius: 50, borderWidth: 1, borderColor: '#fff' },
+  heroRing: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 50, borderWidth: 1, borderColor: '#fff' },
 
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 },
   appPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.13)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', borderRadius: 50, paddingHorizontal: 14, paddingVertical: 8 },
@@ -677,6 +698,16 @@ const s = StyleSheet.create({
   statNum: { fontSize: 28, fontWeight: '900' },
   statLabel: { fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 3, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
   statsDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.14)', marginHorizontal: 4 },
+
+  miniWidgetsRow: { flexDirection: 'row', paddingHorizontal: 16, marginTop: 16, marginBottom: 4, gap: 12 },
+  weatherWidget: { flex: 0.8, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  weatherTemp: { fontSize: 16, fontWeight: '900', color: '#0f172a' },
+  weatherDesc: { fontSize: 11, fontWeight: '600', color: '#64748b' },
+  
+  alertWidget: { flex: 1.2, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fffaf0', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#fef08a', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  alertIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#fef9c3', alignItems: 'center', justifyContent: 'center' },
+  alertTitle: { fontSize: 13, fontWeight: '800', color: '#9a3412' },
+  alertDesc: { fontSize: 11, fontWeight: '500', color: '#b45309' },
 
   // Quick Actions section with animated bg
   qaSection: { paddingBottom: 20, overflow: 'hidden' },
@@ -711,10 +742,10 @@ const s = StyleSheet.create({
   // Emergency horizontal scroll
   emerListContent: { paddingHorizontal: 16, paddingVertical: 6, gap: 12 },
   emerCardWrap: { width: EMER_CARD_WIDTH, borderRadius: 20, overflow: 'hidden', elevation: 10, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
-  emerCard: { width: '100%', height: 190, paddingTop: 4, paddingBottom: 14, paddingHorizontal: 10, alignItems: 'center', position: 'relative' },
-  emerTopBar: { width: '100%', height: 4, borderRadius: 20, marginBottom: 10, opacity: 0.8 },
+  emerCard: { width: '100%', minHeight: 200, paddingTop: 24, paddingBottom: 20, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'space-between', position: 'relative' },
+  emerTopBar: { position: 'absolute', top: 8, alignSelf: 'center', width: '40%', height: 4, borderRadius: 20, opacity: 0.8 },
   emerGlowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, height: 80, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 20 },
-  emerIconWrap: { position: 'relative', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  emerIconWrap: { position: 'relative', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', marginBottom: 8, marginTop: 4 },
   emerRingOuter: { position: 'absolute', inset: -8, borderRadius: 36, borderWidth: 1.5 },
   emerIconCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
   emerName: { minHeight: 34, fontSize: 11, fontWeight: '800', color: '#fff', textAlign: 'center', lineHeight: 16, marginBottom: 4 },

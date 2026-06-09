@@ -1,3 +1,4 @@
+import MaintenanceWrapper from './MaintenanceWrapper';
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './Layout';
@@ -15,7 +16,7 @@ import './App.css';
 
 function App() {
   return (
-    <Routes>
+    <MaintenanceWrapper portalKey='adminPortal'><Routes>
       <Route>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -30,7 +31,7 @@ function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
       </Route>
-    </Routes>
+    </Routes></MaintenanceWrapper>
   );
 }
 

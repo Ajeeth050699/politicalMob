@@ -166,12 +166,14 @@ const AdminTabs = () => (
     <Tab.Screen name="Notifications" component={AdminNotifications} />
     <Tab.Screen name="Education" component={AdminEducation} />
     <Tab.Screen name="Workers" component={AdminWorkers} />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
 
 // ── Root Navigator ────────────────────────────────────────────────
 export default function AppNavigator() {
   const { userInfo, loading } = useAuth();
+  const role = String(userInfo?.role || "").toLowerCase();
 
   if (loading) {
     return (
@@ -190,7 +192,7 @@ export default function AppNavigator() {
 
   return (
     <Stack.Navigator
-      key={userInfo ? `app-${userInfo.role || "user"}` : "auth"}
+      key={userInfo ? `app-${role || "user"}` : "auth"}
       screenOptions={{ headerShown: false, animation: "slide_from_right" }}
     >
       {!userInfo ? (
@@ -204,7 +206,7 @@ export default function AppNavigator() {
             component={ForgotPasswordScreen}
           />
         </>
-      ) : userInfo.role === "public" || userInfo.role === "citizen" ? (
+      ) : role === "public" || role === "citizen" ? (
         // ── Public stack ──
         <>
           <Stack.Screen name="PublicTabs" component={PublicTabs} />
@@ -219,7 +221,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Billing" component={BillingScreen} />
           <Stack.Screen name="Verify" component={VerifyScreen} />
         </>
-      ) : userInfo.role === "admin" || userInfo.role === "superadmin" ? (
+      ) : role === "admin" || role === "superadmin" || role === "agent" ? (
         // ── Admin stack ──
         <>
           <Stack.Screen name="AdminTabs" component={AdminTabs} />
