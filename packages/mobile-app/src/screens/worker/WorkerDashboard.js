@@ -2,11 +2,11 @@ import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, RefreshControl,
-  TouchableOpacity, ActivityIndicator, Platform, StatusBar, Animated, Image, Dimensions
+  TouchableOpacity, ActivityIndicator, Platform, StatusBar, Animated, Image, Dimensions, FlatList, Linking
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { complaintAPI } from '../../services/api';
+import { complaintAPI, emergencyAPI } from '../../services/api';
 import { T, STATUS_COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useWeatherAlerts } from '../../hooks/useWeatherAlerts';
@@ -15,6 +15,18 @@ import { useWeatherAlerts } from '../../hooks/useWeatherAlerts';
 const { width } = Dimensions.get('window');
 const APP_LOGO = require('../../../assets/images/icon.png');
 const QA_CARD_WIDTH = Math.floor((width - 52) / 3);
+const EMER_CARD_WIDTH = Math.min(138, Math.floor((width - 56) / 3));
+
+const EMER_GRADS = {
+  police: ['#1d4ed8', '#3b82f6'],
+  ambulance: ['#b91c1c', '#ef4444'],
+  fire: ['#b45309', '#f59e0b'],
+  women: ['#9d174d', '#ec4899'],
+  child: ['#6d28d9', '#8b5cf6'],
+  district: ['#065f46', '#22c55e']
+};
+const EMER_BAR = { police: '#60a5fa', ambulance: '#fca5a5', fire: '#fcd34d', women: '#f9a8d4', child: '#c4b5fd', district: '#86efac' };
+const EMER_ICON = { police: 'police-badge-outline', ambulance: 'ambulance', fire: 'fire-truck', women: 'face-woman-outline', child: 'baby-face-outline', district: 'office-building-marker-outline' };
 
 const asArray = (payload) => {
   if (Array.isArray(payload)) return payload;
@@ -176,6 +188,50 @@ function ActionCard({ item, index, onPress }) {
   );
 }
 
+function EmerCard({ e, index, onPress }) {
+  const grads = EMER_GRADS[e.type] || [T.maroon, '#A52020'];
+  const barColor = EMER_BAR[e.type] || '#fff';
+  const anim = useRef(new Animated.Value(0)).current;
+  const pressScl = useRef(new Animated.Value(1)).current;
+  const ring = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.spring(anim, { toValue: 1, tension: 70, friction: 6, delay: index * 100, useNativeDriver: true }).start();
+    Animated.loop(Animated.sequence([
+      Animated.timing(ring, { toValue: 1.3, duration: 900, useNativeDriver: true }),
+      Animated.timing(ring, { toValue: 1, duration: 900, useNativeDriver: true })
+    ])).start();
+  }, []);
+
+  const onIn = () => Animated.spring(pressScl, { toValue: 0.94, useNativeDriver: true }).start();
+  const onOut = () => Animated.spring(pressScl, { toValue: 1, useNativeDriver: true }).start();
+
+  return (
+    <Animated.View style={{
+      opacity: anim,
+      transform: [{ perspective: 900 }, { scale: Animated.multiply(anim, pressScl) }, { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }]
+    }}>
+      <TouchableOpacity onPress={onPress} onPressIn={onIn} onPressOut={onOut} activeOpacity={1} style={s.emerCardWrap}>
+        <LinearGradient colors={grads} start={{ x: 0, y: 0 }} end={{ x: 0.5, y: 1 }} style={s.emerCard}>
+          <View style={[s.emerTopBar, { backgroundColor: barColor }]} />
+          <View style={s.emerGlowOverlay} />
+          <View style={s.emerIconWrap}>
+            <Animated.View style={[s.emerRingOuter, { borderColor: barColor + '40', transform: [{ scale: ring }] }]} />
+            <View style={s.emerIconCircle}>
+              <Icon name={EMER_ICON[e.type] || 'phone-outline'} size={25} color="#fff" />
+            </View>
+          </View>
+          <Text style={s.emerName} numberOfLines={2}>{e.name}</Text>
+          <Text style={[s.emerNum, { color: barColor }]}>{e.number}</Text>
+          <View style={s.emerCallBtn}>
+            <Text style={s.emerCallTxt}>{literalT("Tap to Call")}</Text>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
 function StatCard({ value, label, color, icon, delay, bg }) {
   const anim = useRef(new Animated.Value(0)).current;
   const count = useRef(new Animated.Value(0)).current;
@@ -208,14 +264,19 @@ export default function WorkerDashboard({ navigation }) {
   const heroAnim = useRef(new Animated.Value(0)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
   const [complaints, setComplaints] = useState([]);
+  const [emergency, setEmergency] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
   const load = async () => {
     try {
-      const { data } = await complaintAPI.getAll();
-      setComplaints(asArray(data));
+      const [complaintRes, emergencyRes] = await Promise.all([
+        complaintAPI.getAll().catch(() => ({ data: [] })),
+        emergencyAPI.getAll().catch(() => ({ data: [] }))
+      ]);
+      setComplaints(asArray(complaintRes.data));
+      setEmergency(asArray(emergencyRes.data).slice(0, 6));
     } catch {/* silent */} finally {setLoading(false);}
   };
 
@@ -344,7 +405,7 @@ export default function WorkerDashboard({ navigation }) {
 
         {/* ════ WEATHER & ALERTS ════ */}
         <View style={s.miniWidgetsRow}>
-          <View style={s.weatherWidget}>
+          <TouchableOpacity style={s.weatherWidget} onPress={() => navigation.navigate('Weather')} activeOpacity={0.82}>
             <Text style={{ fontSize: 28, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
             <View style={{ marginLeft: 0 }}>
               <Text style={s.weatherTemp}>
@@ -354,7 +415,7 @@ export default function WorkerDashboard({ navigation }) {
                 {weather?.condition || literalT('Fetching weather...')}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
@@ -383,8 +444,11 @@ export default function WorkerDashboard({ navigation }) {
           <View style={s.qGrid}>
             {[
               { icon: 'clipboard-list-outline', label: 'All Tasks', color: '#ec4899', route: 'Complaints', bg: '#fce7f3' },
-              { icon: 'map-marker-radius-outline', label: 'Map View', color: '#8b5cf6', route: 'Complaints', bg: '#ede9fe' },
-              { icon: 'account-cog-outline', label: 'Settings', color: '#3b82f6', route: 'Profile', bg: '#dbeafe' }
+              { icon: 'weather-partly-cloudy', label: 'Weather', color: '#0f766e', route: 'Weather', bg: '#ccfbf1' },
+              { icon: 'phone-alert-outline', label: 'Emergency', color: '#ef4444', route: 'Emergency', bg: '#fee2e2' },
+              { icon: 'bell-ring-outline', label: 'Alerts', color: '#f59e0b', route: 'Notifications', bg: '#fef3c7' },
+              { icon: 'newspaper-variant-outline', label: 'News', color: '#3b82f6', route: 'News', bg: '#dbeafe' },
+              { icon: 'account-hard-hat-outline', label: 'Profile', color: '#8b5cf6', route: 'Profile', bg: '#ede9fe' }
             ].map((action, i) => (
               <ActionCard key={action.label} item={action} index={i} onPress={() => navigation.navigate(action.route)} />
             ))}
@@ -392,6 +456,45 @@ export default function WorkerDashboard({ navigation }) {
         </View>
 
         {/* ════ TODAY'S FOCUS ════ */}
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <PulseDot color="#ef4444" />
+              <Text style={s.sectionTitle}>{literalT("Emergency Contacts")}</Text>
+            </View>
+            <TouchableOpacity onPress={() => navigation.navigate('Emergency')}>
+              <Text style={s.seeAllBtn}>{literalT("See all")}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <FlatList
+          data={emergency}
+          keyExtractor={(e) => e.name}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.emerListContent}
+          renderItem={({ item: e, index: i }) => (
+            <EmerCard e={e} index={i} onPress={() => Linking.openURL(`tel:${e.number}`)} />
+          )}
+          ListEmptyComponent={
+            <View style={s.emptyEmer}>
+              <Text style={s.emptyCardText}>{literalT("No contacts found")}</Text>
+            </View>
+          }
+        />
+
+        <TouchableOpacity
+          style={s.seeMoreBtn}
+          onPress={() => navigation.navigate('Emergency')}
+          activeOpacity={0.85}>
+          <View style={s.seeMoreInner}>
+            <Text style={s.seeMoreTxt}>{literalT("See All Emergency Contacts")}</Text>
+            <Text style={s.seeMoreSub}>{emergency.length} {literalT("contacts available")}</Text>
+          </View>
+          <Icon name="arrow-right" size={20} color={T.maroon} />
+        </TouchableOpacity>
+
         <View style={s.section}>
           <View style={s.focusCard}>
             <View style={s.focusHeader}>
@@ -599,6 +702,25 @@ const s = StyleSheet.create({
   qIconBox: { width: 50, height: 50, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 6, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
   qLabel: { minHeight: 26, fontSize: 11, lineHeight: 14, fontWeight: '800', color: T.text, textAlign: 'center', textAlignVertical: 'center' },
 
+  // Emergency horizontal scroll
+  emerListContent: { paddingHorizontal: 16, paddingVertical: 6, gap: 12 },
+  emerCardWrap: { width: EMER_CARD_WIDTH, borderRadius: 20, overflow: 'hidden', elevation: 10, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  emerCard: { width: '100%', minHeight: 200, paddingTop: 24, paddingBottom: 20, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'space-between', position: 'relative' },
+  emerTopBar: { position: 'absolute', top: 8, alignSelf: 'center', width: '40%', height: 4, borderRadius: 20, opacity: 0.8 },
+  emerGlowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, height: 80, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 20 },
+  emerIconWrap: { position: 'relative', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', marginBottom: 8, marginTop: 4 },
+  emerRingOuter: { position: 'absolute', inset: -8, borderRadius: 36, borderWidth: 1.5 },
+  emerIconCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.18)' },
+  emerName: { minHeight: 34, fontSize: 11, fontWeight: '800', color: '#fff', textAlign: 'center', lineHeight: 16, marginBottom: 4 },
+  emerNum: { minHeight: 28, fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 10 },
+  emerCallBtn: { minHeight: 32, paddingHorizontal: 8, paddingVertical: 7, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
+  emerCallTxt: { fontSize: 10, fontWeight: '800', color: '#fff', textAlign: 'center' },
+  seeMoreBtn: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginTop: 12, backgroundColor: 'rgba(139,26,26,0.06)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(139,26,26,0.18)' },
+  seeMoreInner: { flex: 1 },
+  seeMoreTxt: { fontSize: 13, fontWeight: '800', color: T.maroon },
+  seeMoreSub: { fontSize: 11, color: T.textM, marginTop: 2 },
+  emptyEmer: { paddingHorizontal: 16, paddingVertical: 24 },
+
   // Focus
   focusCard: { backgroundColor: '#fff', borderRadius: 20, padding: 16, elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
   focusHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
@@ -651,4 +773,3 @@ const qa = StyleSheet.create({
   ripple: { position: 'absolute', width: 200, height: 200, borderRadius: 100, borderWidth: 1.5, borderColor: T.maroon, top: '50%', left: '50%', marginLeft: -100, marginTop: -100 },
   shimmerLine: { position: 'absolute', top: 0, bottom: 0, width: 80, backgroundColor: '#fff', transform: [{ skewX: '-20deg' }] }
 });
-

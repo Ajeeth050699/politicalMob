@@ -85,6 +85,20 @@ function SectionHeader({ title, action, onPress }) {
 
 }
 
+function QuickActionCard({ icon, label, sub, color, onPress }) {
+  return (
+    <TouchableOpacity style={s.quickActionCard} onPress={onPress} activeOpacity={0.84}>
+      <View style={s.cardTopLight} />
+      <View style={s.cardBottomShade} />
+      <View style={[s.quickActionIcon, { backgroundColor: color + '16' }]}>
+        <Icon name={icon} size={24} color={color} />
+      </View>
+      <Text style={s.quickActionLabel} numberOfLines={1}>{label}</Text>
+      <Text style={s.quickActionSub} numberOfLines={2}>{sub}</Text>
+    </TouchableOpacity>);
+
+}
+
 export default function AdminDashboard({ navigation }) {
   const { userInfo } = useAuth();
   const { weather, alerts, loading: weatherLoading } = useWeatherAlerts({ pollMs: 10 * 60 * 1000 });
@@ -266,7 +280,7 @@ export default function AdminDashboard({ navigation }) {
 
         {/* ════ WEATHER & ALERTS ════ */}
         <View style={s.miniWidgetsRow}>
-          <View style={s.weatherWidget}>
+          <TouchableOpacity style={s.weatherWidget} onPress={() => navigation.navigate('Weather')} activeOpacity={0.82}>
             <Text style={{ fontSize: 24, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
             <View style={{ marginLeft: 10 }}>
               <Text style={s.weatherTemp}>
@@ -276,7 +290,7 @@ export default function AdminDashboard({ navigation }) {
                 {weather?.condition || literalT('Fetching weather...')}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
               <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
@@ -295,6 +309,16 @@ export default function AdminDashboard({ navigation }) {
           <StatTile label={literalT("New")} value={stats.newComplaints} sub={literalT("Unassigned")} color={T.amber} iconName="alert-circle-outline" onPress={() => navigation.navigate('AdminComplaints', { status: 'NEW' })} />
           <StatTile label={literalT("Progress")} value={stats.inProgressComplaints} sub={literalT("Active work")} color="#8b5cf6" iconName="progress-clock" onPress={() => navigation.navigate('AdminComplaints', { status: 'IN PROGRESS' })} />
           <StatTile label={literalT("Done")} value={stats.completedComplaints} sub={literalT("Resolved")} color={T.green} iconName="check-decagram-outline" onPress={() => navigation.navigate('AdminComplaints', { status: 'COMPLETED' })} />
+        </View>
+
+        <View style={s.section}>
+          <SectionHeader title={literalT("Quick Actions")} />
+          <View style={s.quickActionGrid}>
+            <QuickActionCard icon="clipboard-search-outline" label={literalT("Complaints")} sub={literalT("Review and filter cases")} color={T.maroon} onPress={() => navigation.navigate('AdminComplaints')} />
+            <QuickActionCard icon="account-hard-hat" label={literalT("Workers")} sub={literalT("Manage field coverage")} color={T.blue} onPress={() => navigation.navigate('AdminWorkers')} />
+            <QuickActionCard icon="weather-partly-cloudy" label={literalT("Weather")} sub={literalT("Area forecast and alerts")} color="#0f766e" onPress={() => navigation.navigate('Weather')} />
+            <QuickActionCard icon="bell-ring-outline" label={literalT("Notify")} sub={literalT("Send public updates")} color="#f59e0b" onPress={() => navigation.navigate('AdminNotifications')} />
+          </View>
         </View>
 
         <View style={s.section}>
@@ -491,6 +515,12 @@ const s = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sectionTitle: { color: T.text, fontSize: 17, fontWeight: '900' },
   sectionAction: { color: T.maroon, fontSize: 13, fontWeight: '800' },
+
+  quickActionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  quickActionCard: { width: '48%', minHeight: 124, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
+  quickActionIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  quickActionLabel: { color: T.text, fontSize: 14, fontWeight: '900' },
+  quickActionSub: { color: T.textM, fontSize: 11, lineHeight: 15, marginTop: 4 },
 
   opsGrid: { flexDirection: 'row', gap: 10 },
   opsCard: { flex: 1, height: 132, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },

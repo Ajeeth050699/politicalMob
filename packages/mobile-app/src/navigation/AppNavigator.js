@@ -29,6 +29,7 @@ import BillingScreen from "../screens/shared/BillingScreen";
 import ComplaintDetail from "../screens/shared/ComplaintDetail";
 import NewsDetailScreen from "../screens/shared/NewsDetailScreen";
 import NotificationDetail from "../screens/shared/NotificationDetail";
+import WeatherScreen from "../screens/shared/WeatherScreen";
 
 // ── Worker Screens ────────────────────────────────────────────────
 import WorkerDashboard from "../screens/worker/WorkerDashboard";
@@ -214,6 +215,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
           <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
+          <Stack.Screen name="Weather" component={WeatherScreen} />
           <Stack.Screen name="Education" component={EducationScreen} />
           <Stack.Screen name="Exam" component={ExamScreen} />
           <Stack.Screen name="Camps" component={CampsScreen} />
@@ -232,6 +234,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ComplaintDetailAdmin" component={ComplaintDetailAdmin} />
           <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
+          <Stack.Screen name="Weather" component={WeatherScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Billing" component={BillingScreen} />
           <Stack.Screen name="Verify" component={VerifyScreen} />
@@ -240,9 +243,11 @@ export default function AppNavigator() {
         // ── Worker stack ──
         <>
           <Stack.Screen name="WorkerTabs" component={WorkerTabs} />
+          <Stack.Screen name="Emergency" component={EmergencyScreen} />
           <Stack.Screen name="ComplaintDetail" component={ComplaintDetail} />
           <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
+          <Stack.Screen name="Weather" component={WeatherScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Billing" component={BillingScreen} />
           <Stack.Screen name="Verify" component={VerifyScreen} />

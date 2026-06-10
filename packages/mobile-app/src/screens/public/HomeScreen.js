@@ -522,7 +522,7 @@ export default function HomeScreen({ navigation }) {
 
         {/* ════ WEATHER & ALERTS ════ */}
         <View style={s.miniWidgetsRow}>
-          <View style={s.weatherWidget}>
+          <TouchableOpacity style={s.weatherWidget} onPress={() => navigation.navigate('Weather')} activeOpacity={0.82}>
             <Text style={{ fontSize: 24, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
             <View style={{ flex: 1 }}>
               <Text style={s.weatherTemp}>
@@ -532,7 +532,7 @@ export default function HomeScreen({ navigation }) {
                 {weather?.condition || literalT('Fetching weather...')}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
