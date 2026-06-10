@@ -5,6 +5,7 @@ import {
   Dimensions, FlatList, Image } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { newsAPI, emergencyAPI, complaintAPI } from '../../services/api';
 import { T } from '../../constants/theme';
@@ -520,7 +521,55 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         }
 
-        {/* ════ WEATHER & ALERTS ════ */}
+    
+
+
+        {/* ════ QUICK ACTIONS ════ */}
+        
+
+        <View style={[s.section, s.qaSection]}>
+          {/* Animated loop background */}
+          <QuickActionBg />
+
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>⚡ {t('quickActions')}</Text>
+            <View style={s.sectionLine} />
+          </View>
+          <View style={s.qGrid}>
+            {QUICK_ACTION_KEYS.map((item, index) =>
+            <ActionCard
+              key={item.route}
+              item={{ ...item, label: t(item.key) }}
+              index={index}
+              onPress={() => navigation.navigate(item.route)} />
+
+            )}
+          </View>
+        </View>
+        <TouchableOpacity
+          style={s.weatherCta}
+          onPress={() => navigation.navigate('Weather')}
+          activeOpacity={0.88}>
+          <LinearGradient
+            colors={['#0f766e', '#0891b2', '#2563eb']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.weatherCtaInner}>
+            <View style={s.weatherCtaIcon}>
+              <Icon name="weather-partly-cloudy" size={30} color="#fff" />
+            </View>
+            <View style={s.weatherCtaCopy}>
+              <Text style={s.weatherCtaTitle}>{literalT("Weather")}</Text>
+              <Text style={s.weatherCtaSub} numberOfLines={1}>
+                {weather?.temperatureC != null ? `${weather.temperatureC}°C` : literalT("Live forecast")} {weather?.condition ? `- ${weather.condition}` : ''}
+              </Text>
+            </View>
+            <View style={s.weatherCtaArrow}>
+              <Icon name="arrow-right" size={22} color="#fff" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+    {/* ════ WEATHER & ALERTS ════ */}
         <View style={s.miniWidgetsRow}>
           <TouchableOpacity style={s.weatherWidget} onPress={() => navigation.navigate('Weather')} activeOpacity={0.82}>
             <Text style={{ fontSize: 24, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
@@ -544,28 +593,6 @@ export default function HomeScreen({ navigation }) {
                 {alerts?.[0]?.message || literalT('No active alerts now.')}
               </Text>
             </View>
-          </View>
-        </View>
-
-
-        {/* ════ QUICK ACTIONS ════ */}
-        <View style={[s.section, s.qaSection]}>
-          {/* Animated loop background */}
-          <QuickActionBg />
-
-          <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>⚡ {t('quickActions')}</Text>
-            <View style={s.sectionLine} />
-          </View>
-          <View style={s.qGrid}>
-            {QUICK_ACTION_KEYS.map((item, index) =>
-            <ActionCard
-              key={item.route}
-              item={{ ...item, label: t(item.key) }}
-              index={index}
-              onPress={() => navigation.navigate(item.route)} />
-
-            )}
           </View>
         </View>
 
@@ -721,6 +748,14 @@ const s = StyleSheet.create({
   alertIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#fef9c3', alignItems: 'center', justifyContent: 'center' },
   alertTitle: { fontSize: 13, fontWeight: '800', color: '#9a3412' },
   alertDesc: { fontSize: 11, fontWeight: '500', color: '#b45309' },
+
+  weatherCta: { marginHorizontal: 16, marginTop: 14, borderRadius: 20, overflow: 'hidden', elevation: 8, shadowColor: '#0891b2', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
+  weatherCtaInner: { minHeight: 86, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  weatherCtaIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)' },
+  weatherCtaCopy: { flex: 1, minWidth: 0 },
+  weatherCtaTitle: { color: '#fff', fontSize: 18, fontWeight: '900' },
+  weatherCtaSub: { color: 'rgba(255,255,255,0.82)', fontSize: 12, fontWeight: '700', marginTop: 4 },
+  weatherCtaArrow: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
 
   // Quick Actions section with animated bg
   qaSection: { paddingBottom: 20, overflow: 'hidden' },

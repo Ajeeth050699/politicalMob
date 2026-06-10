@@ -4,8 +4,10 @@ import {
   Linking, ActivityIndicator, Platform, StatusBar, Alert } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { emergencyAPI } from '../../services/api';
 import { T } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 const TYPE_META = {
   police: { icon: '🚔', color: '#3b82f6', bg: '#dbeafe', label: 'Police' },
@@ -16,9 +18,11 @@ const TYPE_META = {
   district: { icon: '🏢', color: '#22c55e', bg: '#dcfce7', label: 'District Control' }
 };
 
-export default function EmergencyScreen() {
+export default function EmergencyScreen({ navigation }) {
+  const { userInfo } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const role = String(userInfo?.role || '').toLowerCase();
 
   useEffect(() => {
     emergencyAPI.getAll().
@@ -36,6 +40,18 @@ export default function EmergencyScreen() {
       { text: 'Call Now', style: 'destructive', onPress: () => Linking.openURL(`tel:${number}`) }]
 
     );
+  };
+
+  const goDashboard = () => {
+    if (role === 'admin' || role === 'superadmin' || role === 'agent') {
+      navigation.navigate('AdminTabs', { screen: 'Dashboard' });
+      return;
+    }
+    if (role === 'public' || role === 'citizen') {
+      navigation.navigate('Home');
+      return;
+    }
+    navigation.navigate('WorkerTabs', { screen: 'Dashboard' });
   };
 
   const renderItem = ({ item: c }) => {
@@ -78,8 +94,13 @@ export default function EmergencyScreen() {
 
       {/* ── Header ── */}
       <LinearGradient colors={['#dc2626', T.maroon]} style={s.header}>
-        <View style={s.alertBadge}>
+        <View style={s.headerTop}>
+          <TouchableOpacity style={s.backBtn} onPress={goDashboard} activeOpacity={0.82}>
+            <Icon name="arrow-left" size={22} color="#fff" />
+          </TouchableOpacity>
+          <View style={s.alertBadge}>
           <Text style={s.alertTxt}>{literalT("🆘 EMERGENCY SERVICES")}</Text>
+        </View>
         </View>
         <Text style={s.headerTitle}>{literalT("Emergency Contacts")}</Text>
         <Text style={s.headerSub}>{literalT("Tap any contact to call directly")}</Text>
@@ -132,7 +153,9 @@ const s = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 24, paddingHorizontal: 20 },
-  alertBadge: { backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 50, marginBottom: 10 },
+  headerTop: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  backBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)' },
+  alertBadge: { backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 50 },
   alertTxt: { color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   headerTitle: { fontSize: 26, fontWeight: '900', color: '#fff' },
   headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4, marginBottom: 18 },

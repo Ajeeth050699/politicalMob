@@ -403,32 +403,6 @@ export default function WorkerDashboard({ navigation }) {
         </TouchableOpacity>
         }
 
-        {/* ════ WEATHER & ALERTS ════ */}
-        <View style={s.miniWidgetsRow}>
-          <TouchableOpacity style={s.weatherWidget} onPress={() => navigation.navigate('Weather')} activeOpacity={0.82}>
-            <Text style={{ fontSize: 28, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
-            <View style={{ marginLeft: 0 }}>
-              <Text style={s.weatherTemp}>
-                {weather?.temperatureC != null ? `${weather.temperatureC}°C` : '—'}
-              </Text>
-              <Text style={s.weatherDesc}>
-                {weather?.condition || literalT('Fetching weather...')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <View style={s.alertWidget}>
-            <View style={s.alertIconWrap}>
-              <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
-            </View>
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
-              <Text style={s.alertDesc} numberOfLines={1}>
-                {alerts?.[0]?.message || literalT('No active alerts now.')}
-              </Text>
-            </View>
-          </View>
-        </View>
 
 
         {/* ════ QUICK ACTIONS ════ */}
@@ -455,6 +429,32 @@ export default function WorkerDashboard({ navigation }) {
           </View>
         </View>
 
+        {/* ════ WEATHER & ALERTS ════ */}
+        <View style={s.miniWidgetsRow}>
+          <TouchableOpacity style={s.weatherWidget} onPress={() => navigation.navigate('Weather')} activeOpacity={0.82}>
+            <Text style={{ fontSize: 28, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
+            <View style={{ marginLeft: 0 }}>
+              <Text style={s.weatherTemp}>
+                {weather?.temperatureC != null ? `${weather.temperatureC}°C` : '—'}
+              </Text>
+              <Text style={s.weatherDesc}>
+                {weather?.condition || literalT('Fetching weather...')}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <View style={s.alertWidget}>
+            <View style={s.alertIconWrap}>
+              <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
+            </View>
+            <View style={{ marginLeft: 10, flex: 1 }}>
+              <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
+              <Text style={s.alertDesc} numberOfLines={1}>
+                {alerts?.[0]?.message || literalT('No active alerts now.')}
+              </Text>
+            </View>
+          </View>
+        </View>
         {/* ════ TODAY'S FOCUS ════ */}
         <View style={s.section}>
           <View style={s.sectionHeader}>
