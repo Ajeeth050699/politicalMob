@@ -9,6 +9,8 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { complaintAPI } from '../../services/api';
 import { T, STATUS_COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useWeatherAlerts } from '../../hooks/useWeatherAlerts';
+
 
 const { width } = Dimensions.get('window');
 const APP_LOGO = require('../../../assets/images/icon.png');
@@ -201,6 +203,7 @@ function StatCard({ value, label, color, icon, delay, bg }) {
 
 export default function WorkerDashboard({ navigation }) {
   const { userInfo } = useAuth();
+  const { weather, alerts, loading: weatherLoading } = useWeatherAlerts({ pollMs: 10 * 60 * 1000 });
   const scrollY = useRef(new Animated.Value(0)).current;
   const heroAnim = useRef(new Animated.Value(0)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
@@ -342,22 +345,30 @@ export default function WorkerDashboard({ navigation }) {
         {/* ════ WEATHER & ALERTS ════ */}
         <View style={s.miniWidgetsRow}>
           <View style={s.weatherWidget}>
-            <Icon name="weather-partly-cloudy" size={28} color="#38bdf8" />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={s.weatherTemp}>32°C</Text>
-              <Text style={s.weatherDesc}>{literalT("Partly Cloudy")}</Text>
+            <Text style={{ fontSize: 28, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
+            <View style={{ marginLeft: 0 }}>
+              <Text style={s.weatherTemp}>
+                {weather?.temperatureC != null ? `${weather.temperatureC}°C` : '—'}
+              </Text>
+              <Text style={s.weatherDesc}>
+                {weather?.condition || literalT('Fetching weather...')}
+              </Text>
             </View>
           </View>
+
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
-              <Icon name="bullhorn-variant-outline" size={20} color="#ea580c" />
+              <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
             </View>
             <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={s.alertTitle}>{literalT("City Alert")}</Text>
-              <Text style={s.alertDesc} numberOfLines={1}>{literalT("Heavy rain expected today.")}</Text>
+              <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
+              <Text style={s.alertDesc} numberOfLines={1}>
+                {alerts?.[0]?.message || literalT('No active alerts now.')}
+              </Text>
             </View>
           </View>
         </View>
+
 
         {/* ════ QUICK ACTIONS ════ */}
         <View style={[s.section, s.qaSection]}>

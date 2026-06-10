@@ -22,7 +22,9 @@ const systemRoutes       = require('./routes/systemRoutes');
 const billingRoutes      = require('./routes/billingRoutes');
 const realtimeRoutes     = require('./routes/realtimeRoutes');
 const developerRoutes    = require('./routes/developerRoutes');
+const weatherRoutes      = require('./routes/weatherRoutes');
 const SystemSettings     = require('./models/systemSettingsModel');
+
 
 const app = express();
 
@@ -107,8 +109,10 @@ app.use('/api/system',        systemRoutes);
 app.use('/api/developer',     developerRoutes);
 app.use('/api/billing',       billingRoutes);
 app.use('/api/realtime',      realtimeRoutes);
+app.use(weatherRoutes);
 
 app.get('/', (req, res) => {
+
   res.send('PoliticalMob API is running!');
 });
 

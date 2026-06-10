@@ -9,8 +9,10 @@ import { useAuth } from '../../context/AuthContext';
 import { newsAPI, emergencyAPI, complaintAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 import { useLang } from '../../context/LanguageContext';
+import { useWeatherAlerts } from '../../hooks/useWeatherAlerts';
 
 const { width, height } = Dimensions.get('window');
+
 const APP_LOGO = require('../../../assets/images/icon.png');
 const QA_CARD_WIDTH = Math.floor((width - 52) / 3);
 const EMER_CARD_WIDTH = Math.min(138, Math.floor((width - 56) / 3));
@@ -371,7 +373,10 @@ export default function HomeScreen({ navigation }) {
   const [stats, setStats] = useState({ total: 0, pending: 0, done: 0 });
   const [refreshing, setRefreshing] = useState(false);
 
+  const { weather, alerts, loading: weatherLoading } = useWeatherAlerts({ pollMs: 10 * 60 * 1000 });
+
   const heroAnim = useRef(new Animated.Value(0)).current;
+
   const scrollY = useRef(new Animated.Value(0)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
 
@@ -518,22 +523,30 @@ export default function HomeScreen({ navigation }) {
         {/* ════ WEATHER & ALERTS ════ */}
         <View style={s.miniWidgetsRow}>
           <View style={s.weatherWidget}>
-            <Text style={{ fontSize: 24, marginRight: 8 }}>🌤️</Text>
+            <Text style={{ fontSize: 24, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
             <View style={{ flex: 1 }}>
-              <Text style={s.weatherTemp}>32°C</Text>
-              <Text style={s.weatherDesc}>{literalT("Partly Cloudy")}</Text>
+              <Text style={s.weatherTemp}>
+                {weather?.temperatureC != null ? `${weather.temperatureC}°C` : '—'}
+              </Text>
+              <Text style={s.weatherDesc}>
+                {weather?.condition || literalT('Fetching weather...')}
+              </Text>
             </View>
           </View>
+
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
-              <Text style={{ fontSize: 16 }}>📣</Text>
+              <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
             </View>
             <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={s.alertTitle}>{literalT("City Alert")}</Text>
-              <Text style={s.alertDesc} numberOfLines={1}>{literalT("Heavy rain expected today.")}</Text>
+              <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
+              <Text style={s.alertDesc} numberOfLines={1}>
+                {alerts?.[0]?.message || literalT('No active alerts now.')}
+              </Text>
             </View>
           </View>
         </View>
+
 
         {/* ════ QUICK ACTIONS ════ */}
         <View style={[s.section, s.qaSection]}>
