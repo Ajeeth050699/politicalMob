@@ -3,21 +3,23 @@ const { WeatherSnapshot, WeatherAlert } = require('../models/weatherModel');
 const { fetchWeatherForLocation } = require('../utils/openWeather');
 
 // Helper: location fallback logic
-function normalizeLocation({ district, ward }) {
+function normalizeLocation({ district, ward, lat, lng }) {
   return {
     district: district || undefined,
     ward: ward || undefined,
+    lat: lat || undefined,
+    lng: lng || undefined,
   };
 }
 
-// GET /api/weather/current?district=&ward=
+// GET /api/weather/current?district=&ward=&lat=&lng=
 // Returns latest weather snapshot for provided location.
 const getCurrentWeather = asyncHandler(async (req, res) => {
-  const { district, ward } = normalizeLocation(req.query);
+  const { district, ward, lat, lng } = normalizeLocation(req.query);
 
   // Fetch real weather using OpenWeather API utility
   // This will read from DB if < 30 mins old, otherwise fetch from OpenWeatherMap
-  const doc = await fetchWeatherForLocation(district);
+  const doc = await fetchWeatherForLocation(district, lat, lng);
 
   res.json({
     found: !!doc,

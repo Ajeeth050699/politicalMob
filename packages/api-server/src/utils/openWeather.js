@@ -4,61 +4,95 @@ const { WeatherSnapshot, WeatherAlert } = require('../models/weatherModel');
 const CACHE_MINUTES = 30; // How long before we fetch new data
 const DEFAULT_CITY = 'Chennai';
 
-async function fetchWeatherForLocation(district) {
+async function fetchWeatherForLocation(district, lat, lng) {
   const city = district || DEFAULT_CITY;
   
   // 1. Check if we have recent data in DB
   const thirtyMinsAgo = new Date(Date.now() - CACHE_MINUTES * 60 * 1000);
-  const recentSnapshot = await WeatherSnapshot.findOne({
-    district: city,
-    fetchedAt: { $gte: thirtyMinsAgo }
-  }).sort({ fetchedAt: -1 });
+  let query = { fetchedAt: { $gte: thirtyMinsAgo } };
+  
+  if (lat && lng) {
+    // Basic bounding box for caching lat/lng
+    query.lat = { $gte: Number(lat) - 0.1, $lte: Number(lat) + 0.1 };
+    query.lng = { $gte: Number(lng) - 0.1, $lte: Number(lng) + 0.1 };
+  } else {
+    query.district = city;
+  }
 
-  if (recentSnapshot) {
+  const recentSnapshot = await WeatherSnapshot.findOne(query).sort({ fetchedAt: -1 });
+
+  if (recentSnapshot?.raw?.current_weather && recentSnapshot?.raw?.daily?.time) {
     return recentSnapshot;
   }
 
-  // 2. We don't have recent data, so fetch from OpenWeatherMap
-  const apiKey = process.env.OPENWEATHER_API_KEY;
-  if (!apiKey) {
-    console.warn('OPENWEATHER_API_KEY is not set. Using simulated/cached weather.');
-    return await WeatherSnapshot.findOne({ district: city }).sort({ fetchedAt: -1 });
-  }
-
+  // 2. We don't have recent data, so fetch from Open-Meteo
   try {
-    // Adding ,IN forces India context. Adjust as needed if international.
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)},IN&units=metric&appid=${apiKey}`;
-    const response = await axios.get(url);
+    let targetLat = lat;
+    let targetLng = lng;
+
+    if (!targetLat || !targetLng) {
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
+      const geoRes = await axios.get(geoUrl);
+      if (geoRes.data && geoRes.data.results && geoRes.data.results.length > 0) {
+        targetLat = geoRes.data.results[0].latitude;
+        targetLng = geoRes.data.results[0].longitude;
+      } else {
+        throw new Error(`Location not found for ${city}`);
+      }
+    }
+
+    const weatherParams = new URLSearchParams({
+      latitude: String(targetLat),
+      longitude: String(targetLng),
+      current_weather: 'true',
+      hourly: 'temperature_2m,relativehumidity_2m,apparent_temperature,precipitation_probability,visibility,uv_index',
+      daily: 'weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,uv_index_max',
+      timezone: 'auto',
+      forecast_days: '7',
+    });
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?${weatherParams.toString()}`;
+    const response = await axios.get(weatherUrl);
     const data = response.data;
 
-    const temperatureC = data.main.temp;
-    const condition = data.weather && data.weather.length > 0 ? data.weather[0].main : 'Unknown';
-    const description = data.weather && data.weather.length > 0 ? data.weather[0].description : '';
-    const precipitationMm = (data.rain && data.rain['1h']) || (data.snow && data.snow['1h']) || 0;
+    const current = data.current_weather;
+    const temperatureC = current.temperature;
+    
+    // Convert WMO code to condition string
+    const WEATHER_CODE = {
+      0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+      45: "Fog", 48: "Rime fog", 51: "Light drizzle", 53: "Drizzle",
+      55: "Heavy drizzle", 61: "Light rain", 63: "Rain", 65: "Heavy rain",
+      71: "Light snow", 73: "Snow", 75: "Heavy snow", 80: "Rain showers",
+      81: "Showers", 82: "Heavy showers", 95: "Thunderstorm", 96: "Storm with hail", 99: "Severe storm",
+    };
+    const condition = WEATHER_CODE[current.weathercode] || 'Unknown';
+    const precipitationMm = data.hourly && data.hourly.precipitation_probability ? data.hourly.precipitation_probability[0] : 0; // fallback to prob as mm proxy
 
     // 3. Save to DB
     const snapshot = await WeatherSnapshot.create({
       district: city,
-      lat: data.coord.lat,
-      lng: data.coord.lon,
-      provider: 'openweathermap',
+      lat: targetLat,
+      lng: targetLng,
+      provider: 'open-meteo',
       temperatureC,
-      condition: description ? description.charAt(0).toUpperCase() + description.slice(1) : condition,
+      condition,
       precipitationMm,
       raw: data,
     });
 
     // 4. Check for alerts based on condition
-    const severeConditions = ['Thunderstorm', 'Tornado', 'Squall', 'Hurricane', 'Extreme'];
+    const severeCodes = [65, 75, 82, 95, 96, 99];
+    const rainCodes = [51, 53, 55, 61, 63, 80, 81];
+    
     let alertSeverity = null;
     let alertTitle = '';
     let alertMessage = '';
 
-    if (severeConditions.includes(condition) || precipitationMm > 15) {
+    if (severeCodes.includes(current.weathercode) || precipitationMm > 50) {
       alertSeverity = 'HIGH';
       alertTitle = 'Severe Weather Alert';
-      alertMessage = `High risk of ${condition}. Precipitation: ${precipitationMm}mm. Please stay safe.`;
-    } else if (precipitationMm > 2) {
+      alertMessage = `High risk of ${condition}. Please stay safe.`;
+    } else if (rainCodes.includes(current.weathercode) || precipitationMm > 20) {
       alertSeverity = 'MEDIUM';
       alertTitle = 'Rain Alert';
       alertMessage = `Moderate rain expected. Drive carefully.`;

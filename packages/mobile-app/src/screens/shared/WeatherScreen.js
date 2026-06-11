@@ -1,5 +1,5 @@
 import { literalT } from "../../i18n/runtimeTamil";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +18,7 @@ import * as Location from "expo-location";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
 import { T } from "../../constants/theme";
+import { weatherAPI } from "../../services/api";
 
 const DEFAULT_PLACE = {
   name: "Chennai",
@@ -66,6 +67,27 @@ const timeText = (iso) => {
   if (!iso) return "--";
   return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 };
+const LOCATION_CACHE_MAX_AGE_MS = 10 * 60 * 1000;
+const LOCATION_LOOKUP_TIMEOUT_MS = 4500;
+const WEATHER_UNAVAILABLE_MESSAGE = "Weather service is busy. Please try again in a few minutes.";
+
+const withTimeout = (promise, ms, message) => {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), ms);
+    }),
+  ]).finally(() => clearTimeout(timer));
+};
+
+const placeFromPosition = (position) => ({
+  name: "Current Location",
+  admin1: "Loading...",
+  country: "",
+  latitude: position.coords.latitude,
+  longitude: position.coords.longitude,
+});
 
 function MetricCard({ icon, label, value, color = T.maroon }) {
   return (
@@ -100,9 +122,12 @@ export default function WeatherScreen({ navigation, route }) {
   const [suggestions, setSuggestions] = useState([]);
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [locating, setLocating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
+  const abortControllerRef = useRef(null);
+  const bootstrappedRef = useRef(false);
 
   const current = weather?.current_weather;
   const currentMeta = useMemo(() => getWeatherMeta(current?.weathercode), [current?.weathercode]);
@@ -119,25 +144,96 @@ export default function WeatherScreen({ navigation, route }) {
 
   const loadWeather = useCallback(async (targetPlace = place) => {
     setError("");
-    const params = new URLSearchParams({
-      latitude: String(targetPlace.latitude),
-      longitude: String(targetPlace.longitude),
-      current_weather: "true",
-      hourly: "temperature_2m,relativehumidity_2m,apparent_temperature,precipitation_probability,visibility,uv_index",
-      daily: "weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,uv_index_max",
-      timezone: "auto",
-      forecast_days: "7",
-    });
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
-    if (!res.ok) throw new Error("Weather service unavailable");
-    const data = await res.json();
-    setWeather(data);
-    setPlace(targetPlace);
+    try {
+      const apiRes = await weatherAPI.getCurrent({
+        district: targetPlace.name,
+        lat: targetPlace.latitude,
+        lng: targetPlace.longitude,
+      });
+      const data = apiRes?.data?.data?.raw;
+
+      if (!data) {
+        throw new Error("Weather backend did not return forecast data. Please restart the API server and try again.");
+      }
+
+      if (!data?.current_weather) throw new Error("Weather service unavailable");
+      setWeather(data);
+      setPlace(targetPlace);
+    } catch (err) {
+      if (err?.response?.status === 429 || err?.message?.includes("429")) {
+        throw new Error(WEATHER_UNAVAILABLE_MESSAGE);
+      }
+      throw new Error(err?.message || "Weather service unavailable");
+    }
   }, [place]);
 
-  useEffect(() => {
-    loadWeather(place).catch((err) => setError(err.message || "Unable to load weather")).finally(() => setLoading(false));
+  const loadPlaceNameFromCoords = useCallback((coords) => {
+    Location.reverseGeocodeAsync(coords)
+      .then((nearby) => {
+        const first = nearby?.[0] || {};
+        if (first.city || first.district || first.name) {
+          setPlace(prev => ({
+            ...prev,
+            name: first.city || first.district || first.name || "Current location",
+            admin1: first.region || prev.admin1,
+            country: first.country || prev.country,
+          }));
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  const getDevicePosition = useCallback(async ({ requestPermission = false } = {}) => {
+    const permission = requestPermission
+      ? await Location.requestForegroundPermissionsAsync()
+      : await Location.getForegroundPermissionsAsync();
+
+    if (permission.status !== "granted") {
+      return null;
+    }
+
+    const cached = await Location.getLastKnownPositionAsync({
+      maxAge: LOCATION_CACHE_MAX_AGE_MS,
+    });
+
+    if (cached) return cached;
+
+    return withTimeout(
+      Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low }),
+      LOCATION_LOOKUP_TIMEOUT_MS,
+      "Location request timed out"
+    );
+  }, []);
+
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+
+    let mounted = true;
+
+    loadWeather(place)
+      .catch((err) => {
+        if (mounted) setError(err.message || "Unable to load weather");
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    if (!initialPlace) {
+      getDevicePosition()
+        .then((position) => {
+          if (!mounted || !position) return;
+          const devicePlace = placeFromPosition(position);
+          loadWeather(devicePlace).catch(() => {});
+          loadPlaceNameFromCoords(position.coords);
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [getDevicePosition, initialPlace, loadPlaceNameFromCoords, loadWeather, place]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -150,46 +246,76 @@ export default function WeatherScreen({ navigation, route }) {
     }
   };
 
-  const searchPlaces = async () => {
-    const text = query.trim();
-    if (text.length < 2) return;
+  const selectPlace = useCallback(async (targetPlace) => {
+    try {
+      await loadWeather(targetPlace);
+    } catch (err) {
+      setError(err.message || "Unable to load selected area");
+    }
+  }, [loadWeather]);
+
+  const searchPlaces = useCallback(async (searchText) => {
+    const text = (typeof searchText === "string" ? searchText : query).trim();
+    if (text.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setSearching(true);
     try {
-      const params = new URLSearchParams({ name: text, count: "8", language: "en", format: "json" });
-      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`);
+      const paramsStr = `name=${encodeURIComponent(text)}&count=8&language=en&format=json`;
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${paramsStr}`, {
+        signal: abortControllerRef.current.signal
+      });
       const data = await res.json();
       setSuggestions(data.results || []);
-    } catch {
-      Alert.alert("Search failed", "Please check your internet connection and try again.");
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      if (typeof searchText !== "string") {
+        Alert.alert("Search failed", "Please check your internet connection and try again.");
+      }
     } finally {
       setSearching(false);
     }
-  };
+  }, [query]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (query.trim().length >= 2) {
+        searchPlaces(query);
+      } else {
+        setSuggestions([]);
+      }
+    }, 400);
+    return () => clearTimeout(delayDebounceFn);
+  }, [query, searchPlaces]);
 
   const useCurrentLocation = async () => {
     try {
+      setLocating(true);
       setLoading(true);
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
+      const position = await getDevicePosition({ requestPermission: true });
+      if (!position) {
         Alert.alert("Location permission needed", "Allow location access to show nearby weather.");
         return;
       }
-      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const nearby = await Location.reverseGeocodeAsync(position.coords).catch(() => []);
-      const first = nearby?.[0] || {};
-      await loadWeather({
-        name: first.city || first.district || "Current location",
-        admin1: first.region,
-        country: first.country,
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      });
+
+      const tempPlace = placeFromPosition(position);
+      await loadWeather(tempPlace);
+      loadPlaceNameFromCoords(position.coords);
+
       setSuggestions([]);
       setQuery("");
     } catch {
       Alert.alert("Location failed", "Could not read your current location.");
     } finally {
       setLoading(false);
+      setLocating(false);
     }
   };
 
@@ -231,9 +357,17 @@ export default function WeatherScreen({ navigation, route }) {
             <TouchableOpacity style={s.circleBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
               <Icon name="arrow-left" size={22} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity style={s.locationBtn} onPress={useCurrentLocation} activeOpacity={0.82}>
-              <Icon name="crosshairs-gps" size={18} color="#fff" />
-              <Text style={s.locationBtnTxt}>{literalT("Use my location")}</Text>
+            <TouchableOpacity
+              style={[s.locationBtn, locating && s.locationBtnDisabled]}
+              onPress={useCurrentLocation}
+              activeOpacity={0.82}
+              disabled={locating}>
+              {locating ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Icon name="crosshairs-gps" size={18} color="#fff" />
+              )}
+              <Text style={s.locationBtnTxt}>{literalT(locating ? "Locating..." : "Use my location")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -275,7 +409,7 @@ export default function WeatherScreen({ navigation, route }) {
                   key={`${item.id}-${item.latitude}`}
                   style={s.suggestionItem}
                   onPress={() => {
-                    loadWeather(item).catch(() => setError("Unable to load selected area"));
+                    selectPlace(item);
                     setSuggestions([]);
                     setQuery("");
                   }}>
@@ -291,7 +425,7 @@ export default function WeatherScreen({ navigation, route }) {
 
         <View style={s.popularRow}>
           {POPULAR_PLACES.map((p) => (
-            <TouchableOpacity key={p.name} style={s.popularChip} onPress={() => loadWeather(p)} activeOpacity={0.8}>
+            <TouchableOpacity key={p.name} style={s.popularChip} onPress={() => selectPlace(p)} activeOpacity={0.8}>
               <Text style={s.popularTxt}>{p.name}</Text>
             </TouchableOpacity>
           ))}
@@ -348,6 +482,7 @@ const s = StyleSheet.create({
   heroTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 22 },
   circleBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)" },
   locationBtn: { flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 12, height: 38, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.16)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)" },
+  locationBtnDisabled: { opacity: 0.72 },
   locationBtnTxt: { color: "#fff", fontSize: 12, fontWeight: "800" },
   heroKicker: { color: "rgba(255,255,255,0.72)", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
   placeName: { color: "#fff", fontSize: 26, lineHeight: 32, fontWeight: "900", marginTop: 4 },

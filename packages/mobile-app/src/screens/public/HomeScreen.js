@@ -585,12 +585,12 @@ export default function HomeScreen({ navigation }) {
 
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
-              <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
+              <Text style={{ fontSize: 16 }}>{alerts?.[0] ? (alerts[0].severity === 'HIGH' ? '🚨' : '📣') : '✅'}</Text>
             </View>
             <View style={{ marginLeft: 10, flex: 1 }}>
               <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
               <Text style={s.alertDesc} numberOfLines={1}>
-                {alerts?.[0]?.message || literalT('No active alerts now.')}
+                {alerts?.[0]?.message || literalT('Normal conditions. No active alerts.')}
               </Text>
             </View>
           </View>

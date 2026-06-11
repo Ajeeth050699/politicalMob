@@ -293,12 +293,12 @@ export default function AdminDashboard({ navigation }) {
           </TouchableOpacity>
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
-              <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
+              <Text style={{ fontSize: 16 }}>{alerts?.[0] ? (alerts[0].severity === 'HIGH' ? '🚨' : '📣') : '✅'}</Text>
             </View>
             <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={s.alertTitle}>{literalT("City Alert")}</Text>
+              <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
               <Text style={s.alertDesc} numberOfLines={1}>
-                {alerts?.[0]?.message || literalT("No active alerts now.")}
+                {alerts?.[0]?.message || literalT('Normal conditions. No active alerts.')}
               </Text>
             </View>
           </View>
@@ -485,7 +485,7 @@ const s = StyleSheet.create({
   adminMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 },
   adminMetaChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
   adminMetaChipTxt: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '700' },
-  healthPanel: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', flexDirection: 'row', alignItems: 'center', gap: 14, elevation: 8, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
+  healthPanel: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', flexDirection: 'row', alignItems: 'center', gap: 14 },
   healthLabel: { color: 'rgba(255,255,255,0.76)', fontSize: 12, fontWeight: '700' },
   healthValue: { color: T.goldL, fontSize: 34, fontWeight: '900', lineHeight: 38 },
   healthRight: { flex: 1, gap: 8 },

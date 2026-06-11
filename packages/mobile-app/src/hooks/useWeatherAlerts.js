@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
+import * as Location from 'expo-location';
 import { weatherAPI, alertsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,9 +24,33 @@ export function useWeatherAlerts({ pollMs = 10 * 60 * 1000 } = {}) {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
+      let lat, lng;
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          let loc = await Location.getLastKnownPositionAsync();
+          if (!loc) {
+            loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Lowest });
+          }
+          if (loc) {
+            lat = loc.coords.latitude;
+            lng = loc.coords.longitude;
+          }
+        }
+      } catch (err) {
+        // Location failed, fallback to profile info
+      }
+
+      const params = {
+        district: location.district,
+        ward: location.ward,
+        lat,
+        lng
+      };
+
       const [wRes, aRes] = await Promise.all([
-        weatherAPI.getCurrent({ district: location.district, ward: location.ward }),
-        alertsAPI.getActive({ district: location.district, ward: location.ward }),
+        weatherAPI.getCurrent(params),
+        alertsAPI.getActive(params),
       ]);
 
       // API returns {found, data} for weather

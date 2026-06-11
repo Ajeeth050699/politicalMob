@@ -4,6 +4,7 @@ import {
   RefreshControl, ActivityIndicator, Platform, StatusBar, ScrollView } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { newsAPI } from '../../services/api';
 import { T } from '../../constants/theme';
 
@@ -90,8 +91,15 @@ export default function NewsScreen({ navigation }) {
 
       {/* ── Header ── */}
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-        <Text style={s.headerTitle}>{literalT("📰 Local News")}</Text>
-        <Text style={s.headerSub}>{literalT("Stay updated with Tamil Nadu")}</Text>
+        <View style={s.headerTopRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn} activeOpacity={0.8}>
+            <Icon name="arrow-left" size={28} color="#fff" />
+          </TouchableOpacity>
+          <View style={s.headerTitleWrap}>
+            <Text style={s.headerTitle}>{literalT("📰 Local News")}</Text>
+            <Text style={s.headerSub}>{literalT("Stay updated with Tamil Nadu")}</Text>
+          </View>
+        </View>
 
         {/* News count badges */}
         <View style={s.countRow}>
@@ -150,8 +158,11 @@ const s = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 20, paddingHorizontal: 20 },
+  headerTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  backBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
+  headerTitleWrap: { flex: 1 },
   headerTitle: { fontSize: 24, fontWeight: '900', color: '#fff' },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4, marginBottom: 16 },
+  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
 
   countRow: { flexDirection: 'row', gap: 10 },
   countCard: { flex: 1, backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 14, padding: 12, alignItems: 'center' },

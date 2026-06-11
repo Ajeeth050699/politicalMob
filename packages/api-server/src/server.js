@@ -109,7 +109,7 @@ app.use('/api/system',        systemRoutes);
 app.use('/api/developer',     developerRoutes);
 app.use('/api/billing',       billingRoutes);
 app.use('/api/realtime',      realtimeRoutes);
-app.use(weatherRoutes);
+app.use('/api/weather',       weatherRoutes);
 
 app.get('/', (req, res) => {
 

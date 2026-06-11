@@ -235,6 +235,7 @@ export default function AppNavigator() {
           <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
           <Stack.Screen name="Weather" component={WeatherScreen} />
+          <Stack.Screen name="Camps" component={CampsScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Billing" component={BillingScreen} />
           <Stack.Screen name="Verify" component={VerifyScreen} />
@@ -248,6 +249,7 @@ export default function AppNavigator() {
           <Stack.Screen name="NotificationDetail" component={NotificationDetail} />
           <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
           <Stack.Screen name="Weather" component={WeatherScreen} />
+          <Stack.Screen name="Camps" component={CampsScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Billing" component={BillingScreen} />
           <Stack.Screen name="Verify" component={VerifyScreen} />

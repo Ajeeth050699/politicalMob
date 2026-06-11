@@ -422,7 +422,7 @@ export default function WorkerDashboard({ navigation }) {
               { icon: 'phone-alert-outline', label: 'Emergency', color: '#ef4444', route: 'Emergency', bg: '#fee2e2' },
               { icon: 'bell-ring-outline', label: 'Alerts', color: '#f59e0b', route: 'Notifications', bg: '#fef3c7' },
               { icon: 'newspaper-variant-outline', label: 'News', color: '#3b82f6', route: 'News', bg: '#dbeafe' },
-              { icon: 'account-hard-hat-outline', label: 'Profile', color: '#8b5cf6', route: 'Profile', bg: '#ede9fe' }
+              { icon: 'tent', label: 'Camps', color: '#16a34a', route: 'Camps', bg: '#dcfce7' }
             ].map((action, i) => (
               <ActionCard key={action.label} item={action} index={i} onPress={() => navigation.navigate(action.route)} />
             ))}
@@ -445,12 +445,12 @@ export default function WorkerDashboard({ navigation }) {
 
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
-              <Text style={{ fontSize: 16 }}>{alerts?.[0]?.severity === 'HIGH' ? '🚨' : '📣'}</Text>
+              <Text style={{ fontSize: 16 }}>{alerts?.[0] ? (alerts[0].severity === 'HIGH' ? '🚨' : '📣') : '✅'}</Text>
             </View>
             <View style={{ marginLeft: 10, flex: 1 }}>
               <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
               <Text style={s.alertDesc} numberOfLines={1}>
-                {alerts?.[0]?.message || literalT('No active alerts now.')}
+                {alerts?.[0]?.message || literalT('Normal conditions. No active alerts.')}
               </Text>
             </View>
           </View>

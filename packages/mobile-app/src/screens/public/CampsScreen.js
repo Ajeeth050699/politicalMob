@@ -4,6 +4,7 @@ import {
   ActivityIndicator, RefreshControl, Linking, Platform, StatusBar } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { newsAPI } from '../../services/api';
 import { T } from '../../constants/theme'; // ← fixed from '../../../constants/theme'
 
@@ -111,11 +112,15 @@ export default function CampsScreen({ navigation }) {
 
       {/* ── Header ── */}
       <LinearGradient colors={[T.maroon, T.maroonL]} style={s.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-          <Text style={s.backTxt}>{literalT("← Back")}</Text>
-        </TouchableOpacity>
-        <Text style={s.headerTitle}>{literalT("🏕️ Welfare Camps")}</Text>
-        <Text style={s.headerSub}>{literalT("Government welfare programs near you")}</Text>
+        <View style={s.headerTopRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn} activeOpacity={0.8}>
+            <Icon name="arrow-left" size={28} color="#fff" />
+          </TouchableOpacity>
+          <View style={s.headerTitleWrap}>
+            <Text style={s.headerTitle}>{literalT("🏕️ Welfare Camps")}</Text>
+            <Text style={s.headerSub}>{literalT("Government welfare programs near you")}</Text>
+          </View>
+        </View>
 
         {/* Stats */}
         <View style={s.statsRow}>
@@ -189,8 +194,10 @@ const s = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingBottom: 16, paddingHorizontal: 20, zIndex: 1 },
-  backBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 52 : 40, left: 16, width: 44, height: 44, justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 10 },
+  headerTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  backBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
   backTxt: { color: '#fff', fontSize: 24, fontWeight: '600', marginTop: -4 },
+  headerTitleWrap: { flex: 1 },
   headerTitle: { fontSize: 24, fontWeight: '900', color: '#fff' },
   headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4, marginBottom: 16 },
 

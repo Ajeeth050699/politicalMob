@@ -157,7 +157,7 @@ export const emergencyAPI = {
 
 // ── WEATHER & ALERTS ─────────────────────────────────────────────
 export const weatherAPI = {
-  getCurrent: (params) => api.get('/weather/weather/current', { params }),
+  getCurrent: (params) => api.get('/weather/current', { params }),
 };
 
 export const alertsAPI = {
