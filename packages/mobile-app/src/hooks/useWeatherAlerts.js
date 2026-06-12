@@ -13,6 +13,8 @@ export function useWeatherAlerts({ pollMs = 10 * 60 * 1000 } = {}) {
   const [loading, setLoading] = useState(true);
 
   const pollTimer = useRef(null);
+  const isRefreshingRef = useRef(false);
+
 
   const location = useMemo(() => {
     return {
@@ -21,9 +23,13 @@ export function useWeatherAlerts({ pollMs = 10 * 60 * 1000 } = {}) {
     };
   }, [userInfo]);
 
+
   const refresh = useCallback(async () => {
+    if (isRefreshingRef.current) return;
+    isRefreshingRef.current = true;
     setLoading(true);
     try {
+
       let lat, lng;
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -41,12 +47,29 @@ export function useWeatherAlerts({ pollMs = 10 * 60 * 1000 } = {}) {
         // Location failed, fallback to profile info
       }
 
+      if (!location?.district && !location?.ward) {
+        // If user has no location context yet, don't call weather APIs.
+        return;
+      }
+
+      // reset loading state if we early-return
+      setLoading(false);
+
+
+
       const params = {
         district: location.district,
         ward: location.ward,
-        lat,
-        lng
+        lat: typeof lat === 'number' ? lat : undefined,
+        lng: typeof lng === 'number' ? lng : undefined,
       };
+
+      // Avoid calling with completely empty parameters.
+      if (!params.district && !params.ward && params.lat == null && params.lng == null) {
+        return;
+      }
+
+
 
       const [wRes, aRes] = await Promise.all([
         weatherAPI.getCurrent(params),

@@ -289,7 +289,8 @@ export default function AssignedComplaints({ navigation }) {
       {/* List */}
       <FlatList
         data={filtered}
-        keyExtractor={(c) => c.id?.toString()}
+        keyExtractor={(c) => String(c._id || c.id)}
+
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.maroon} colors={[T.maroon]} />}
         renderItem={renderItem}
