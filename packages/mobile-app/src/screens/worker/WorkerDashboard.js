@@ -300,7 +300,7 @@ export default function WorkerDashboard({ navigation }) {
   const nextComplaint = complaints.find((c) => c.status === 'NEW') || complaints.find((c) => c.status === 'ACCEPTED') || complaints.find((c) => c.status === 'IN PROGRESS');
   const categoryStats = Object.entries(
     complaints.reduce((acc, c) => {
-      const key = c.category || 'Others';
+      const key = complaintCategoryT(c.category, c.customCategory);
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {})
@@ -564,7 +564,7 @@ export default function WorkerDashboard({ navigation }) {
                   </View>
                   <View style={s.mixInfo}>
                     <Text style={s.mixCount}>{count}</Text>
-                    <Text style={s.mixName} numberOfLines={2}>{complaintCategoryT(category)}</Text>
+                    <Text style={s.mixName} numberOfLines={2}>{category}</Text>
                   </View>
                 </View>
               ))}

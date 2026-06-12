@@ -5,6 +5,7 @@ import {
   Platform, StatusBar, Image } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { T } from '../../constants/theme';
 import PopupToast from '../../components/PopupToast';
@@ -111,8 +112,8 @@ export default function LoginScreen({ navigation }) {
                 returnKeyType="done"
                 onSubmitEditing={handleLogin} />
               
-              <TouchableOpacity onPress={() => setShowPass((v) => !v)} style={{ padding: 8 }}>
-                <Text style={{ fontSize: 16 }}>{showPass ? '🙈' : '👁️'}</Text>
+              <TouchableOpacity onPress={() => setShowPass((v) => !v)} style={s.eyeBtn} activeOpacity={0.75}>
+                <Icon name={showPass ? 'eye-off-outline' : 'eye-outline'} size={22} color={T.textM} />
               </TouchableOpacity>
             </View>
 
@@ -174,6 +175,7 @@ const s = StyleSheet.create({
   inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14, marginBottom: 16 },
   icon: { fontSize: 16, marginRight: 10 },
   input: { paddingVertical: 14, fontSize: 15, color: T.text },
+  eyeBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   forgotBtn: { alignSelf: 'flex-end', marginTop: -8, marginBottom: 20 },
   forgotTxt: { fontSize: 13, color: T.maroon, fontWeight: '600' },
   btn: { borderRadius: 50, overflow: 'hidden', elevation: 4, shadowColor: T.maroon, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },

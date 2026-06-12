@@ -1,7 +1,7 @@
 import { complaintCategoryT, literalT } from "../../i18n/runtimeTamil";import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
-  TouchableOpacity, ActivityIndicator, Platform, StatusBar, Animated, Image } from
+  TouchableOpacity, ActivityIndicator, Platform, StatusBar, Animated, Image, Dimensions } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -11,6 +11,11 @@ import { useAuth } from '../../context/AuthContext';
 import { useWeatherAlerts } from '../../hooks/useWeatherAlerts';
 
 const APP_LOGO = require('../../../assets/images/icon.png');
+const { width } = Dimensions.get('window');
+const PAGE_PAD = 16;
+const CARD_GAP = 10;
+const ADMIN_HALF_CARD_WIDTH = Math.floor((width - PAGE_PAD * 2 - CARD_GAP) / 2);
+const ADMIN_CATEGORY_CARD_WIDTH = Math.min(132, Math.floor(width * 0.34));
 const asArray = (payload) => {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
@@ -25,16 +30,6 @@ const STATUS_META = {
   COMPLETED: { label: 'Completed', color: T.green, bg: '#DCFCE7' }
 };
 
-const CATEGORY_ICONS = {
-  'Street Light Problem': 'lightbulb-on-outline',
-  'Road Damage': 'road-variant',
-  'Garbage Issue': 'trash-can-outline',
-  'Water Supply Problem': 'water-outline',
-  'Drainage Issue': 'pipe-leak',
-  'Public Safety Issue': 'shield-alert-outline',
-  Others: 'file-document-outline'
-};
-
 const categoryIconName = (category) => ({
   'Street Light Problem': 'lightbulb-on-outline',
   'Road Damage': 'road-variant',
@@ -44,6 +39,16 @@ const categoryIconName = (category) => ({
   'Public Safety Issue': 'shield-alert-outline',
   Others: 'file-document-outline'
 })[category] || 'file-document-outline';
+
+const categoryMeta = (category) => ({
+  'Street Light Problem': { color: '#b45309', bg: '#fffbeb', border: '#fcd34d' },
+  'Road Damage': { color: '#92400e', bg: '#fff7ed', border: '#fdba74' },
+  'Garbage Issue': { color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
+  'Water Supply Problem': { color: '#0369a1', bg: '#f0f9ff', border: '#7dd3fc' },
+  'Drainage Issue': { color: '#4338ca', bg: '#eef2ff', border: '#a5b4fc' },
+  'Public Safety Issue': { color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' },
+  Others: { color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' }
+})[category] || { color: T.maroon, bg: '#fff7ed', border: '#fecaca' };
 
 function StatTile({ label, value, sub, color, iconName, onPress }) {
   const resolvedIcon = iconName || {
@@ -55,16 +60,15 @@ function StatTile({ label, value, sub, color, iconName, onPress }) {
 
   return (
     <TouchableOpacity
-      style={s.statTile}
+      style={[s.statTile, { backgroundColor: color + '0D', borderColor: color + '38' }]}
       onPress={onPress}
       activeOpacity={onPress ? 0.82 : 1}
       disabled={!onPress}>
       
-      <View style={s.cardTopLight} />
-      <View style={s.cardBottomShade} />
       <View style={[s.statIconBox, { backgroundColor: color + '18' }]}>
         <Icon name={resolvedIcon} size={22} color={color} />
       </View>
+      <View style={[s.cardAccent, { backgroundColor: color }]} />
       <Text style={s.statValue}>{value}</Text>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
       {!!sub && <Text style={s.statSub} numberOfLines={1}>{sub}</Text>}
@@ -87,12 +91,11 @@ function SectionHeader({ title, action, onPress }) {
 
 function QuickActionCard({ icon, label, sub, color, onPress }) {
   return (
-    <TouchableOpacity style={s.quickActionCard} onPress={onPress} activeOpacity={0.84}>
-      <View style={s.cardTopLight} />
-      <View style={s.cardBottomShade} />
+    <TouchableOpacity style={[s.quickActionCard, { backgroundColor: color + '0D', borderColor: color + '30' }]} onPress={onPress} activeOpacity={0.84}>
       <View style={[s.quickActionIcon, { backgroundColor: color + '16' }]}>
         <Icon name={icon} size={24} color={color} />
       </View>
+      <View style={[s.cardAccent, { backgroundColor: color }]} />
       <Text style={s.quickActionLabel} numberOfLines={1}>{label}</Text>
       <Text style={s.quickActionSub} numberOfLines={2}>{sub}</Text>
     </TouchableOpacity>);
@@ -281,21 +284,23 @@ export default function AdminDashboard({ navigation }) {
         {/* ════ WEATHER & ALERTS ════ */}
         <View style={s.miniWidgetsRow}>
           <TouchableOpacity style={s.weatherWidget} onPress={() => navigation.navigate('Weather')} activeOpacity={0.82}>
-            <Text style={{ fontSize: 24, marginRight: 8 }}>{weather?.condition ? '🌤️' : '🌤️'}</Text>
-            <View style={{ marginLeft: 10 }}>
+            <View style={s.weatherIconBox}>
+              <Icon name="weather-partly-cloudy" size={22} color="#0891b2" />
+            </View>
+            <View style={s.widgetCopy}>
               <Text style={s.weatherTemp}>
                 {weather?.temperatureC != null ? `${weather.temperatureC}°C` : '—'}
               </Text>
               <Text style={s.weatherDesc}>
-                {weather?.condition || literalT('Fetching weather...')}
+                {weatherLoading ? literalT('Refreshing weather...') : weather?.condition || literalT('Fetching weather...')}
               </Text>
             </View>
           </TouchableOpacity>
           <View style={s.alertWidget}>
             <View style={s.alertIconWrap}>
-              <Text style={{ fontSize: 16 }}>{alerts?.[0] ? (alerts[0].severity === 'HIGH' ? '🚨' : '📣') : '✅'}</Text>
+              <Icon name={alerts?.[0] ? 'bullhorn-outline' : 'check-circle-outline'} size={18} color={alerts?.[0] ? '#b45309' : '#16a34a'} />
             </View>
-            <View style={{ marginLeft: 10, flex: 1 }}>
+            <View style={s.widgetCopy}>
               <Text style={s.alertTitle}>{literalT('City Alert')}</Text>
               <Text style={s.alertDesc} numberOfLines={1}>
                 {alerts?.[0]?.message || literalT('Normal conditions. No active alerts.')}
@@ -324,16 +329,12 @@ export default function AdminDashboard({ navigation }) {
         <View style={s.section}>
           <SectionHeader title={literalT("Operations")} />
           <View style={s.opsGrid}>
-            <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminComplaints')} activeOpacity={0.82}>
-              <View style={s.cardTopLight} />
-              <View style={s.cardBottomShade} />
+            <TouchableOpacity style={[s.opsCard, s.opsReview]} onPress={() => navigation.navigate('AdminComplaints')} activeOpacity={0.82}>
               <View style={s.opsIconBox}><Icon name="magnify" size={25} color={T.maroon} /></View>
               <Text style={s.opsTitle}>{literalT("Review Complaints")}</Text>
               <Text style={s.opsSub}>{literalT("Filter by thokuthi, status, and search.")}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.opsCard} onPress={() => navigation.navigate('AdminWorkers')} activeOpacity={0.82}>
-              <View style={s.cardTopLight} />
-              <View style={s.cardBottomShade} />
+            <TouchableOpacity style={[s.opsCard, s.opsWorkers]} onPress={() => navigation.navigate('AdminWorkers')} activeOpacity={0.82}>
               <View style={s.opsIconBox}><Icon name="account-hard-hat" size={25} color={T.blue} /></View>
               <Text style={s.opsTitle}>{literalT("Worker Coverage")}</Text>
               <Text style={s.opsSub}>{stats.activeWorkers}/{stats.totalWorkers}{literalT("active,")}{activeWorkerRate}{literalT("% coverage.")}</Text>
@@ -371,15 +372,16 @@ export default function AdminDashboard({ navigation }) {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryRow}>
             {categories.length === 0 ?
             <View style={s.inlineEmpty}><Text style={s.emptyText}>{literalT("No category data.")}</Text></View> :
-            categories.map((cat) =>
-            <View key={cat.name} style={s.categoryCard}>
-                <View style={s.cardTopLight} />
-                <View style={s.cardBottomShade} />
-                <View style={s.categoryIconBox}><Icon name={categoryIconName(cat.name)} size={24} color={T.maroon} /></View>
+            categories.map((cat) => {
+              const meta = categoryMeta(cat.name);
+              return (
+            <View key={cat.name} style={[s.categoryCard, { backgroundColor: meta.bg, borderColor: meta.border }]}>
+                <View style={[s.categoryIconBox, { backgroundColor: '#fff', borderColor: meta.border }]}><Icon name={categoryIconName(cat.name)} size={24} color={meta.color} /></View>
                 <Text style={s.categoryName} numberOfLines={2}>{complaintCategoryT(cat.name)}</Text>
-                <Text style={s.categoryValue}>{cat.value}%</Text>
-              </View>
-            )}
+                <Text style={[s.categoryValue, { color: meta.color }]}>{cat.value}%</Text>
+              </View>);
+
+            })}
           </ScrollView>
         </View>
 
@@ -462,9 +464,9 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: T.bg },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: T.bg },
   loadingText: { color: T.textM, marginTop: 10, fontSize: 13 },
-  scrollContent: { paddingBottom: 34 },
+  scrollContent: { paddingBottom: 40 },
 
-  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingHorizontal: 20, paddingBottom: 30, position: 'relative', overflow: 'hidden' },
+  header: { paddingTop: Platform.OS === 'ios' ? 52 : 40, paddingHorizontal: 20, paddingBottom: 36, position: 'relative', overflow: 'hidden' },
   heroGrid: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05 },
   heroOrb1: { position: 'absolute', top: -60, right: -50, width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,100,60,0.13)' },
   heroOrb2: { position: 'absolute', bottom: 10, left: -60, width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(212,160,23,0.10)' },
@@ -476,7 +478,7 @@ const s = StyleSheet.create({
   onlineBlip: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ade80' },
   appPillTxt: { fontSize: 12, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
   headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
-  avatar: { width: 50, height: 50, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  avatar: { width: 50, height: 50, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)' },
   avatarTxt: { color: '#fff', fontSize: 20, fontWeight: '900' },
   headerCopy: { flex: 1, minWidth: 0 },
   greeting: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '700' },
@@ -485,7 +487,7 @@ const s = StyleSheet.create({
   adminMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 },
   adminMetaChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
   adminMetaChipTxt: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '700' },
-  healthPanel: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', flexDirection: 'row', alignItems: 'center', gap: 14 },
+  healthPanel: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', flexDirection: 'row', alignItems: 'center', gap: 14 },
   healthLabel: { color: 'rgba(255,255,255,0.76)', fontSize: 12, fontWeight: '700' },
   healthValue: { color: T.goldL, fontSize: 34, fontWeight: '900', lineHeight: 38 },
   healthRight: { flex: 1, gap: 8 },
@@ -493,42 +495,46 @@ const s = StyleSheet.create({
   progressTrack: { height: 9, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 5, backgroundColor: T.goldL },
 
-  miniWidgetsRow: { flexDirection: 'row', paddingHorizontal: 16, marginTop: 16, marginBottom: 4, gap: 12 },
-  weatherWidget: { flex: 0.8, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  miniWidgetsRow: { flexDirection: 'row', paddingHorizontal: PAGE_PAD, marginTop: 16, marginBottom: 4, gap: CARD_GAP },
+  weatherWidget: { flex: 1, minHeight: 70, flexDirection: 'row', alignItems: 'center', backgroundColor: '#ecfeff', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#a5f3fc' },
+  weatherIconBox: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#cffafe', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  widgetCopy: { flex: 1, minWidth: 0 },
   weatherTemp: { fontSize: 16, fontWeight: '900', color: '#0f172a' },
   weatherDesc: { fontSize: 11, fontWeight: '600', color: '#64748b' },
   
-  alertWidget: { flex: 1.2, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fffaf0', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#fef08a', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-  alertIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#fef9c3', alignItems: 'center', justifyContent: 'center' },
+  alertWidget: { flex: 1, minHeight: 70, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fffaf0', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#fef08a' },
+  alertIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#fef9c3', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
   alertTitle: { fontSize: 13, fontWeight: '800', color: '#9a3412' },
   alertDesc: { fontSize: 11, fontWeight: '500', color: '#b45309' },
 
-  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 14, paddingTop: 14 },
-  statTile: { width: '48%', height: 136, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
-  statIconBox: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center', marginBottom: 10, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP, paddingHorizontal: PAGE_PAD, paddingTop: 14 },
+  statTile: { width: ADMIN_HALF_CARD_WIDTH, height: 132, borderRadius: 18, padding: 14, borderWidth: 1, overflow: 'hidden' },
+  statIconBox: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   statIcon: { fontSize: 21 },
   statValue: { color: T.text, fontSize: 24, fontWeight: '900' },
   statLabel: { color: T.text, fontSize: 13, fontWeight: '800', marginTop: 2 },
   statSub: { color: T.textM, fontSize: 11, marginTop: 2 },
 
-  section: { paddingHorizontal: 14, paddingTop: 22 },
+  section: { paddingHorizontal: PAGE_PAD, paddingTop: 22 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sectionTitle: { color: T.text, fontSize: 17, fontWeight: '900' },
   sectionAction: { color: T.maroon, fontSize: 13, fontWeight: '800' },
 
-  quickActionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  quickActionCard: { width: '48%', minHeight: 124, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
+  quickActionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
+  quickActionCard: { width: ADMIN_HALF_CARD_WIDTH, minHeight: 124, borderRadius: 18, padding: 14, borderWidth: 1, overflow: 'hidden' },
   quickActionIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   quickActionLabel: { color: T.text, fontSize: 14, fontWeight: '900' },
   quickActionSub: { color: T.textM, fontSize: 11, lineHeight: 15, marginTop: 4 },
 
-  opsGrid: { flexDirection: 'row', gap: 10 },
-  opsCard: { flex: 1, height: 132, backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 9, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, overflow: 'hidden' },
+  opsGrid: { flexDirection: 'row', gap: CARD_GAP },
+  opsCard: { width: ADMIN_HALF_CARD_WIDTH, minHeight: 136, borderRadius: 18, padding: 14, borderWidth: 1, overflow: 'hidden' },
+  opsReview: { backgroundColor: '#fff7ed', borderColor: '#fed7aa' },
+  opsWorkers: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
   opsIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   opsTitle: { color: T.text, fontSize: 14, fontWeight: '900' },
   opsSub: { color: T.textM, fontSize: 11, lineHeight: 16, marginTop: 4 },
 
-  trendCard: { height: 146, backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
+  trendCard: { height: 146, backgroundColor: '#f8fafc', borderRadius: 18, borderWidth: 1, borderColor: '#e2e8f0', paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
   trendColumn: { alignItems: 'center', flex: 1 },
   barPair: { height: 88, flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
   bar: { width: 7, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
@@ -538,14 +544,14 @@ const s = StyleSheet.create({
   legendRow: { flexDirection: 'row', gap: 16, paddingTop: 8, paddingHorizontal: 4 },
   legendText: { color: T.maroon, fontSize: 11, fontWeight: '700' },
 
-  categoryRow: { gap: 10, paddingRight: 14 },
-  categoryCard: { width: 118, height: 128, backgroundColor: '#fff', borderRadius: 18, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, overflow: 'hidden' },
-  categoryIconBox: { width: 42, height: 42, borderRadius: 13, backgroundColor: T.maroon + '12', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  categoryRow: { gap: CARD_GAP, paddingRight: PAGE_PAD },
+  categoryCard: { width: ADMIN_CATEGORY_CARD_WIDTH, height: 128, borderRadius: 18, padding: 12, borderWidth: 1, overflow: 'hidden' },
+  categoryIconBox: { width: 42, height: 42, borderRadius: 13, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   categoryName: { color: T.text, fontSize: 12, fontWeight: '800', lineHeight: 16, minHeight: 32 },
   categoryValue: { color: T.maroon, fontSize: 20, fontWeight: '900', marginTop: 8 },
-  inlineEmpty: { width: '100%', backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
+  inlineEmpty: { width: '100%', backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#e5e7eb' },
 
-  tableCard: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', padding: 12, elevation: 8, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
+  tableCard: { backgroundColor: '#f8fafc', borderRadius: 18, borderWidth: 1, borderColor: '#e2e8f0', padding: 12 },
   districtRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: T.border },
   districtNameWrap: { width: 108 },
   districtName: { color: T.text, fontSize: 12, fontWeight: '800' },
@@ -554,7 +560,7 @@ const s = StyleSheet.create({
   districtFill: { height: '100%', backgroundColor: T.green, borderRadius: 4 },
   districtRate: { width: 38, textAlign: 'right', color: T.text, fontSize: 12, fontWeight: '900' },
 
-  complaintCard: { backgroundColor: '#fff', borderRadius: 18, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', flexDirection: 'row', alignItems: 'center', gap: 10, elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15, shadowOffset: { width: 0, height: 7 } },
+  complaintCard: { backgroundColor: '#fff7ed', borderRadius: 18, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#fed7aa', flexDirection: 'row', alignItems: 'center', gap: 10 },
   complaintIconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   complaintIcon: { fontSize: 20 },
   complaintInfo: { flex: 1, minWidth: 0 },
@@ -563,14 +569,13 @@ const s = StyleSheet.create({
   statusBadge: { paddingHorizontal: 9, paddingVertical: 5, borderRadius: 10 },
   statusText: { fontSize: 10, fontWeight: '900' },
 
-  notificationCard: { backgroundColor: '#fff', borderRadius: 18, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', flexDirection: 'row', gap: 10, elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 15, shadowOffset: { width: 0, height: 7 } },
+  notificationCard: { backgroundColor: '#f0f9ff', borderRadius: 18, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#bae6fd', flexDirection: 'row', gap: 10 },
   notificationDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: T.maroon, marginTop: 5 },
   notificationBody: { flex: 1 },
   notificationMsg: { color: T.text, fontSize: 13, fontWeight: '700', lineHeight: 18 },
   notificationTime: { color: T.textM, fontSize: 10, marginTop: 4 },
 
-  emptyCard: { backgroundColor: '#fff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', elevation: 7, shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
-  cardTopLight: { position: 'absolute', top: 4, left: 8, right: 8, height: 22, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.5)' },
-  cardBottomShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 32, backgroundColor: 'rgba(0,0,0,0.025)' },
+  emptyCard: { backgroundColor: '#f8fafc', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#e2e8f0' },
+  cardAccent: { position: 'absolute', top: 0, left: 0, right: 0, height: 3 },
   emptyText: { color: T.textM, fontSize: 12, textAlign: 'center' }
 });

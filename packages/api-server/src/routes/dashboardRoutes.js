@@ -47,7 +47,26 @@ router.get('/complaints/by-category', asyncHandler(async (req, res) => {
     'Others':                '#9B9B9B',
   };
   const total = await Complaint.countDocuments();
-  const agg = await Complaint.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]);
+  const agg = await Complaint.aggregate([
+    {
+      $project: {
+        displayCategory: {
+          $cond: [
+            {
+              $and: [
+                { $eq: ['$category', 'Others'] },
+                { $ne: ['$customCategory', null] },
+                { $ne: ['$customCategory', ''] },
+              ],
+            },
+            '$customCategory',
+            '$category',
+          ],
+        },
+      },
+    },
+    { $group: { _id: '$displayCategory', count: { $sum: 1 } } },
+  ]);
   res.json(agg.map((item) => ({
     name:  item._id,
     value: total ? Math.round((item.count / total) * 100) : 0,
@@ -62,7 +81,7 @@ router.get('/complaints/recent', asyncHandler(async (req, res) => {
     .populate('user', 'name')
     .populate('assignedWorker', 'name');
   res.json(complaints.map((c) => ({
-    id: c._id, category: c.category, user: c.user?.name || 'Unknown',
+    id: c._id, category: c.category, customCategory: c.customCategory, user: c.user?.name || 'Unknown',
     thokuthi: c.thokuthi, district: c.district, priority: c.priority,
     status: c.status, time: timeAgo(c.createdAt),
   })));

@@ -74,8 +74,11 @@ export default function AdminComplaints({ route, navigation }) {
   // Filter complaints based on search
   const filtered = complaints.filter((c) => {
     const query = searchQuery.toLowerCase();
+    const categoryLabel = complaintCategoryT(c.category, c.customCategory).toLowerCase();
     return (
+      categoryLabel.includes(query) ||
       c.category?.toLowerCase().includes(query) ||
+      c.customCategory?.toLowerCase().includes(query) ||
       c.user?.toLowerCase().includes(query) ||
       c.thokuthi?.toLowerCase().includes(query) ||
       c.ward?.toLowerCase().includes(query) ||
@@ -94,7 +97,7 @@ export default function AdminComplaints({ route, navigation }) {
   const complaintExportData = () => ({
     headers: ['Category', 'User', 'Phone', 'Thokuthi', 'District', 'Status', 'Worker', 'Date', 'Description'],
     rows: filtered.map((c) => [
-    c.category || 'N/A',
+    complaintCategoryT(c.category, c.customCategory) || 'N/A',
     c.user || 'N/A',
     c.userPhone || 'N/A',
     c.thokuthi || c.ward || 'N/A',

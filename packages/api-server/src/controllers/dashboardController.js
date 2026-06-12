@@ -55,7 +55,24 @@ const getComplaintsByCategory = asyncHandler(async (req, res) => {
 
   const total = await Complaint.countDocuments();
   const agg   = await Complaint.aggregate([
-    { $group: { _id: '$category', count: { $sum: 1 } } },
+    {
+      $project: {
+        displayCategory: {
+          $cond: [
+            {
+              $and: [
+                { $eq: ['$category', 'Others'] },
+                { $ne: ['$customCategory', null] },
+                { $ne: ['$customCategory', ''] },
+              ],
+            },
+            '$customCategory',
+            '$category',
+          ],
+        },
+      },
+    },
+    { $group: { _id: '$displayCategory', count: { $sum: 1 } } },
   ]);
 
   res.json(agg.map((item) => ({
@@ -78,6 +95,7 @@ const getRecentComplaints = asyncHandler(async (req, res) => {
   res.json(complaints.map((c) => ({
     id:       c._id,
     category: c.category,
+    customCategory: c.customCategory,
     user:     c.user?.name || 'Unknown',
     thokuthi:    c.thokuthi,
     district: c.district,

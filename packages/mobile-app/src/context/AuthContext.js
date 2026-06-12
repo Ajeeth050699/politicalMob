@@ -1,16 +1,11 @@
 import React, {
   createContext, useContext, useReducer,
-  useEffect, useRef,
+  useEffect,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState } from 'react-native';
 import { authAPI } from '../services/api';
 
-// ── Session config ─────────────────────────────────────────────────
-// Auto-logout after 8 minutes in background / app closed
-const SESSION_TIMEOUT_MS = 8 * 60 * 1000;
-
-// ── Reducer ────────────────────────────────────────────────────────
+// Reducer
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':   return { ...state, userInfo: action.payload, loading: false };
@@ -21,80 +16,21 @@ const authReducer = (state, action) => {
   }
 };
 
-// ── Context ────────────────────────────────────────────────────────
+// Context
 const AuthContext = createContext(undefined);
 
-// ── Provider ───────────────────────────────────────────────────────
+// Provider
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, { userInfo: null, loading: true });
 
-  const bgTimeRef    = useRef(null);
-  const appStateRef  = useRef(AppState.currentState);
-  const userInfoRef  = useRef(null);
-
-  // Keep ref in sync with latest userInfo
-  useEffect(() => {
-    userInfoRef.current = state.userInfo;
-  }, [state.userInfo]);
-
-  // ── Load saved user on mount ───────────────────────────────────
+  // Load saved user on mount. Do not expire local login automatically.
   useEffect(() => { loadUser(); }, []);
 
-  // ── AppState listener for background timeout ───────────────────
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', handleAppStateChange);
-    return () => sub.remove();
-  }, []);
-
-  const handleAppStateChange = async (nextState) => {
-    const prevState = appStateRef.current;
-    appStateRef.current = nextState;
-
-    // App going to background
-    if (prevState === 'active' && (nextState === 'background' || nextState === 'inactive')) {
-      const now = Date.now();
-      bgTimeRef.current = now;
-      try { await AsyncStorage.setItem('bgTime', String(now)); } catch {}
-    }
-
-    // App returning to foreground
-    if ((prevState === 'background' || prevState === 'inactive') && nextState === 'active') {
-      if (!userInfoRef.current) return; // not logged in
-
-      const bgTime = bgTimeRef.current
-        || Number(await AsyncStorage.getItem('bgTime') || '0');
-      const elapsed = bgTime ? Date.now() - bgTime : 0;
-
-      if (elapsed >= SESSION_TIMEOUT_MS) {
-        // Been away too long — auto logout
-        await performLogout();
-      } else {
-        try { await AsyncStorage.removeItem('bgTime'); } catch {}
-        bgTimeRef.current = null;
-      }
-    }
-  };
-
-  // ── Load user ──────────────────────────────────────────────────
   const loadUser = async () => {
     try {
-      const [stored, bgTimeStr] = await Promise.all([
-        AsyncStorage.getItem('userInfo'),
-        AsyncStorage.getItem('bgTime'),
-      ]);
+      const stored = await AsyncStorage.getItem('userInfo');
 
       if (!stored) { dispatch({ type: 'DONE' }); return; }
-
-      // Check if session expired while app was closed
-      if (bgTimeStr) {
-        const elapsed = Date.now() - parseInt(bgTimeStr, 10);
-        if (elapsed >= SESSION_TIMEOUT_MS) {
-          await AsyncStorage.multiRemove(['userInfo', 'bgTime']);
-          dispatch({ type: 'DONE' });
-          return;
-        }
-        await AsyncStorage.removeItem('bgTime');
-      }
 
       dispatch({ type: 'LOGIN', payload: JSON.parse(stored) });
     } catch {
@@ -102,18 +38,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ── Auth actions ───────────────────────────────────────────────
+  // Manual logout only. ProfileScreen calls this from the Logout button.
   const performLogout = async () => {
-    bgTimeRef.current = null;
-    userInfoRef.current = null;
     dispatch({ type: 'LOGOUT' });
 
     try {
-      await AsyncStorage.multiRemove(['userInfo', 'bgTime']);
+      await AsyncStorage.removeItem('userInfo');
     } catch {
       try {
         await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('bgTime');
       } catch {}
     }
   };

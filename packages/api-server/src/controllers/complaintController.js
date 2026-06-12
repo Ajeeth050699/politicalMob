@@ -21,6 +21,12 @@ const notify = async (userId, msg, type = 'complaint', complaintId = null, worke
 
 const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 
+const complaintTitle = (complaint) => (
+  complaint?.category === 'Others' && complaint?.customCategory
+    ? complaint.customCategory
+    : complaint?.category
+);
+
 const workerCanSeeComplaint = (worker, complaint) => {
   if (!worker || !complaint) return false;
   if (String(complaint.assignedWorker || '') === String(worker._id || '')) return true;
@@ -217,7 +223,7 @@ const createComplaint = asyncHandler(async (req, res) => {
   for (const agent of agents) {
     await notify(
       agent._id,
-      `New complaint in your ${routingLevel === 'ward' ? 'ward' : 'nearby area'}: ${category}`,
+      `New complaint in your ${routingLevel === 'ward' ? 'ward' : 'nearby area'}: ${complaintTitle(complaint)}`,
       'complaint',
       complaint._id,
       agent._id
@@ -230,7 +236,7 @@ const createComplaint = asyncHandler(async (req, res) => {
     for (const admin of admins) {
       await notify(
         admin._id, 
-        `No workers/agents for: ${category} in ward ${userWard}`, 
+        `No workers/agents for: ${complaintTitle(complaint)} in ward ${userWard}`, 
         'complaint',
         complaint._id
       );
@@ -298,7 +304,7 @@ const acceptComplaint = asyncHandler(async (req, res) => {
   // Notify citizen
   await notify(
     updated.user._id,
-    `✅ Your complaint "${updated.category}" has been accepted by Worker ${req.user.name}.`,
+    `✅ Your complaint "${complaintTitle(updated)}" has been accepted by Worker ${req.user.name}.`,
     'complaint',
     updated._id,
     req.user._id
@@ -309,7 +315,7 @@ const acceptComplaint = asyncHandler(async (req, res) => {
   try {
     const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
     for (const admin of admins) {
-      await notify(admin._id, '? Complaint "' + updated.category + '" was accepted by Worker ' + req.user.name, 'complaint', updated._id);
+      await notify(admin._id, '? Complaint "' + complaintTitle(updated) + '" was accepted by Worker ' + req.user.name, 'complaint', updated._id);
     }
   } catch(e) {}
   const out = fmt(updated);
@@ -354,7 +360,7 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
     if (complaint.status === 'NEW') complaint.status = 'ACCEPTED';
     const isNewAssignment = String(complaint.assignedWorker) !== String(req.body.assignedWorker);
     if (isNewAssignment) {
-      await notify(req.body.assignedWorker, 'You have been assigned to a new complaint: "' + complaint.category + '"', 'complaint', complaint._id);
+      await notify(req.body.assignedWorker, 'You have been assigned to a new complaint: "' + complaintTitle(complaint) + '"', 'complaint', complaint._id);
     }
   }
   await complaint.save();
@@ -362,9 +368,9 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
   // Notify citizen on status change
   if (oldStatus !== complaint.status) {
     const msgs = {
-      'ACCEPTED':    `✅ Your complaint "${complaint.category}" was accepted by a worker.`,
-      'IN PROGRESS': `🔧 A worker is working on your complaint "${complaint.category}".`,
-      'COMPLETED':   `🎉 Your complaint "${complaint.category}" has been resolved!`,
+      'ACCEPTED':    `✅ Your complaint "${complaintTitle(complaint)}" was accepted by a worker.`,
+      'IN PROGRESS': `🔧 A worker is working on your complaint "${complaintTitle(complaint)}".`,
+      'COMPLETED':   `🎉 Your complaint "${complaintTitle(complaint)}" has been resolved!`,
     };
     const citizenId = typeof complaint.user === 'object' ? complaint.user._id : complaint.user;
     const workerId = typeof complaint.assignedWorker === 'object' ? complaint.assignedWorker._id : complaint.assignedWorker;
@@ -374,7 +380,7 @@ const updateComplaintStatus = asyncHandler(async (req, res) => {
     if (complaint.status === 'COMPLETED') {
       const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
       for (const admin of admins) {
-         await notify(admin._id, '? Complaint "' + complaint.category + '" has been resolved.', 'complaint', complaint._id);
+         await notify(admin._id, '? Complaint "' + complaintTitle(complaint) + '" has been resolved.', 'complaint', complaint._id);
       }
     }
   }
@@ -444,10 +450,10 @@ const uploadProof = asyncHandler(async (req, res) => {
   await complaint.save();
 
   const citizenId = typeof complaint.user === 'object' ? complaint.user._id : complaint.user;
-  await notify(citizenId, `🎉 "${complaint.category}" is resolved! Proof uploaded by worker.`, 'complaint');
+  await notify(citizenId, `🎉 "${complaintTitle(complaint)}" is resolved! Proof uploaded by worker.`, 'complaint');
   const admins = await User.find({ role: { $in: ['admin', 'superadmin'] }, isActive: true });
   for (const admin of admins) {
-     await notify(admin._id, '? Complaint "' + complaint.category + '" has been resolved. Proof uploaded.', 'complaint', complaint._id);
+     await notify(admin._id, '? Complaint "' + complaintTitle(complaint) + '" has been resolved. Proof uploaded.', 'complaint', complaint._id);
   }
 
   const populated = await Complaint.findById(complaint._id)
@@ -487,7 +493,7 @@ const escalatePending = asyncHandler(async (req, res) => {
     c.escalatedAt      = new Date();
     await c.save();
     for (const admin of admins) {
-      await notify(admin._id, `⚠️ Unattended 2+ hrs: ${c.category} in thokuthi ${c.thokuthi}`, 'complaint', c._id);
+      await notify(admin._id, `⚠️ Unattended 2+ hrs: ${complaintTitle(c)} in thokuthi ${c.thokuthi}`, 'complaint', c._id);
     }
   }
 
@@ -565,7 +571,7 @@ const revokeComplaint = asyncHandler(async (req, res) => {
   if (complaint.assignedWorker) {
     await notify(
       complaint.assignedWorker, 
-      `❌ Complaint "${complaint.category}" has been revoked by the citizen.`, 
+      `❌ Complaint "${complaintTitle(complaint)}" has been revoked by the citizen.`, 
       'complaint',
       complaint._id,
       complaint.assignedWorker

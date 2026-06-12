@@ -258,6 +258,18 @@ const sendOtp = asyncHandler(async (req, res) => {
   const digits = String(phone).replace(/\D/g, '');
   if (digits.length < 10) { res.status(400); throw new Error('Enter a valid 10-digit phone number'); }
 
+  const phoneExists = await User.findOne({
+    $or: [
+      { phone },
+      { phone: digits },
+      { email: `${digits}@phone.local` },
+    ],
+  });
+  if (phoneExists) {
+    res.status(400);
+    throw new Error('Phone number already taken');
+  }
+
   const otp = '123456'; // String(Math.floor(100000 + Math.random() * 900000));
   registrationOtpStore[phone] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 

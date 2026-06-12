@@ -6,6 +6,7 @@ import {
   Platform, StatusBar, Image, Alert } from
 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../context/AuthContext';
@@ -20,14 +21,29 @@ const GENDER_OPTIONS = [
   { value: 'transgender', label: 'Transgender' },
   { value: 'other', label: 'Other' }
 ];
+const PHONE_TAKEN_MESSAGE = 'Phone number already taken.';
+
+const getErrorMessage = (err, fallback) =>
+  err?.response?.data?.message || err?.response?.data?.error || err?.message || fallback;
+
+const isPhoneAlreadyTaken = (message) => {
+  const text = String(message || '').toLowerCase();
+  return text.includes('phone') && (
+    text.includes('already') ||
+    text.includes('taken') ||
+    text.includes('exist') ||
+    text.includes('registered') ||
+    text.includes('duplicate')
+  );
+};
 
 // ── Field ─────────────────────────────────────────────────────────
-function Field({ label, icon, value, onChange, placeholder, keyboard, secure, hint }) {
+function Field({ label, icon, value, onChange, placeholder, keyboard, secure, hint, error }) {
   const [show, setShow] = useState(false);
   return (
     <View style={{ marginBottom: 16 }}>
       <Text style={fs.label}>{label}</Text>
-      <View style={fs.row}>
+      <View style={[fs.row, error && fs.rowError]}>
         <Text style={fs.icon}>{icon}</Text>
         <TextInput
           style={{ flex: 1, paddingVertical: 14, fontSize: 15, color: T.text }}
@@ -38,12 +54,13 @@ function Field({ label, icon, value, onChange, placeholder, keyboard, secure, hi
           secureTextEntry={!!secure && !show} />
         
         {!!secure &&
-        <TouchableOpacity onPress={() => setShow((v) => !v)} style={{ padding: 8 }}>
-            <Text style={{ fontSize: 16 }}>{show ? '🙈' : '👁️'}</Text>
+        <TouchableOpacity onPress={() => setShow((v) => !v)} style={fs.eyeBtn} activeOpacity={0.75}>
+            <Icon name={show ? 'eye-off-outline' : 'eye-outline'} size={22} color={T.textM} />
           </TouchableOpacity>
         }
       </View>
-      {hint && <Text style={fs.hint}>{hint}</Text>}
+      {!!error && <Text style={fs.error}>{error}</Text>}
+      {!error && hint && <Text style={fs.hint}>{hint}</Text>}
     </View>);
 
 }
@@ -97,6 +114,7 @@ export default function RegisterScreen({ navigation }) {
   const [wards, setWards] = useState([]);
   const [pricing, setPricing] = useState({});
   const [phoneInput, setPhoneInput] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'error' });
   const [form, setForm] = useState({
@@ -164,8 +182,14 @@ export default function RegisterScreen({ navigation }) {
 
   // Send OTP
   const handleSendOtp = async () => {
-    const phone = phoneInput.trim();
-    if (!phone || phone.replace(/\D/g, '').length < 10) {showToast('Enter a valid 10-digit phone number.');return;}
+    const phone = phoneInput.replace(/\D/g, '');
+    setPhoneError('');
+    if (phone.length !== 10) {
+      const msg = 'Enter a valid 10-digit phone number.';
+      setPhoneError(msg);
+      showToast(msg);
+      return;
+    }
     setLoading(true);
     try {
       const res = await authAPI.sendOtp(phone);
@@ -174,7 +198,17 @@ export default function RegisterScreen({ navigation }) {
       setVerifiedPhone(phone);
       setCountdown(60);
     } catch (err) {
-      showToast(err?.response?.data?.message || 'Failed to send OTP.');
+      const msg = getErrorMessage(err, 'Failed to send OTP.');
+      setVerifiedPhone('');
+      setOtpCode('');
+      setCountdown(0);
+      if (isPhoneAlreadyTaken(msg)) {
+        setPhoneError(PHONE_TAKEN_MESSAGE);
+        showToast(PHONE_TAKEN_MESSAGE);
+      } else {
+        setPhoneError(msg);
+        showToast(msg);
+      }
     } finally {setLoading(false);}
   };
 
@@ -319,7 +353,14 @@ export default function RegisterScreen({ navigation }) {
               <View style={s.phoneBox}>
                     <Text style={s.phoneTitle}>{literalT("📱 Phone Verification")}</Text>
                     <Text style={s.phoneSub}>{literalT("Your phone number is used as your identity. We will send a 6-digit OTP to verify.")}</Text>
-                    <Field label={literalT("Phone Number *")} icon="📱" value={phoneInput} onChange={setPhoneInput} placeholder={literalT("10-digit mobile number")} keyboard="phone-pad" />
+                    <Field
+                      label={literalT("Phone Number *")}
+                      icon="📱"
+                      value={phoneInput}
+                      onChange={(v) => { setPhoneInput(v); setPhoneError(''); }}
+                      placeholder={literalT("10-digit mobile number")}
+                      keyboard="phone-pad"
+                      error={phoneError} />
                     <TouchableOpacity style={[s.btn, loading && { opacity: 0.7 }]} onPress={handleSendOtp} disabled={loading} activeOpacity={0.85}>
                       {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>{literalT("Send OTP →")}</Text>}
                     </TouchableOpacity>
@@ -455,7 +496,10 @@ const ot = StyleSheet.create({
 const fs = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '700', color: T.textL, marginBottom: 8 },
   row: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: T.border, borderRadius: 14, backgroundColor: T.bg, paddingHorizontal: 14 },
+  rowError: { borderColor: T.red, backgroundColor: '#FFF1F2' },
   icon: { fontSize: 16, marginRight: 10 },
+  eyeBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  error: { fontSize: 12, color: T.red, marginTop: 6, lineHeight: 16, fontWeight: '700' },
   hint: { fontSize: 11, color: T.textM, marginTop: 6, lineHeight: 16 }
 });
 const s = StyleSheet.create({
